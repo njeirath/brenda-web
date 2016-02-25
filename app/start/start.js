@@ -14,8 +14,8 @@ var StartCtrl = ['$rootScope', '$state', '$scope', '$stateParams', function($roo
         route:   'cfg.aws'
       },
       {
-      	heading: 'S3 Setup',
-      	route: 'cfg.s3'
+      	heading: 'Job Setup',
+      	route: 'cfg.job'
       }
     ];
   };

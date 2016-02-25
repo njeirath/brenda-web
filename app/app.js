@@ -5,7 +5,6 @@ angular.module('brendaWeb', [
   'myApp.version',
   'ui.router',
   'ui.bootstrap',
-  'ui.router.tabs',
   'LocalStorageModule',
   'awsSetup'
 ]).
@@ -13,13 +12,13 @@ config(['$stateProvider', function($stateProvider) {
   $stateProvider.state('cfg', {
     url: '',
     controller: 'StartCtrl',
-    templateUrl: 'start/start.html'
+    templateUrl: 'index.html'
   }).state('cfg.aws', {
-  	url: 'awsSetup',
+  	url: '/awsSetup',
   	templateUrl: 'awsSetup/awsSetup.html',
   	controller: 'AwsSetupCtrl'
-  }).state('cfg.s3', {
-  	url: 's3Setup',
-  	templateUrl: 'awsSetup/s3Setup.html'
+  }).state('cfg.job', {
+  	url: '/jobSetup',
+  	templateUrl: 'awsSetup/jobSetup.html'
   });
 }]);
