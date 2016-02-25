@@ -11,7 +11,6 @@ angular.module('brendaWeb', [
 config(['$stateProvider', function($stateProvider) {
   $stateProvider.state('cfg', {
     url: '',
-    controller: 'StartCtrl',
     templateUrl: 'index.html'
   }).state('cfg.aws', {
   	url: '/awsSetup',
@@ -19,6 +18,7 @@ config(['$stateProvider', function($stateProvider) {
   	controller: 'AwsSetupCtrl'
   }).state('cfg.job', {
   	url: '/jobSetup',
-  	templateUrl: 'awsSetup/jobSetup.html'
+  	templateUrl: 'awsSetup/jobSetup.html',
+  	controller: 'JobSetupCtrl'
   });
 }]);

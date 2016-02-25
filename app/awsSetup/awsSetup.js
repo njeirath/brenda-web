@@ -18,6 +18,21 @@ angular.module('awsSetup', [])
 		awsService.testCredentials();
 	};
 }])
+.controller('JobSetupCtrl', ['$scope', 'awsService', function($scope, awsService) {
+	$scope.queues = [];
+	
+	awsService.getQueues();
+	
+	$scope.$on('aws-sqs-success', function(event, args) {
+		$scope.queues = [];
+		
+		args.QueueUrls.forEach(function(entry) {
+			$scope.queues.push({id: entry, name: entry.split("/").pop()});
+		});
+		
+		$scope.$digest();
+	});
+}])
 .directive('awsLoginStatus', [function() {
 	return {
 		restrict: 'A',
@@ -75,6 +90,16 @@ angular.module('awsSetup', [])
 					$rootScope.$broadcast('aws-login-error', String(err));
 				} else {
 					$rootScope.$broadcast('aws-login-success');
+				}
+			});
+		},
+		getQueues: function() {
+			var sqs = new AWS.SQS();
+			sqs.listQueues({}, function(err, data) {
+				if (err) {
+					$rootScope.$broadcast('aws-sqs-error', String(err));
+				} else {
+					$rootScope.$broadcast('aws-sqs-success', data);
 				}
 			});
 		}
