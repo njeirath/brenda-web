@@ -18,10 +18,64 @@ angular.module('awsSetup', [])
 		awsService.testCredentials();
 	};
 }])
-.controller('JobSetupCtrl', ['$scope', 'awsService', function($scope, awsService) {
+.controller('JobSetupCtrl', ['$scope', '$interval', 'awsService', function($scope, $interval, awsService) {
 	$scope.queues = [];
+	$scope.workQueue = '';
+	$scope.queueSize = 'No Queue Selected';
+	
+	$scope.workTemplate = 'blender -b *.blend -F PNG -o $OUTDIR/frame_###### -s $START -e $END -j $STEP -t 0 -a';
+	$scope.startFrame = 1;
+	$scope.endFrame = 240;
 	
 	awsService.getQueues();
+	
+	function updateQueueSize() {
+		if(($scope.workQueue != '') && ($scope.workQueue != undefined)) {
+			awsService.getQueueSize($scope.workQueue, function(size) {
+				$scope.queueSize = size;
+			});
+		} else {
+			$scope.queueSize = 'No Queue Selected';
+		}
+	}
+	
+	var timer = $interval(function() {
+		updateQueueSize();
+	}, 5000);
+	
+	$scope.$on('destroy', function() {
+		$interval.cancel(timer);
+	});
+	
+	$scope.workList = function() {
+		var list = [];
+		
+		for (var i = parseInt($scope.startFrame); i <= parseInt($scope.endFrame); i++) {
+			var cmd = $scope.workTemplate.replace("$START", i).replace("$END", i).replace("$STEP", 1);
+			list.push(cmd);
+		}
+		
+		return list;
+	};
+	
+	$scope.sendWork = function() {
+		awsService.sendToQueue($scope.workQueue, $scope.workList());
+	};
+	
+	$scope.clearQueue = function() {
+		awsService.clearQueue($scope.workQueue);
+	};
+	
+	$scope.sendStatus = {
+				total: 0,
+				success: 0,
+				failed: 0,
+				inFlight: 0,
+	};
+	
+	$scope.$on('aws-sqs-send-update', function(event, data) {
+		$scope.sendStatus = data;
+	});
 	
 	$scope.$on('aws-sqs-success', function(event, args) {
 		$scope.queues = [];
@@ -100,6 +154,77 @@ angular.module('awsSetup', [])
 					$rootScope.$broadcast('aws-sqs-error', String(err));
 				} else {
 					$rootScope.$broadcast('aws-sqs-success', data);
+				}
+			});
+		},
+		sendToQueue: function(queueUrl, data) {
+			var sqs = new AWS.SQS();
+			
+			var params = {
+				Entries: [],
+				QueueUrl: queueUrl
+			};
+			
+			var sendStatus = {
+				total: data.length,
+				success: 0,
+				failed: 0,
+				inFlight: 0,
+			};
+			
+			$rootScope.$broadcast('aws-sqs-send-update', sendStatus);
+			
+			data.forEach(function(item, i) {
+				
+				params.Entries.push( {
+					MessageBody: item,
+					Id: String(i)
+				});
+				
+				if ((params.Entries.length == 10) || ( i == (data.length -1))) {
+					sendStatus.inFlight += params.Entries.length;
+					$rootScope.$broadcast('aws-sqs-send-update', sendStatus);
+					
+					(function(param) {
+						sqs.sendMessageBatch(param, function(err, data) {
+							if (err) {
+								sendStatus.failed += param.Entries.length;
+								sendStatus.inFlight -= param.Entries.length;
+							} else {
+								sendStatus.success += data.Successful.length;
+								sendStatus.failed += data.Failed.length;
+								sendStatus.inFlight -= data.Successful.length;
+								sendStatus.inFlight -= data.Failed.length;
+							}
+							
+							$rootScope.$broadcast('aws-sqs-send-update', sendStatus);
+						});
+					})(params);
+					
+					
+					params.Entries = [];
+				}
+			});
+		},
+		clearQueue: function(queueUrl) {
+			var sqs = new AWS.SQS();
+			
+			sqs.purgeQueue({QueueUrl: queueUrl}, function(err, data) {
+				
+			});
+		},
+		getQueueSize: function(queueUrl, callback) {
+			var sqs = new AWS.SQS();
+			var params = {
+				QueueUrl: queueUrl, 
+				AttributeNames: ['ApproximateNumberOfMessages', 'ApproximateNumberOfMessagesNotVisible']
+			};
+			
+			sqs.getQueueAttributes(params, function(err, data) {
+				if (err) {
+					callback(String(err));
+				} else {
+					callback(data.Attributes.ApproximateNumberOfMessages);
 				}
 			});
 		}

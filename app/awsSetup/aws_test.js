@@ -119,6 +119,26 @@ describe('awsSetup', function() {
 				expect($rootScope.queues[1].id).toBe('http://queue/url/name2');
 				expect($rootScope.queues[1].name).toBe('name2');
 			});
+			
+			it('should initialize template, start and end frame', function() {
+				var ctrl = $controller('JobSetupCtrl', {$scope: $rootScope, awsService: awsServiceMock});
+				
+				expect($rootScope.workTemplate).toBe('blender -b *.blend -F PNG -o $OUTDIR/frame_###### -s $START -e $END -j $STEP -t 0 -a');
+				expect($rootScope.startFrame).toBe(1);
+				expect($rootScope.endFrame).toBe(240);
+			});
+			
+			describe('$scope.workList', function() {
+				it('should generate the work list', function() {
+					var ctrl = $controller('JobSetupCtrl', {$scope: $rootScope, awsService: awsServiceMock});
+					
+					var workList = $rootScope.workList();
+					
+					expect(workList.length).toBe(240);
+					expect(workList[0]).toBe('blender -b *.blend -F PNG -o $OUTDIR/frame_###### -s 1 -e 1 -j 1 -t 0 -a');
+					expect(workList[1]).toBe('blender -b *.blend -F PNG -o $OUTDIR/frame_###### -s 2 -e 2 -j 1 -t 0 -a');
+				});
+			});
 		});
 	});
 	
