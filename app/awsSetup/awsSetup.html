@@ -14,7 +14,7 @@
 		<label for="awsRegion">AWS Region</label>
 		<input type="text" class="form-control" id="awsRegion" ng-model="awsRegion" placeholder="Region" />
 	</div>
-	<button type="submit" ng-click="setCredentials()">Set Credentials</button>
-	<div aws-login-status></div>
+	<button type="submit" ng-click="setCredentials()" id="setCredentialsBtn">Set Credentials</button>
+	<div aws-login-status id="loginStatus"></div>
 	<!-- <aws-login aws-key-id="awsKeyId" aws-secret="awsSecret" region="awsRegion"></aws-login> -->
 </form>
