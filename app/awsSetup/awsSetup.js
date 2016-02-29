@@ -106,38 +106,38 @@ angular.module('awsSetup', [])
 		}
 	};
 }])
-.factory('awsService', ['$log', '$rootScope', 'localStorageService', function($log, $rootScope, localStorageService) {
+.factory('awsService', ['$log', '$rootScope', 'localStorageService', 'aws', function($log, $rootScope, localStorageService, aws) {
 	var service = {
 		setCredentials: function(keyId, secret) {
-			AWS.config.update({accessKeyId: keyId, secretAccessKey: secret});
+			aws.config.update({accessKeyId: keyId, secretAccessKey: secret});
 			$log.log("Set keyId: " + keyId + " and secret: " + secret);
 			localStorageService.set('keyId', keyId);
 			localStorageService.set('keySecret', secret);
 		},
 		getKeyId: function() {
-			if (AWS.config.credentials) {
-				return AWS.config.credentials.accessKeyId;
+			if (aws.config.credentials) {
+				return aws.config.credentials.accessKeyId;
 			} else {
 				return '';
 			}
 		},
 		getKeySecret: function() {
-			if (AWS.config.credentials) {
-				return AWS.config.credentials.secretAccessKey;
+			if (aws.config.credentials) {
+				return aws.config.credentials.secretAccessKey;
 			} else {
 				return '';
 			}
 		},
 		setRegion: function(region) {
-			AWS.config.region = region;
+			aws.config.region = region;
 			$log.log("Set region: " + region);
 			localStorageService.set('region', region);
 		},
 		getRegion: function() {
-			return AWS.config.region;
+			return aws.config.region;
 		},
 		testCredentials: function() {
-			var ec2 = new AWS.EC2();
+			var ec2 = new aws.EC2();
 			ec2.describeKeyPairs({}, function(err, data) {
 				if (err) {
 					$log.log("Error with credentials: " + err);
@@ -148,7 +148,7 @@ angular.module('awsSetup', [])
 			});
 		},
 		getQueues: function() {
-			var sqs = new AWS.SQS();
+			var sqs = new aws.SQS();
 			sqs.listQueues({}, function(err, data) {
 				if (err) {
 					$rootScope.$broadcast('aws-sqs-error', String(err));
@@ -158,38 +158,49 @@ angular.module('awsSetup', [])
 			});
 		},
 		sendToQueue: function(queueUrl, data) {
-			var sqs = new AWS.SQS();
+			var sqs = new aws.SQS();
 			
-			var params = {
-				Entries: [],
-				QueueUrl: queueUrl
-			};
+			
 			
 			var sendStatus = {
 				total: data.length,
 				success: 0,
 				failed: 0,
 				inFlight: 0,
+				copy: function() {
+					return {
+						total: this.total,
+						success: this.success,
+						failed: this.failed,
+						inFlight: this.inFlight 
+					};
+				}
 			};
 			
-			$rootScope.$broadcast('aws-sqs-send-update', sendStatus);
+			$rootScope.$broadcast('aws-sqs-send-update', sendStatus.copy());
+			
+			var entries = [];
 			
 			data.forEach(function(item, i) {
-				
-				params.Entries.push( {
+				entries.push( {
 					MessageBody: item,
 					Id: String(i)
 				});
 				
-				if ((params.Entries.length == 10) || ( i == (data.length -1))) {
-					sendStatus.inFlight += params.Entries.length;
-					$rootScope.$broadcast('aws-sqs-send-update', sendStatus);
+				if ((entries.length == 10) || ( i == (data.length -1))) {
+					sendStatus.inFlight += entries.length;
+					$rootScope.$broadcast('aws-sqs-send-update', sendStatus.copy());
 					
-					(function(param) {
-						sqs.sendMessageBatch(param, function(err, data) {
+					(function() {
+						var params = {
+							Entries: entries,
+							QueueUrl: queueUrl
+						};
+						
+						sqs.sendMessageBatch(params, function(err, data) {
 							if (err) {
-								sendStatus.failed += param.Entries.length;
-								sendStatus.inFlight -= param.Entries.length;
+								sendStatus.failed += params.Entries.length;
+								sendStatus.inFlight -= params.Entries.length;
 							} else {
 								sendStatus.success += data.Successful.length;
 								sendStatus.failed += data.Failed.length;
@@ -197,24 +208,24 @@ angular.module('awsSetup', [])
 								sendStatus.inFlight -= data.Failed.length;
 							}
 							
-							$rootScope.$broadcast('aws-sqs-send-update', sendStatus);
+							$rootScope.$broadcast('aws-sqs-send-update', sendStatus.copy());
 						});
-					})(params);
+					})();
 					
 					
-					params.Entries = [];
+					entries = [];
 				}
 			});
 		},
 		clearQueue: function(queueUrl) {
-			var sqs = new AWS.SQS();
+			var sqs = new aws.SQS();
 			
 			sqs.purgeQueue({QueueUrl: queueUrl}, function(err, data) {
 				
 			});
 		},
 		getQueueSize: function(queueUrl, callback) {
-			var sqs = new AWS.SQS();
+			var sqs = new aws.SQS();
 			var params = {
 				QueueUrl: queueUrl, 
 				AttributeNames: ['ApproximateNumberOfMessages', 'ApproximateNumberOfMessagesNotVisible']
@@ -243,4 +254,7 @@ angular.module('awsSetup', [])
 	}
 	
 	return service;
+}])
+.factory('aws', [function() {
+	return AWS;
 }]);
