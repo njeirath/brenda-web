@@ -29,7 +29,7 @@ angular.module('awsSetup', [])
 	
 	awsService.getQueues();
 	
-	function updateQueueSize() {
+	$scope.updateQueueSize = function() {
 		if(($scope.workQueue != '') && ($scope.workQueue != undefined)) {
 			awsService.getQueueSize($scope.workQueue, function(size) {
 				$scope.queueSize = size;
@@ -37,10 +37,10 @@ angular.module('awsSetup', [])
 		} else {
 			$scope.queueSize = 'No Queue Selected';
 		}
-	}
+	};
 	
 	var timer = $interval(function() {
-		updateQueueSize();
+		$scope.updateQueueSize();
 	}, 5000);
 	
 	$scope.$on('destroy', function() {
