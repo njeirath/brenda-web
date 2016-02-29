@@ -12,6 +12,7 @@
     "angular-mocks": "~1.4.0",
     "html5-boilerplate": "~5.2.0",
     "aws-sdk-js": "~2.2.37",
-    "angular-local-storage": "~0.1.4"
+    "angular-local-storage": "~0.1.4",
+    "angular-ui-router": "~0.2.18"
   }
 }
