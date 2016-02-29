@@ -33,15 +33,15 @@ module.exports = function(config){
             ],
 
     junitReporter : {
-      outputFile: 'test_out/unit.xml',
+      outputFile: 'test_out/junit/unit.xml',
       suite: 'unit'
     },
     coverageReporter: {
     	type: 'html',
-    	dir: 'coverage'
+    	dir: 'test_out/coverage'
 	},
 	
-	reporters: ['progress', 'coverage']
+	reporters: ['progress', 'coverage', 'junit']
 
   });
 };
