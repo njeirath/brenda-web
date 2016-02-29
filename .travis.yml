@@ -18,6 +18,7 @@ deploy:
   bucket: brenda-web
   local-dir: app
   acl: public_read
+  skip_cleanup: true
   on:
     repo: njeirath/brenda-web
     branch: master
