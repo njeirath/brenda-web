@@ -1,13 +1,24 @@
 language: node_js
 node_js:
-  - ">=0.10"
-
+- '>=0.10'
 before_script:
-  - export DISPLAY=:99.0
-  - sh -e /etc/init.d/xvfb start
-  - npm start > /dev/null &
-  - npm run update-webdriver
-  - sleep 1 # give server time to start
-
+- export DISPLAY=:99.0
+- sh -e /etc/init.d/xvfb start
+- npm start > /dev/null &
+- npm run update-webdriver
+- sleep 1
 script:
-  - node_modules/.bin/karma start karma.conf.js --no-auto-watch --single-run --reporters=dots --browsers=Firefox
+- node_modules/.bin/karma start karma.conf.js --no-auto-watch --single-run --reporters=dots
+  --browsers=Firefox
+deploy:
+  provider: s3
+  access_key_id: AKIAJOUMC4RNM4LVCDRA
+  secret_access_key:
+    secure: C1udB0j/z1ru18Di4dLiAlsd7UdQiNfN7uz2W/D5WBU86ezC6Q0v1hIN79yTWEIgoT3aBf/Aoxl+J6dfgaH7GVUDRvz/F+vvwqwVruejSK/ws7bDw2YbWWPjOQeiKrOAMPGONGEvAfFbN/gu/lnKB94DhlCp+nleAGx8IPuRvh+LSRCHwBLjibFjNifPK44kahllx8T4m/ROmr5e1PQhwoScFZ55wjZKEM8ppNgm4AkMzrFjfhGe3ovRWnqej+5swnYsaHK+W4fWtg3aj/jW3pPMx1fDimBCoAEEM5puYNBw8XcBqoqCr7EmLUzohE3d9xe2L8/IqwzvbccqozBEULcKzFHXzO4HniZU1Hcio6l6fGLeOoAcT/3dMLTkfYgtohVGBGU/acpwjvdt8CRLRW54dm65N/pduK7vKyXzB3vXDzYQrbhQ9tkHdZBvXKJopoIBbm8RkD3k0C1sxSpdygfZWOReX9gW/nO4JxrisM3eyF6ejEktPolHPDsUtixZJ9C9Tdi4EUxAMxJn77S+rk6ZtSgLjd0GOp+x9YQF48NvV+v7FaSY4nHa23t7QkpF1/8B5RCHXgDFzudG/uKHS8zQub9Hs8J4UoJ/kOyO6pJVAQDVNzICzTQq3v8nDrLSPquLnDnN586cSS6n64wYQdQOXiiZusCcjmP4EpQ1sds=
+  bucket: brenda-web
+  local-dir: app
+  acl: public_read
+  on:
+    repo: njeirath/brenda-web
+    branch: master
+
