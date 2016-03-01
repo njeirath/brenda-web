@@ -10,6 +10,7 @@ before_script:
 script:
 - node_modules/.bin/karma start karma.conf.js --no-auto-watch --single-run --reporters=dots
   --browsers=Firefox
+- node_modules/.bin/protractor tests/e2e-tests/protractor.conf.js --browser=firefox
 deploy:
   provider: s3
   access_key_id: AKIAJOUMC4RNM4LVCDRA
