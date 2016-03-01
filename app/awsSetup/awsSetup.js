@@ -87,8 +87,17 @@ angular.module('awsSetup', [])
 		$scope.$digest();
 	});
 }])
-.controller('WorkerSetupCtrl', ['$scope', '$interval', 'awsService', function($scope, $interval, awsService) {
+.controller('WorkerSetupCtrl', ['$scope', 'localStorageService', function($scope, localStorageService) {
+	$scope.projectSource = localStorageService.get('projectSource');
+	$scope.frameDestination = localStorageService.get('frameDestination');
 	
+	$scope.$watch('projectSource', function(newVal) {
+		localStorageService.set('projectSource', newVal);
+	});
+	
+	$scope.$watch('frameDestination', function(newVal) {
+		localStorageService.set('frameDestination', newVal);
+	});
 }])
 .directive('awsLoginStatus', [function() {
 	return {

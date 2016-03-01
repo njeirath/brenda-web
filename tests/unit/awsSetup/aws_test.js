@@ -7,7 +7,7 @@ describe('awsSetup', function() {
 		var $rootScope, $controller;
 			
 		beforeEach(inject(function(_$controller_, _$rootScope_) {
-			$rootScope = _$rootScope_.$new();
+			$rootScope = _$rootScope_;
 			$controller = _$controller_;
 		}));
 		
@@ -189,6 +189,35 @@ describe('awsSetup', function() {
 				});
 				
 				expect($rootScope.sendStatus.status).toBe('test status');
+			});
+		});
+		
+		describe('WorkerSetupCtrl', function() {
+			var ctrl, localStorageService;
+			
+			beforeEach(function() {
+				localStorageService = getLocalStorageMock();
+				localStorageService.data['projectSource'] = 'source location';
+				localStorageService.data['frameDestination'] = 'frame dest';
+				
+				ctrl = $controller('WorkerSetupCtrl', {$scope: $rootScope, localStorageService: localStorageService});
+			});
+			
+			it('should get initial values for projectSource and frameDestination from local storage', function() {
+				expect(localStorageService.get).toHaveBeenCalledWith('projectSource');
+				expect(localStorageService.get).toHaveBeenCalledWith('frameDestination');
+				
+				expect($rootScope.projectSource).toBe('source location');
+				expect($rootScope.frameDestination).toBe('frame dest');
+			});
+			
+			it('should update local storage on projectSource and frameDestination changes', function() {
+				$rootScope.projectSource = 'new source';
+				$rootScope.frameDestination = 'new dest';
+				$rootScope.$digest();
+				
+				expect(localStorageService.set).toHaveBeenCalledWith('projectSource', 'new source');
+				expect(localStorageService.set).toHaveBeenCalledWith('frameDestination', 'new dest');
 			});
 		});
 	});

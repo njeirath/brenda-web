@@ -7,17 +7,7 @@ describe('awsSetup', function() {
 		var $rootScope, $controller, localStorageService, awsMock;
 			
 		beforeEach(function() {
-			localStorageService = {
-				data: {},
-				get: function(name) {
-					return this.data[name];
-				},
-				set: function(name, value) {
-					this.data[name] = value;
-				}
-			};
-			spyOn(localStorageService, 'get').and.callThrough();
-			spyOn(localStorageService, 'set').and.callThrough();
+			localStorageService = getLocalStorageMock();
 			
 			var EC2describeKeyPairsSpy = jasmine.createSpy();
 			var SQSlistQueuesSpy = jasmine.createSpy();

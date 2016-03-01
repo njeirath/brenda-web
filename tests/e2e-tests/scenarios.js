@@ -54,5 +54,15 @@ describe('Brenda Web', function() {
 			expect(element(by.id('projectSource')).getAttribute('value')).toBe('');
 			expect(element(by.id('frameDestination')).getAttribute('value')).toBe('');
 		});
+		
+		it('should retain values if source/destination are changed', function() {
+			element(by.id('projectSource')).sendKeys('abc');
+			element(by.id('frameDestination')).sendKeys('def');
+			
+			browser.get('/app/#/workerSetup');
+			
+			expect(element(by.id('projectSource')).getAttribute('value')).toBe('abc');
+			expect(element(by.id('frameDestination')).getAttribute('value')).toBe('def');
+		});
 	});
 });
