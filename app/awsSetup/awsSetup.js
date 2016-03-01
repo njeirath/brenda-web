@@ -183,7 +183,7 @@ angular.module('awsSetup', [])
 			
 			data.forEach(function(item, i) {
 				entries.push( {
-					MessageBody: item,
+					MessageBody: btoa(item),
 					Id: String(i)
 				});
 				
