@@ -240,24 +240,24 @@ describe('awsSetup', function() {
 					
 					var expected1 = {
 						Entries: [
-							{MessageBody: 't1', Id: '0'},
-							{MessageBody: 't2', Id: '1'},
-							{MessageBody: 't3', Id: '2'},
-							{MessageBody: 't4', Id: '3'},
-							{MessageBody: 't5', Id: '4'},
-							{MessageBody: 't6', Id: '5'},
-							{MessageBody: 't7', Id: '6'},
-							{MessageBody: 't8', Id: '7'},
-							{MessageBody: 't9', Id: '8'},
-							{MessageBody: 't10', Id: '9'}
+							{MessageBody: btoa('t1'), Id: '0'},
+							{MessageBody: btoa('t2'), Id: '1'},
+							{MessageBody: btoa('t3'), Id: '2'},
+							{MessageBody: btoa('t4'), Id: '3'},
+							{MessageBody: btoa('t5'), Id: '4'},
+							{MessageBody: btoa('t6'), Id: '5'},
+							{MessageBody: btoa('t7'), Id: '6'},
+							{MessageBody: btoa('t8'), Id: '7'},
+							{MessageBody: btoa('t9'), Id: '8'},
+							{MessageBody: btoa('t10'), Id: '9'}
 						],
 						QueueUrl: 'url'
 					};
 					
 					var expected2 = {
 						Entries: [
-							{MessageBody: 't11', Id: '10'},
-							{MessageBody: 't12', Id: '11'}
+							{MessageBody: btoa('t11'), Id: '10'},
+							{MessageBody: btoa('t12'), Id: '11'}
 						],
 						QueueUrl: 'url'
 					};
