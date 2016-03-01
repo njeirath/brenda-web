@@ -20,5 +20,9 @@ config(['$stateProvider', function($stateProvider) {
   	url: '/jobSetup',
   	templateUrl: 'awsSetup/jobSetup.html',
   	controller: 'JobSetupCtrl'
+  }).state('cfg.worker', {
+  	url: '/workerSetup',
+  	templateUrl: 'awsSetup/workerSetup.html',
+  	controller: 'WorkerSetupCtrl'
   });
 }]);

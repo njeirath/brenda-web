@@ -16,6 +16,10 @@ var StartCtrl = ['$rootScope', '$state', '$scope', '$stateParams', function($roo
       {
       	heading: 'Job Setup',
       	route: 'cfg.job'
+      },
+      {
+      	heading: 'Worker Setup',
+      	route: 'cfg.worker'
       }
     ];
   };

@@ -87,6 +87,9 @@ angular.module('awsSetup', [])
 		$scope.$digest();
 	});
 }])
+.controller('WorkerSetupCtrl', ['$scope', '$interval', 'awsService', function($scope, $interval, awsService) {
+	
+}])
 .directive('awsLoginStatus', [function() {
 	return {
 		restrict: 'A',
