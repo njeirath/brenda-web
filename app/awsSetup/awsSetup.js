@@ -133,6 +133,29 @@ angular.module('awsSetup', [])
 		});
 	});
 	
+	$scope.generateScript = function() {
+		return 	'#!/bin/bash\n' +
+				'# run Brenda on the EC2 instance store volume\n' +
+				'B="/mnt/brenda"\n' +
+				'if ! [ -d "$B" ]; then\n' +
+				'  for f in brenda.pid log task_count task_last DONE ; do\n' +
+				'    ln -s "$B/$f" "/root/$f"' +
+				'  done\n' +
+				'fi\n' +
+				'export BRENDA_WORK_DIR="."\n' +
+				'mkdir -p "$B"\n' +
+				'cd "$B"\n' +
+				'/usr/local/bin/brenda-node --daemon <<EOF\n' +
+				'AWS_ACCESS_KEY=' + awsService.getKeyId() + '\n' +
+				'AWS_SECRET_KEY=' + awsService.getKeySecret() + '\n' +
+				'BLENDER_PROJECT=' + $scope.projectSource + '\n' +
+				'WORK_QUEUE=sqs://' + awsService.getQueue().split('/').pop() + '\n' +
+				'RENDER_OUTPUT=' + $scope.frameDestination + '\n' +
+				'DONE=shutdown\n' +
+				'EOF\n';
+
+	};
+	
 }])
 .directive('awsLoginStatus', [function() {
 	return {
@@ -205,9 +228,8 @@ angular.module('awsSetup', [])
 			});
 		},
 		sendToQueue: function(queueUrl, data) {
+			localStorageService.set('awsQueue', queueUrl);
 			var sqs = new aws.SQS();
-			
-			
 			
 			var sendStatus = {
 				total: data.length,
@@ -263,6 +285,9 @@ angular.module('awsSetup', [])
 					entries = [];
 				}
 			});
+		},
+		getQueue: function() {
+			return localStorageService.get('awsQueue');
 		},
 		clearQueue: function(queueUrl) {
 			var sqs = new aws.SQS();

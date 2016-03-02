@@ -187,6 +187,10 @@ describe('awsSetup', function() {
 					awsService.sendToQueue('url', ['t1', 't2', 't3', 't4', 't5', 't6', 't7', 't8', 't9', 't10', 't11', 't12']);
 				});
 				
+				it('should store the queue url to localstorage', function() {
+					expect(localStorageService.set).toHaveBeenCalledWith('awsQueue', 'url');
+				});
+				
 				it('should broadcast aws-sqs-send-update with status changes', function() {
 					expect($rootScope.$broadcast.calls.count()).toBe(3);
 					var call1 = $rootScope.$broadcast.calls.argsFor(0);
@@ -260,6 +264,14 @@ describe('awsSetup', function() {
 					
 					expect($rootScope.$broadcast.calls.argsFor(3)).toEqual(['aws-sqs-send-update', {total: 12, success: 1, failed: 1, inFlight: 10}]);
 					expect($rootScope.$broadcast.calls.argsFor(4)).toEqual(['aws-sqs-send-update', {total: 12, success: 1, failed: 11, inFlight: 0}]);
+				});
+			});
+			
+			describe('getQueue', function() {
+				it('should retrieve queue url from local storage', function() {
+					localStorageService.set('awsQueue', 'test url');
+					expect(awsService.getQueue()).toBe('test url');
+					expect(localStorageService.get).toHaveBeenCalledWith('awsQueue');
 				});
 			});
 			

@@ -1,7 +1,22 @@
-function getAwsServiceMock() {
-	var EC2getKeyPairsSpy = jasmine.createSpy();
+function getAwsServiceMock() {	
+	var getKeyPairsSpy = jasmine.createSpy();
 	
-	return {
-		getKeyPairs: EC2getKeyPairsSpy
+	var mock= {
+		getKeyPairs: getKeyPairsSpy,
+		getKeyId: function() {
+			return 'accessKey';
+		},
+		getKeySecret: function() {
+			return 'secretKey';
+		},
+		getQueue: function() {
+			return 'sqs/url/queueName';
+		}
 	};
+		
+	spyOn(mock, 'getKeyId').and.callThrough();
+	spyOn(mock, 'getKeySecret').and.callThrough();
+	spyOn(mock, 'getQueue').and.callThrough();
+		
+	return mock;
 }

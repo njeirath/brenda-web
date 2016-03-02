@@ -254,6 +254,35 @@ describe('awsSetup', function() {
 				expect($rootScope.keys[0]).toBe('key1');
 				expect($rootScope.keys[1]).toBe('key2');
 			});
+			
+			describe('generateScript', function() {
+				it('should generate the startup script correctly', function() {
+					
+					var expected = 
+						'#!/bin/bash\n' +
+						'# run Brenda on the EC2 instance store volume\n' +
+						'B="/mnt/brenda"\n' +
+						'if ! [ -d "$B" ]; then\n' +
+						'  for f in brenda.pid log task_count task_last DONE ; do\n' +
+						'    ln -s "$B/$f" "/root/$f"' +
+						'  done\n' +
+						'fi\n' +
+						'export BRENDA_WORK_DIR="."\n' +
+						'mkdir -p "$B"\n' +
+						'cd "$B"\n' +
+						'/usr/local/bin/brenda-node --daemon <<EOF\n' +
+						'AWS_ACCESS_KEY=accessKey\n' +
+						'AWS_SECRET_KEY=secretKey\n' +
+						'BLENDER_PROJECT=source location\n' +
+						'WORK_QUEUE=sqs://queueName\n' +
+						'RENDER_OUTPUT=frame dest\n' +
+						'DONE=shutdown\n' +
+						'EOF\n';
+					var script = $rootScope.generateScript();
+					
+					expect(script).toEqual(expected);
+				});
+			});
 		});
 	});
 	
