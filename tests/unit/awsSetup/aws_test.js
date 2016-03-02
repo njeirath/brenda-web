@@ -194,7 +194,7 @@ describe('awsSetup', function() {
 		});
 		
 		describe('WorkerSetupCtrl', function() {
-			var ctrl, localStorageService, amiListHandler;
+			var ctrl, localStorageService, amiListHandler, instanceHandler;
 			
 			beforeEach(function() {
 				localStorageService = getLocalStorageMock();
@@ -204,8 +204,10 @@ describe('awsSetup', function() {
 				amiListHandler = $httpBackend.when('GET', 'amiList.json').respond({
 					"ami-0529086c": {
 						"blenderVersion": "??"
-					}
+					}	
 				});
+				
+				instanceHandler = $httpBackend.when('GET', 'instances.json').respond(['c1.xlarge', 'm3.2xlarge']);
 				
 				ctrl = $controller('WorkerSetupCtrl', {$scope: $rootScope, localStorageService: localStorageService});
 			});
@@ -234,6 +236,12 @@ describe('awsSetup', function() {
 				expect($rootScope.amis.length).toBe(1);
 				expect($rootScope.amis[0]).toEqual({id: 0, name: 'ami-0529086c'});
 				expect($rootScope.amiSelect).toBe('0');
+			});
+			
+			it('should populate instance list based on http response', function() {
+				$httpBackend.flush();
+				expect($rootScope.instances.length).toBe(2);
+				expect($rootScope.instances[0]).toBe('c1.xlarge');
 			});
 		});
 	});

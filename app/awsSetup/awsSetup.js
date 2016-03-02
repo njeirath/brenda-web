@@ -88,9 +88,11 @@ angular.module('awsSetup', [])
 	});
 }])
 .controller('WorkerSetupCtrl', ['$scope', 'localStorageService', '$http', function($scope, localStorageService, $http) {
+	//Load source/destination if it is stored
 	$scope.projectSource = localStorageService.get('projectSource');
 	$scope.frameDestination = localStorageService.get('frameDestination');
 	
+	//Persist source/destination when changed
 	$scope.$watch('projectSource', function(newVal) {
 		localStorageService.set('projectSource', newVal);
 	});
@@ -99,6 +101,7 @@ angular.module('awsSetup', [])
 		localStorageService.set('frameDestination', newVal);
 	});
 	
+	//Get list of AMIs to choose from
 	$scope.amis = [];
 	
 	$http.get('amiList.json').then(function(response) {
@@ -111,6 +114,15 @@ angular.module('awsSetup', [])
 	});
 	
 	$scope.instanceType = 'spot';
+	
+	//Get list of instance types to choose from
+	$scope.instances = [];
+	
+	$http.get('instances.json').then(function(response) {
+		$scope.instances = response.data;
+	});
+	
+	//Get EC2 keypairs to choose from
 	
 }])
 .directive('awsLoginStatus', [function() {
