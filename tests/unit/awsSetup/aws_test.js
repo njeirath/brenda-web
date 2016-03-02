@@ -4,11 +4,12 @@ describe('awsSetup', function() {
 	beforeEach(module('awsSetup'));
 	
 	describe('Controllers', function() {
-		var $rootScope, $controller;
+		var $rootScope, $controller, $httpBackend;
 			
-		beforeEach(inject(function(_$controller_, _$rootScope_) {
+		beforeEach(inject(function(_$controller_, _$rootScope_, _$httpBackend_) {
 			$rootScope = _$rootScope_;
 			$controller = _$controller_;
+			$httpBackend = _$httpBackend_;
 		}));
 		
 		
@@ -193,12 +194,18 @@ describe('awsSetup', function() {
 		});
 		
 		describe('WorkerSetupCtrl', function() {
-			var ctrl, localStorageService;
+			var ctrl, localStorageService, amiListHandler;
 			
 			beforeEach(function() {
 				localStorageService = getLocalStorageMock();
 				localStorageService.data['projectSource'] = 'source location';
 				localStorageService.data['frameDestination'] = 'frame dest';
+				
+				amiListHandler = $httpBackend.when('GET', 'amiList.json').respond({
+					"ami-0529086c": {
+						"blenderVersion": "??"
+					}
+				});
 				
 				ctrl = $controller('WorkerSetupCtrl', {$scope: $rootScope, localStorageService: localStorageService});
 			});
@@ -209,6 +216,8 @@ describe('awsSetup', function() {
 				
 				expect($rootScope.projectSource).toBe('source location');
 				expect($rootScope.frameDestination).toBe('frame dest');
+				
+				expect($rootScope.instanceType).toBe('spot');
 			});
 			
 			it('should update local storage on projectSource and frameDestination changes', function() {
@@ -218,6 +227,13 @@ describe('awsSetup', function() {
 				
 				expect(localStorageService.set).toHaveBeenCalledWith('projectSource', 'new source');
 				expect(localStorageService.set).toHaveBeenCalledWith('frameDestination', 'new dest');
+			});
+			
+			it('should populate list based on http response and default select first item', function() {
+				$httpBackend.flush();
+				expect($rootScope.amis.length).toBe(1);
+				expect($rootScope.amis[0]).toEqual({id: 0, name: 'ami-0529086c'});
+				expect($rootScope.amiSelect).toBe('0');
 			});
 		});
 	});

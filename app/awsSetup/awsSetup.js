@@ -87,7 +87,7 @@ angular.module('awsSetup', [])
 		$scope.$digest();
 	});
 }])
-.controller('WorkerSetupCtrl', ['$scope', 'localStorageService', function($scope, localStorageService) {
+.controller('WorkerSetupCtrl', ['$scope', 'localStorageService', '$http', function($scope, localStorageService, $http) {
 	$scope.projectSource = localStorageService.get('projectSource');
 	$scope.frameDestination = localStorageService.get('frameDestination');
 	
@@ -98,6 +98,20 @@ angular.module('awsSetup', [])
 	$scope.$watch('frameDestination', function(newVal) {
 		localStorageService.set('frameDestination', newVal);
 	});
+	
+	$scope.amis = [];
+	
+	$http.get('amiList.json').then(function(response) {
+		var i = 0;
+		Object.keys(response.data).forEach(function(item) {
+			$scope.amis[i] = {id: i, name: item}; 
+		});
+		
+		$scope.amiSelect = '0';	
+	});
+	
+	$scope.instanceType = 'spot';
+	
 }])
 .directive('awsLoginStatus', [function() {
 	return {
