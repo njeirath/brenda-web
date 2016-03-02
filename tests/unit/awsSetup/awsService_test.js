@@ -8,34 +8,7 @@ describe('awsSetup', function() {
 			
 		beforeEach(function() {
 			localStorageService = getLocalStorageMock();
-			
-			var EC2describeKeyPairsSpy = jasmine.createSpy();
-			var SQSlistQueuesSpy = jasmine.createSpy();
-			var SQSSendMessageBatchSpy = jasmine.createSpy();
-			var SQSpurgeQueueSpy = jasmine.createSpy();
-			var SQSgetQueueAttributesSpy = jasmine.createSpy();
-			
-			awsMock = {
-				config: {
-					update: jasmine.createSpy(),
-					region: undefined,
-					credentials: {}
-				},
-				EC2describeKeyPairs: EC2describeKeyPairsSpy,
-				EC2: function() {
-					this.describeKeyPairs = EC2describeKeyPairsSpy;
-				},
-				SQSlistQueues: SQSlistQueuesSpy,
-				SQSSendMessageBatch: SQSSendMessageBatchSpy,
-				SQSpurgeQueue: SQSpurgeQueueSpy,
-				SQSgetQueueAttributes: SQSgetQueueAttributesSpy,
-				SQS: function() {
-					this.listQueues = SQSlistQueuesSpy;
-					this.sendMessageBatch = SQSSendMessageBatchSpy;
-					this.purgeQueue = SQSpurgeQueueSpy;
-					this.getQueueAttributes = SQSgetQueueAttributesSpy;
-				}
-			};
+			awsMock = getAwsMock();
 			
 			module(function($provide) {
 				$provide.value('localStorageService', localStorageService);
@@ -328,6 +301,32 @@ describe('awsSetup', function() {
 					var awsCallback = awsMock.SQSgetQueueAttributes.calls.argsFor(0)[1];
 					awsCallback(null, {Attributes: {ApproximateNumberOfMessages: 5}});
 					expect(callback).toHaveBeenCalledWith(5);
+				});
+			});
+			
+			describe('getKeyPairs', function() {
+				var callback;
+				
+				beforeEach(function() {
+					callback = jasmine.createSpy();
+					awsService.getKeyPairs(callback);
+				});
+				
+				it('should request keypairs from EC2', function() {
+					expect(awsMock.EC2describeKeyPairs).toHaveBeenCalled();
+					expect(awsMock.EC2describeKeyPairs.calls.argsFor(0)[0]).toEqual({});
+				});
+				
+				it('should broadcast aws-ec2-error on errors', function() {
+					var awsCallback = awsMock.EC2describeKeyPairs.calls.argsFor(0)[1];
+					awsCallback('error', null);
+					expect($rootScope.$broadcast).toHaveBeenCalledWith('aws-ec2-error', 'error');
+				});
+				
+				it('should call supplied callback on success', function() {
+					var awsCallback = awsMock.EC2describeKeyPairs.calls.argsFor(0)[1];
+					awsCallback(null, 'some datas');
+					expect(callback).toHaveBeenCalledWith('some datas');
 				});
 			});
 		});

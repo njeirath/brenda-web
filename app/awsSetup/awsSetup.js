@@ -87,7 +87,7 @@ angular.module('awsSetup', [])
 		$scope.$digest();
 	});
 }])
-.controller('WorkerSetupCtrl', ['$scope', 'localStorageService', '$http', function($scope, localStorageService, $http) {
+.controller('WorkerSetupCtrl', ['$scope', 'localStorageService', '$http', 'awsService', function($scope, localStorageService, $http, awsService) {
 	//Load source/destination if it is stored
 	$scope.projectSource = localStorageService.get('projectSource');
 	$scope.frameDestination = localStorageService.get('frameDestination');
@@ -123,6 +123,15 @@ angular.module('awsSetup', [])
 	});
 	
 	//Get EC2 keypairs to choose from
+	$scope.keys = [];
+	
+	awsService.getKeyPairs(function(data) {
+		$scope.keys = [];
+		
+		data.KeyPairs.forEach(function(keyPair) {
+			$scope.keys.push(keyPair.KeyName);
+		});
+	});
 	
 }])
 .directive('awsLoginStatus', [function() {
@@ -274,6 +283,17 @@ angular.module('awsSetup', [])
 					callback(String(err));
 				} else {
 					callback(data.Attributes.ApproximateNumberOfMessages);
+				}
+			});
+		},
+		getKeyPairs: function(callback) {
+			var ec2 = new aws.EC2();
+			ec2.describeKeyPairs({}, function(err, data) {
+				if (err) {
+					$log.log(err);
+					$rootScope.$broadcast('aws-ec2-error', String(err));
+				} else {
+					callback(data);
 				}
 			});
 		}

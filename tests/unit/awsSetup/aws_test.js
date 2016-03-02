@@ -194,7 +194,7 @@ describe('awsSetup', function() {
 		});
 		
 		describe('WorkerSetupCtrl', function() {
-			var ctrl, localStorageService, amiListHandler, instanceHandler;
+			var ctrl, localStorageService, amiListHandler, instanceHandler, awsServiceMock;
 			
 			beforeEach(function() {
 				localStorageService = getLocalStorageMock();
@@ -207,9 +207,11 @@ describe('awsSetup', function() {
 					}	
 				});
 				
+				awsServiceMock = getAwsServiceMock();
+				
 				instanceHandler = $httpBackend.when('GET', 'instances.json').respond(['c1.xlarge', 'm3.2xlarge']);
 				
-				ctrl = $controller('WorkerSetupCtrl', {$scope: $rootScope, localStorageService: localStorageService});
+				ctrl = $controller('WorkerSetupCtrl', {$scope: $rootScope, localStorageService: localStorageService, awsService: awsServiceMock});
 			});
 			
 			it('should get initial values for projectSource and frameDestination from local storage', function() {
@@ -242,6 +244,15 @@ describe('awsSetup', function() {
 				$httpBackend.flush();
 				expect($rootScope.instances.length).toBe(2);
 				expect($rootScope.instances[0]).toBe('c1.xlarge');
+			});
+			
+			it('should populate $scope.keys on callback from awsService.getKeyPairs', function() {
+				expect(awsServiceMock.getKeyPairs).toHaveBeenCalled();
+				var callback = awsServiceMock.getKeyPairs.calls.argsFor(0)[0];
+				callback({KeyPairs: [{KeyName: 'key1'}, {KeyName: 'key2'}]});
+				expect($rootScope.keys.length).toBe(2);
+				expect($rootScope.keys[0]).toBe('key1');
+				expect($rootScope.keys[1]).toBe('key2');
 			});
 		});
 	});
