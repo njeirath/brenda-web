@@ -341,6 +341,60 @@ describe('awsSetup', function() {
 					expect(callback).toHaveBeenCalledWith('some datas');
 				});
 			});
+			
+			describe('getLaunchSpecification', function() {
+				it('should construct the ec2 lauch specification correctly', function() {
+					expect(awsService.getLaunchSpecification('ami_123', 'brendaKey', 'brendaSG', 'bunches of stuff here', 'c3.large'))
+						.toEqual({
+							ImageId: 'ami_123',
+							KeyName: 'brendaKey',
+							SecurityGroups: ['brendaSG'],
+							UserData: btoa('bunches of stuff here'),
+							InstanceType: 'c3.large'
+						});
+				});
+			});
+			
+			describe('requestSpot', function() {
+				beforeEach(function() {
+					awsService.requestSpot('ami_123', 'brendaKey', 'brendaSG', 'bunches of stuff here', 'c3.large', 0.02, 1, 'one-time');
+				});
+				
+				it('should make a request to ec2 with appropriate parameters', function() {
+					expect(awsMock.EC2requestSpotInstances).toHaveBeenCalled();
+					expect(awsMock.EC2requestSpotInstances.calls.argsFor(0)[0]).toEqual({
+						SpotPrice: '0.02', 
+						InstanceCount: 1,
+						Type: 'one-time', 
+						LaunchSpecification: { 
+							ImageId: 'ami_123', 
+							KeyName: 'brendaKey', 
+							SecurityGroups: ['brendaSG'], 
+							UserData: 'YnVuY2hlcyBvZiBzdHVmZiBoZXJl', 
+							InstanceType: 'c3.large'
+						}
+					});
+				});
+			});
+			
+			describe('requestOndemand', function() {
+				beforeEach(function() {
+					awsService.requestOndemand('ami_123', 'brendaKey', 'brendaSG', 'bunches of stuff here', 'c3.large', 1);
+				});
+				
+				it('should make a request to ec2 with appropriate parameters', function() {
+					expect(awsMock.EC2runInstances).toHaveBeenCalled();
+					expect(awsMock.EC2runInstances.calls.argsFor(0)[0]).toEqual({
+						ImageId: 'ami_123', 
+						KeyName: 'brendaKey', 
+						SecurityGroups: ['brendaSG'], 
+						UserData: 'YnVuY2hlcyBvZiBzdHVmZiBoZXJl', 
+						InstanceType: 'c3.large',
+						MinCount: 1,
+						MaxCount: 1
+					});
+				});
+			});
 		});
 	});
 });

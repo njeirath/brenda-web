@@ -122,6 +122,8 @@ angular.module('awsSetup', [])
 		$scope.instances = response.data;
 	});
 	
+	$scope.numInstances = 1;
+	
 	//Get EC2 keypairs to choose from
 	$scope.keys = [];
 	
@@ -136,10 +138,16 @@ angular.module('awsSetup', [])
 	$scope.generateScript = function() {
 		return 	'#!/bin/bash\n' +
 				'# run Brenda on the EC2 instance store volume\n' +
+				'sudo apt-get update\n' +
+				'sudo apt-get -y install nginx\n' +
+				'sudo service nginx start\n' +
+				'sudo echo "* * * * * root tail -n1000 /mnt/brenda/log > /usr/share/nginx/www/log_tail.txt" >> /etc/crontab\n' +
+				'sudo echo "* * * * * root uptime > /usr/share/nginx/www/uptime.txt" >> /etc/crontab\n' +
 				'B="/mnt/brenda"\n' +
 				'if ! [ -d "$B" ]; then\n' +
 				'  for f in brenda.pid log task_count task_last DONE ; do\n' +
-				'    ln -s "$B/$f" "/root/$f"' +
+				'    ln -s "$B/$f" "/root/$f"\n' +
+				'    sudo ln -s "$B/$f" "/usr/share/nginx/www/$f"\n' +
 				'  done\n' +
 				'fi\n' +
 				'export BRENDA_WORK_DIR="."\n' +
@@ -154,6 +162,16 @@ angular.module('awsSetup', [])
 				'DONE=shutdown\n' +
 				'EOF\n';
 
+	};
+	
+	$scope.requestInstances= function() {
+		//ami, keyPair, securityGroup, userData, instanceType, spotPrice, count, type
+		if ($scope.instanceType == 'spot') {
+			awsService.requestSpot($scope.amiSelect, $scope.sshKey, 'brenda', $scope.generateScript(), $scope.instanceSize, $scope.spotPrice, $scope.numInstances, 'one-time');
+		} else {
+			//requestOndemand: function(ami, keyPair, securityGroup, userData, instanceType, count)
+			awsService.requestOndemand($scope.amiSelect, $scope.sshKey, 'brenda', $scope.generateScript(), $scope.instanceSize, $scope.numInstances);
+		}
 	};
 	
 }])
@@ -319,6 +337,50 @@ angular.module('awsSetup', [])
 					$rootScope.$broadcast('aws-ec2-error', String(err));
 				} else {
 					callback(data);
+				}
+			});
+		},
+		getLaunchSpecification: function(ami, keyPair, securityGroup, userData, instanceType) {
+			return {
+				ImageId: ami,
+				KeyName: keyPair,
+				SecurityGroups: [securityGroup],
+				UserData: btoa(userData),
+				InstanceType: instanceType,
+			};
+		},
+		requestSpot: function(ami, keyPair, securityGroup, userData, instanceType, spotPrice, count, type) {
+			var spec = this.getLaunchSpecification(ami, keyPair, securityGroup, userData, instanceType);
+			
+			var params = {
+				// DryRun: true,
+				SpotPrice: String(spotPrice),
+				InstanceCount: parseInt(count),
+				LaunchSpecification: spec,
+				Type: type
+			};
+			
+			var ec2 = new aws.EC2();
+			ec2.requestSpotInstances(params, function(err, data) {
+				if (err) {
+					$log.log(err);
+				} else {
+					$log.log(data);
+				}
+			});
+		},
+		requestOndemand: function(ami, keyPair, securityGroup, userData, instanceType, count) {
+			var spec = this.getLaunchSpecification(ami, keyPair, securityGroup, userData, instanceType);
+			spec.MinCount = count;
+			spec.MaxCount = count;
+			// spec.DryRun = true;
+			
+			var ec2 = new aws.EC2();
+			ec2.runInstances(spec, function(err, data) {
+				if (err) {
+					$log.log(err);
+				} else {
+					$log.log(data);
 				}
 			});
 		}
