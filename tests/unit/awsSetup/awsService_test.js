@@ -391,7 +391,8 @@ describe('awsSetup', function() {
 						UserData: 'YnVuY2hlcyBvZiBzdHVmZiBoZXJl', 
 						InstanceType: 'c3.large',
 						MinCount: 1,
-						MaxCount: 1
+						MaxCount: 1,
+						InstanceInitiatedShutdownBehavior: 'terminate'
 					});
 				});
 			});

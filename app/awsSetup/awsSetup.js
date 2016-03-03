@@ -373,6 +373,7 @@ angular.module('awsSetup', [])
 			var spec = this.getLaunchSpecification(ami, keyPair, securityGroup, userData, instanceType);
 			spec.MinCount = count;
 			spec.MaxCount = count;
+			spec.InstanceInitiatedShutdownBehavior = 'terminate';
 			// spec.DryRun = true;
 			
 			var ec2 = new aws.EC2();
