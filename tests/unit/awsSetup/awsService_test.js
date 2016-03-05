@@ -7,45 +7,8 @@ describe('awsSetup', function() {
 		var $rootScope, $controller, localStorageService, awsMock;
 			
 		beforeEach(function() {
-			localStorageService = {
-				data: {},
-				get: function(name) {
-					return this.data[name];
-				},
-				set: function(name, value) {
-					this.data[name] = value;
-				}
-			};
-			spyOn(localStorageService, 'get').and.callThrough();
-			spyOn(localStorageService, 'set').and.callThrough();
-			
-			var EC2describeKeyPairsSpy = jasmine.createSpy();
-			var SQSlistQueuesSpy = jasmine.createSpy();
-			var SQSSendMessageBatchSpy = jasmine.createSpy();
-			var SQSpurgeQueueSpy = jasmine.createSpy();
-			var SQSgetQueueAttributesSpy = jasmine.createSpy();
-			
-			awsMock = {
-				config: {
-					update: jasmine.createSpy(),
-					region: undefined,
-					credentials: {}
-				},
-				EC2describeKeyPairs: EC2describeKeyPairsSpy,
-				EC2: function() {
-					this.describeKeyPairs = EC2describeKeyPairsSpy;
-				},
-				SQSlistQueues: SQSlistQueuesSpy,
-				SQSSendMessageBatch: SQSSendMessageBatchSpy,
-				SQSpurgeQueue: SQSpurgeQueueSpy,
-				SQSgetQueueAttributes: SQSgetQueueAttributesSpy,
-				SQS: function() {
-					this.listQueues = SQSlistQueuesSpy;
-					this.sendMessageBatch = SQSSendMessageBatchSpy;
-					this.purgeQueue = SQSpurgeQueueSpy;
-					this.getQueueAttributes = SQSgetQueueAttributesSpy;
-				}
-			};
+			localStorageService = getLocalStorageMock();
+			awsMock = getAwsMock();
 			
 			module(function($provide) {
 				$provide.value('localStorageService', localStorageService);
@@ -224,6 +187,10 @@ describe('awsSetup', function() {
 					awsService.sendToQueue('url', ['t1', 't2', 't3', 't4', 't5', 't6', 't7', 't8', 't9', 't10', 't11', 't12']);
 				});
 				
+				it('should store the queue url to localstorage', function() {
+					expect(localStorageService.set).toHaveBeenCalledWith('awsQueue', 'url');
+				});
+				
 				it('should broadcast aws-sqs-send-update with status changes', function() {
 					expect($rootScope.$broadcast.calls.count()).toBe(3);
 					var call1 = $rootScope.$broadcast.calls.argsFor(0);
@@ -300,6 +267,14 @@ describe('awsSetup', function() {
 				});
 			});
 			
+			describe('getQueue', function() {
+				it('should retrieve queue url from local storage', function() {
+					localStorageService.set('awsQueue', 'test url');
+					expect(awsService.getQueue()).toBe('test url');
+					expect(localStorageService.get).toHaveBeenCalledWith('awsQueue');
+				});
+			});
+			
 			describe('clearQueue', function() {
 				beforeEach(function() {
 					awsService.clearQueue('url');
@@ -338,6 +313,115 @@ describe('awsSetup', function() {
 					var awsCallback = awsMock.SQSgetQueueAttributes.calls.argsFor(0)[1];
 					awsCallback(null, {Attributes: {ApproximateNumberOfMessages: 5}});
 					expect(callback).toHaveBeenCalledWith(5);
+				});
+			});
+			
+			describe('getKeyPairs', function() {
+				var callback;
+				
+				beforeEach(function() {
+					callback = jasmine.createSpy();
+					awsService.getKeyPairs(callback);
+				});
+				
+				it('should request keypairs from EC2', function() {
+					expect(awsMock.EC2describeKeyPairs).toHaveBeenCalled();
+					expect(awsMock.EC2describeKeyPairs.calls.argsFor(0)[0]).toEqual({});
+				});
+				
+				it('should broadcast aws-ec2-error on errors', function() {
+					var awsCallback = awsMock.EC2describeKeyPairs.calls.argsFor(0)[1];
+					awsCallback('error', null);
+					expect($rootScope.$broadcast).toHaveBeenCalledWith('aws-ec2-error', 'error');
+				});
+				
+				it('should call supplied callback on success', function() {
+					var awsCallback = awsMock.EC2describeKeyPairs.calls.argsFor(0)[1];
+					awsCallback(null, 'some datas');
+					expect(callback).toHaveBeenCalledWith('some datas');
+				});
+			});
+			
+			describe('getLaunchSpecification', function() {
+				it('should construct the ec2 lauch specification correctly', function() {
+					expect(awsService.getLaunchSpecification('ami_123', 'brendaKey', 'brendaSG', 'bunches of stuff here', 'c3.large'))
+						.toEqual({
+							ImageId: 'ami_123',
+							KeyName: 'brendaKey',
+							SecurityGroups: ['brendaSG'],
+							UserData: btoa('bunches of stuff here'),
+							InstanceType: 'c3.large'
+						});
+				});
+			});
+			
+			describe('requestSpot', function() {
+				var callback, serviceCallback;
+				
+				beforeEach(function() {
+					callback = jasmine.createSpy();
+					awsService.requestSpot('ami_123', 'brendaKey', 'brendaSG', 'bunches of stuff here', 'c3.large', 0.02, 1, 'one-time', callback);
+					serviceCallback = awsMock.EC2requestSpotInstances.calls.argsFor(0)[1];
+				});
+				
+				it('should make a request to ec2 with appropriate parameters', function() {
+					expect(awsMock.EC2requestSpotInstances).toHaveBeenCalled();
+					expect(awsMock.EC2requestSpotInstances.calls.argsFor(0)[0]).toEqual({
+						SpotPrice: '0.02', 
+						InstanceCount: 1,
+						Type: 'one-time', 
+						LaunchSpecification: { 
+							ImageId: 'ami_123', 
+							KeyName: 'brendaKey', 
+							SecurityGroups: ['brendaSG'], 
+							UserData: 'YnVuY2hlcyBvZiBzdHVmZiBoZXJl', 
+							InstanceType: 'c3.large'
+						}
+					});
+				});
+				
+				it('should call callback with danger and error message on error', function() {
+					serviceCallback('Error message', null);
+					expect(callback).toHaveBeenCalledWith('danger', 'Error message');
+				});
+				
+				it('should call callback with success and message on success', function() {
+					serviceCallback(null, 'it worked');
+					expect(callback).toHaveBeenCalledWith('success', 'Spot instances requested');
+				});
+			});
+			
+			describe('requestOndemand', function() {
+				var callback, serviceCallback;
+				
+				beforeEach(function() {
+					callback = jasmine.createSpy();
+					awsService.requestOndemand('ami_123', 'brendaKey', 'brendaSG', 'bunches of stuff here', 'c3.large', 1, callback);
+					serviceCallback = awsMock.EC2runInstances.calls.argsFor(0)[1];
+				});
+				
+				it('should make a request to ec2 with appropriate parameters', function() {
+					expect(awsMock.EC2runInstances).toHaveBeenCalled();
+					expect(awsMock.EC2runInstances.calls.argsFor(0)[0]).toEqual({
+						ImageId: 'ami_123', 
+						KeyName: 'brendaKey', 
+						SecurityGroups: ['brendaSG'], 
+						UserData: 'YnVuY2hlcyBvZiBzdHVmZiBoZXJl', 
+						InstanceType: 'c3.large',
+						MinCount: 1,
+						MaxCount: 1,
+						InstanceInitiatedShutdownBehavior: 'terminate'
+					});
+				});
+				
+				it('should call callback with danger and error message on error', function() {
+					serviceCallback('Error message', null);
+					expect(callback).toHaveBeenCalledWith('danger', 'Error message');
+				});
+				
+				it('should call callback with success and message on success', function() {
+					serviceCallback(null, 'it worked');
+					expect(callback).toHaveBeenCalledWith('success', 'On demand instances requested');
 				});
 			});
 		});

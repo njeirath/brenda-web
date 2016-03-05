@@ -87,6 +87,104 @@ angular.module('awsSetup', [])
 		$scope.$digest();
 	});
 }])
+.controller('WorkerSetupCtrl', ['$scope', 'localStorageService', '$http', 'awsService', function($scope, localStorageService, $http, awsService) {
+	//Load source/destination if it is stored
+	$scope.projectSource = localStorageService.get('projectSource');
+	$scope.frameDestination = localStorageService.get('frameDestination');
+	
+	//Persist source/destination when changed
+	$scope.$watch('projectSource', function(newVal) {
+		localStorageService.set('projectSource', newVal);
+	});
+	
+	$scope.$watch('frameDestination', function(newVal) {
+		localStorageService.set('frameDestination', newVal);
+	});
+	
+	//Get list of AMIs to choose from
+	$scope.amis = [];
+	
+	$http.get('amiList.json').then(function(response) {
+		var i = 0;
+		Object.keys(response.data).forEach(function(item) {
+			$scope.amis[i] = {id: i, name: item}; 
+		});
+		
+		$scope.amiSelect = '0';	
+	});
+	
+	$scope.instanceType = 'spot';
+	
+	//Get list of instance types to choose from
+	$scope.instances = [];
+	
+	$http.get('instances.json').then(function(response) {
+		$scope.instances = response.data;
+	});
+	
+	$scope.numInstances = 1;
+	
+	//Get EC2 keypairs to choose from
+	$scope.keys = [];
+	
+	awsService.getKeyPairs(function(data) {
+		$scope.keys = [];
+		
+		data.KeyPairs.forEach(function(keyPair) {
+			$scope.keys.push(keyPair.KeyName);
+		});
+	});
+	
+	$scope.generateScript = function() {
+		return 	'#!/bin/bash\n' +
+				'# run Brenda on the EC2 instance store volume\n' +
+				'sudo apt-get update\n' +
+				'sudo apt-get -y install nginx\n' +
+				'sudo service nginx start\n' +
+				'sudo echo "* * * * * root tail -n1000 /mnt/brenda/log > /usr/share/nginx/www/log_tail.txt" >> /etc/crontab\n' +
+				'sudo echo "* * * * * root uptime > /usr/share/nginx/www/uptime.txt" >> /etc/crontab\n' +
+				'B="/mnt/brenda"\n' +
+				'if ! [ -d "$B" ]; then\n' +
+				'  for f in brenda.pid log task_count task_last DONE ; do\n' +
+				'    ln -s "$B/$f" "/root/$f"\n' +
+				'    sudo ln -s "$B/$f" "/usr/share/nginx/www/$f"\n' +
+				'  done\n' +
+				'fi\n' +
+				'export BRENDA_WORK_DIR="."\n' +
+				'mkdir -p "$B"\n' +
+				'cd "$B"\n' +
+				'/usr/local/bin/brenda-node --daemon <<EOF\n' +
+				'AWS_ACCESS_KEY=' + awsService.getKeyId() + '\n' +
+				'AWS_SECRET_KEY=' + awsService.getKeySecret() + '\n' +
+				'BLENDER_PROJECT=' + $scope.projectSource + '\n' +
+				'WORK_QUEUE=sqs://' + awsService.getQueue().split('/').pop() + '\n' +
+				'RENDER_OUTPUT=' + $scope.frameDestination + '\n' +
+				'DONE=shutdown\n' +
+				'EOF\n';
+
+	};
+	
+	$scope.statuses = [];
+	
+	$scope.showStatus = function (status, message) {
+		$scope.statuses.pop();
+		$scope.statuses.push({type: status, text: message});
+		$scope.$digest();
+	};
+	
+	$scope.requestInstances = function() {
+		//ami, keyPair, securityGroup, userData, instanceType, spotPrice, count, type
+		if ($scope.instanceType == 'spot') {
+			awsService.requestSpot($scope.amiSelect, $scope.sshKey, 'brenda', $scope.generateScript(), $scope.instanceSize, $scope.spotPrice, $scope.numInstances, 'one-time', $scope.showStatus);
+		} else {
+			//requestOndemand: function(ami, keyPair, securityGroup, userData, instanceType, count)
+			awsService.requestOndemand($scope.amiSelect, $scope.sshKey, 'brenda', $scope.generateScript(), $scope.instanceSize, $scope.numInstances, $scope.showStatus);
+		}
+	};
+	
+	
+	
+}])
 .directive('awsLoginStatus', [function() {
 	return {
 		restrict: 'A',
@@ -158,9 +256,8 @@ angular.module('awsSetup', [])
 			});
 		},
 		sendToQueue: function(queueUrl, data) {
+			localStorageService.set('awsQueue', queueUrl);
 			var sqs = new aws.SQS();
-			
-			
 			
 			var sendStatus = {
 				total: data.length,
@@ -217,6 +314,9 @@ angular.module('awsSetup', [])
 				}
 			});
 		},
+		getQueue: function() {
+			return localStorageService.get('awsQueue');
+		},
 		clearQueue: function(queueUrl) {
 			var sqs = new aws.SQS();
 			
@@ -236,6 +336,66 @@ angular.module('awsSetup', [])
 					callback(String(err));
 				} else {
 					callback(data.Attributes.ApproximateNumberOfMessages);
+				}
+			});
+		},
+		getKeyPairs: function(callback) {
+			var ec2 = new aws.EC2();
+			ec2.describeKeyPairs({}, function(err, data) {
+				if (err) {
+					$log.log(err);
+					$rootScope.$broadcast('aws-ec2-error', String(err));
+				} else {
+					callback(data);
+				}
+			});
+		},
+		getLaunchSpecification: function(ami, keyPair, securityGroup, userData, instanceType) {
+			return {
+				ImageId: ami,
+				KeyName: keyPair,
+				SecurityGroups: [securityGroup],
+				UserData: btoa(userData),
+				InstanceType: instanceType,
+			};
+		},
+		requestSpot: function(ami, keyPair, securityGroup, userData, instanceType, spotPrice, count, type, statusCallback) {
+			var spec = this.getLaunchSpecification(ami, keyPair, securityGroup, userData, instanceType);
+			
+			var params = {
+				// DryRun: true,
+				SpotPrice: String(spotPrice),
+				InstanceCount: parseInt(count),
+				LaunchSpecification: spec,
+				Type: type
+			};
+			
+			var ec2 = new aws.EC2();
+			ec2.requestSpotInstances(params, function(err, data) {
+				if (err) {
+					$log.log(err);
+					statusCallback('danger', String(err));
+				} else {
+					$log.log(data);
+					statusCallback('success', 'Spot instances requested');
+				}
+			});
+		},
+		requestOndemand: function(ami, keyPair, securityGroup, userData, instanceType, count, statusCallback) {
+			var spec = this.getLaunchSpecification(ami, keyPair, securityGroup, userData, instanceType);
+			spec.MinCount = count;
+			spec.MaxCount = count;
+			spec.InstanceInitiatedShutdownBehavior = 'terminate';
+			// spec.DryRun = true;
+			
+			var ec2 = new aws.EC2();
+			ec2.runInstances(spec, function(err, data) {
+				if (err) {
+					$log.log(err);
+					statusCallback('danger', String(err));
+				} else {
+					$log.log(data);
+					statusCallback('success', 'On demand instances requested');
 				}
 			});
 		}
