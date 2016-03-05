@@ -81,7 +81,7 @@
 			</div>
 			
 			<button type="submit" ng-click="requestInstances()">Request Instances</button>
-			
+			<uib-alert ng-repeat="status in statuses" type="{{status.type}}" close="">{{status.text}}</uib-alert>
 		</form>
 	</div>
 </div>

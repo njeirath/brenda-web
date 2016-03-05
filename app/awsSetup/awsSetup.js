@@ -164,15 +164,25 @@ angular.module('awsSetup', [])
 
 	};
 	
-	$scope.requestInstances= function() {
+	$scope.statuses = [];
+	
+	$scope.showStatus = function (status, message) {
+		$scope.statuses.pop();
+		$scope.statuses.push({type: status, text: message});
+		$scope.$digest();
+	};
+	
+	$scope.requestInstances = function() {
 		//ami, keyPair, securityGroup, userData, instanceType, spotPrice, count, type
 		if ($scope.instanceType == 'spot') {
-			awsService.requestSpot($scope.amiSelect, $scope.sshKey, 'brenda', $scope.generateScript(), $scope.instanceSize, $scope.spotPrice, $scope.numInstances, 'one-time');
+			awsService.requestSpot($scope.amiSelect, $scope.sshKey, 'brenda', $scope.generateScript(), $scope.instanceSize, $scope.spotPrice, $scope.numInstances, 'one-time', $scope.showStatus);
 		} else {
 			//requestOndemand: function(ami, keyPair, securityGroup, userData, instanceType, count)
-			awsService.requestOndemand($scope.amiSelect, $scope.sshKey, 'brenda', $scope.generateScript(), $scope.instanceSize, $scope.numInstances);
+			awsService.requestOndemand($scope.amiSelect, $scope.sshKey, 'brenda', $scope.generateScript(), $scope.instanceSize, $scope.numInstances, $scope.showStatus);
 		}
 	};
+	
+	
 	
 }])
 .directive('awsLoginStatus', [function() {
@@ -349,7 +359,7 @@ angular.module('awsSetup', [])
 				InstanceType: instanceType,
 			};
 		},
-		requestSpot: function(ami, keyPair, securityGroup, userData, instanceType, spotPrice, count, type) {
+		requestSpot: function(ami, keyPair, securityGroup, userData, instanceType, spotPrice, count, type, statusCallback) {
 			var spec = this.getLaunchSpecification(ami, keyPair, securityGroup, userData, instanceType);
 			
 			var params = {
@@ -364,12 +374,14 @@ angular.module('awsSetup', [])
 			ec2.requestSpotInstances(params, function(err, data) {
 				if (err) {
 					$log.log(err);
+					statusCallback('danger', String(err));
 				} else {
 					$log.log(data);
+					statusCallback('success', 'Spot instances requested');
 				}
 			});
 		},
-		requestOndemand: function(ami, keyPair, securityGroup, userData, instanceType, count) {
+		requestOndemand: function(ami, keyPair, securityGroup, userData, instanceType, count, statusCallback) {
 			var spec = this.getLaunchSpecification(ami, keyPair, securityGroup, userData, instanceType);
 			spec.MinCount = count;
 			spec.MaxCount = count;
@@ -380,8 +392,10 @@ angular.module('awsSetup', [])
 			ec2.runInstances(spec, function(err, data) {
 				if (err) {
 					$log.log(err);
+					statusCallback('danger', String(err));
 				} else {
 					$log.log(data);
+					statusCallback('success', 'On demand instances requested');
 				}
 			});
 		}

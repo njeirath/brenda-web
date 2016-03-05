@@ -356,8 +356,12 @@ describe('awsSetup', function() {
 			});
 			
 			describe('requestSpot', function() {
+				var callback, serviceCallback;
+				
 				beforeEach(function() {
-					awsService.requestSpot('ami_123', 'brendaKey', 'brendaSG', 'bunches of stuff here', 'c3.large', 0.02, 1, 'one-time');
+					callback = jasmine.createSpy();
+					awsService.requestSpot('ami_123', 'brendaKey', 'brendaSG', 'bunches of stuff here', 'c3.large', 0.02, 1, 'one-time', callback);
+					serviceCallback = awsMock.EC2requestSpotInstances.calls.argsFor(0)[1];
 				});
 				
 				it('should make a request to ec2 with appropriate parameters', function() {
@@ -375,11 +379,25 @@ describe('awsSetup', function() {
 						}
 					});
 				});
+				
+				it('should call callback with danger and error message on error', function() {
+					serviceCallback('Error message', null);
+					expect(callback).toHaveBeenCalledWith('danger', 'Error message');
+				});
+				
+				it('should call callback with success and message on success', function() {
+					serviceCallback(null, 'it worked');
+					expect(callback).toHaveBeenCalledWith('success', 'Spot instances requested');
+				});
 			});
 			
 			describe('requestOndemand', function() {
+				var callback, serviceCallback;
+				
 				beforeEach(function() {
-					awsService.requestOndemand('ami_123', 'brendaKey', 'brendaSG', 'bunches of stuff here', 'c3.large', 1);
+					callback = jasmine.createSpy();
+					awsService.requestOndemand('ami_123', 'brendaKey', 'brendaSG', 'bunches of stuff here', 'c3.large', 1, callback);
+					serviceCallback = awsMock.EC2runInstances.calls.argsFor(0)[1];
 				});
 				
 				it('should make a request to ec2 with appropriate parameters', function() {
@@ -394,6 +412,16 @@ describe('awsSetup', function() {
 						MaxCount: 1,
 						InstanceInitiatedShutdownBehavior: 'terminate'
 					});
+				});
+				
+				it('should call callback with danger and error message on error', function() {
+					serviceCallback('Error message', null);
+					expect(callback).toHaveBeenCalledWith('danger', 'Error message');
+				});
+				
+				it('should call callback with success and message on success', function() {
+					serviceCallback(null, 'it worked');
+					expect(callback).toHaveBeenCalledWith('success', 'On demand instances requested');
 				});
 			});
 		});

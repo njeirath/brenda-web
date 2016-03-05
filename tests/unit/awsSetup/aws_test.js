@@ -289,6 +289,41 @@ describe('awsSetup', function() {
 					expect(script).toEqual(expected);
 				});
 			});
+			
+			describe('$scope.requestInstances', function() {
+				beforeEach(function() {
+					$rootScope.instanceType = 'spot';
+					$rootScope.amiSelect = 'ami_123';
+					$rootScope.sshKey = 'key';
+					$rootScope.generateScript = function() {
+						return 'script';
+					};
+					$rootScope.instanceSize = 'c3.large';
+					$rootScope.spotPrice = '0.02';
+					$rootScope.numInstances = 1;
+				});
+				
+				it('should call requestSpot method when spot instances being requested', function() {
+					$rootScope.requestInstances();
+					expect(awsServiceMock.requestSpot).toHaveBeenCalledWith('ami_123', 'key', 'brenda', 'script', 'c3.large', '0.02', 1, 'one-time', jasmine.any(Function));
+				});
+				
+				it('should call reqstOndemand method when on demand instances being requested', function() {
+					$rootScope.instanceType = 'onDemand';
+					$rootScope.requestInstances();
+					expect(awsServiceMock.requestOndemand).toHaveBeenCalledWith('ami_123', 'key', 'brenda', 'script', 'c3.large', 1, jasmine.any(Function));
+				});
+			});
+			
+			describe('$scope.showStatus', function() {
+				it('should replace any existing statuses', function() {
+					$rootScope.statuses.push({type: 'test', text: 'message'});
+					
+					$rootScope.showStatus('warning', 'warn message');
+					expect($rootScope.statuses.length).toBe(1);
+					expect($rootScope.statuses[0]).toEqual({type: 'warning', text: 'warn message'});
+				});
+			});
 		});
 	});
 	
