@@ -14,7 +14,7 @@ angular.module('awsSetup', [])
 		awsService.testCredentials();
 	};
 }])
-.controller('JobSetupCtrl', ['$scope', '$interval', 'awsService', function($scope, $interval, awsService) {
+.controller('JobSetupCtrl', ['$scope', 'awsService', function($scope, awsService) {
 	$scope.queues = [];
 	$scope.queueSize = 'No Queue Selected';
 	
@@ -23,24 +23,6 @@ angular.module('awsSetup', [])
 	$scope.endFrame = 240;
 	
 	awsService.getQueues();
-	
-	$scope.updateQueueSize = function() {
-		if(($scope.queue.workQueue != '') && ($scope.queue.workQueue != undefined)) {
-			awsService.getQueueSize($scope.queue.workQueue, function(size) {
-				$scope.queueSize = size;
-			});
-		} else {
-			$scope.queueSize = 'No Queue Selected';
-		}
-	};
-	
-	var timer = $interval(function() {
-		$scope.updateQueueSize();
-	}, 5000);
-	
-	$scope.$on('destroy', function() {
-		$interval.cancel(timer);
-	});
 	
 	$scope.workList = function() {
 		var list = [];
@@ -167,7 +149,7 @@ angular.module('awsSetup', [])
 		}
 	};
 }])
-.controller('SetupCtrl', ['$scope', 'localStorageService', 'awsService', function($scope, localStorageService, awsService) {
+.controller('SetupCtrl', ['$scope', 'localStorageService', 'awsService', '$interval', function($scope, localStorageService, awsService, $interval) {
 	//Credentials setup
 	$scope.credentials = {
 		awsRegion: awsService.getRegion(),
@@ -177,8 +159,27 @@ angular.module('awsSetup', [])
 	
 	//Queue setup
 	$scope.queue = {
-		workQueue: ''
+		workQueue: '',
+		queueSize: '-'
 	};
+	
+	$scope.updateQueueSize = function() {
+		if(($scope.queue.workQueue != '') && ($scope.queue.workQueue != undefined)) {
+			awsService.getQueueSize($scope.queue.workQueue, function(size) {
+				$scope.queue.queueSize = size;
+			});
+		} else {
+			$scope.queue.queueSize = '-';
+		}
+	};
+	
+	var timer = $interval(function() {
+		$scope.updateQueueSize();
+	}, 5000);
+	
+	$scope.$on('destroy', function() {
+		$interval.cancel(timer);
+	});
 
 	//Load source/destination if it is stored
 	$scope.s3 = {
