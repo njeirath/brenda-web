@@ -16,7 +16,6 @@ angular.module('awsSetup', [])
 }])
 .controller('JobSetupCtrl', ['$scope', '$interval', 'awsService', function($scope, $interval, awsService) {
 	$scope.queues = [];
-	$scope.workQueue = '';
 	$scope.queueSize = 'No Queue Selected';
 	
 	$scope.workTemplate = 'blender -b *.blend -F PNG -o $OUTDIR/frame_###### -s $START -e $END -j $STEP -t 0 -a';
@@ -26,8 +25,8 @@ angular.module('awsSetup', [])
 	awsService.getQueues();
 	
 	$scope.updateQueueSize = function() {
-		if(($scope.workQueue != '') && ($scope.workQueue != undefined)) {
-			awsService.getQueueSize($scope.workQueue, function(size) {
+		if(($scope.queue.workQueue != '') && ($scope.queue.workQueue != undefined)) {
+			awsService.getQueueSize($scope.queue.workQueue, function(size) {
 				$scope.queueSize = size;
 			});
 		} else {
@@ -55,11 +54,11 @@ angular.module('awsSetup', [])
 	};
 	
 	$scope.sendWork = function() {
-		awsService.sendToQueue($scope.workQueue, $scope.workList());
+		awsService.sendToQueue($scope.queue.workQueue, $scope.workList());
 	};
 	
 	$scope.clearQueue = function() {
-		awsService.clearQueue($scope.workQueue);
+		awsService.clearQueue($scope.queue.workQueue);
 	};
 	
 	$scope.sendStatus = {
@@ -143,7 +142,7 @@ angular.module('awsSetup', [])
 				'AWS_ACCESS_KEY=' + awsService.getKeyId() + '\n' +
 				'AWS_SECRET_KEY=' + awsService.getKeySecret() + '\n' +
 				'BLENDER_PROJECT=' + $scope.s3.projectSource + '\n' +
-				'WORK_QUEUE=sqs://' + awsService.getQueue().split('/').pop() + '\n' +
+				'WORK_QUEUE=sqs://' + $scope.queue.workQueue.split('/').pop() + '\n' +
 				'RENDER_OUTPUT=' + $scope.s3.frameDestination + '\n' +
 				'DONE=shutdown\n' +
 				'EOF\n';
@@ -169,10 +168,16 @@ angular.module('awsSetup', [])
 	};
 }])
 .controller('SetupCtrl', ['$scope', 'localStorageService', 'awsService', function($scope, localStorageService, awsService) {
+	//Credentials setup
 	$scope.credentials = {
 		awsRegion: awsService.getRegion(),
 		awsKeyId: awsService.getKeyId(),
 		awsSecret: awsService.getKeySecret()
+	};
+	
+	//Queue setup
+	$scope.queue = {
+		workQueue: ''
 	};
 
 	//Load source/destination if it is stored

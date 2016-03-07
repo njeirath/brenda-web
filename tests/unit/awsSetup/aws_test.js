@@ -60,12 +60,11 @@ describe('awsSetup', function() {
 			var awsServiceMock, ctrl;
 			
 			beforeEach(function() {
-				awsServiceMock = {
-					getQueuesCalled: false,
-					
-					getQueues: function() {
-						this.getQueuesCalled = true;
-					}
+				awsServiceMock = getAwsServiceMock();
+				
+				//Setup inherited scope var
+				$rootScope.queue = {
+					workQueue: ''
 				};
 				
 				ctrl = $controller('JobSetupCtrl', {$scope: $rootScope, awsService: awsServiceMock});
@@ -73,7 +72,7 @@ describe('awsSetup', function() {
 			
 			it('should initialize array to empty and call getQueues', function() {				
 				expect($rootScope.queues.length).toBe(0);
-				expect(awsServiceMock.getQueuesCalled).toBe(true);
+				expect(awsServiceMock.getQueues).toHaveBeenCalled();
 			});
 			
 			it('should update array when success event received', function() {
@@ -119,7 +118,7 @@ describe('awsSetup', function() {
 						callback(5);
 					};
 					
-					$rootScope.workQueue = 'testUrl';
+					$rootScope.queue.workQueue = 'testUrl';
 					$rootScope.updateQueueSize();
 					expect($rootScope.queueSize).toBe(5);
 				});
@@ -135,7 +134,7 @@ describe('awsSetup', function() {
 					};
 					
 					$rootScope.workList = function() {return ['job1', 'job2'];};
-					$rootScope.workQueue = 'testUrl';
+					$rootScope.queue.workQueue = 'testUrl';
 					$rootScope.sendWork();
 				});
 			});
@@ -146,7 +145,7 @@ describe('awsSetup', function() {
 						expect(queueUrl).toBe('testUrl');
 					};
 					
-					$rootScope.workQueue = 'testUrl';
+					$rootScope.queue.workQueue = 'testUrl';
 					$rootScope.clearQueue();
 				});
 			});
@@ -215,6 +214,10 @@ describe('awsSetup', function() {
 				$rootScope.s3 = {
 					projectSource: 'source location',
 					frameDestination: 'frame dest'
+				};
+				
+				$rootScope.queue = {
+					workQueue: 'queueName'
 				};
 				
 				ctrl = $controller('WorkerSetupCtrl', {$scope: $rootScope, localStorageService: localStorageService, awsService: awsServiceMock});
