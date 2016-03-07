@@ -2,19 +2,15 @@
 
 angular.module('awsSetup', [])
 .controller('AwsSetupCtrl', ['$scope', 'awsService', function($scope, awsService) {
-	$scope.awsRegion = awsService.getRegion();
-	$scope.awsKeyId = awsService.getKeyId();
-	$scope.awsSecret = awsService.getKeySecret();
-	
-	if (    ($scope.awsRegion) && ($scope.awsRegion != '') 
-	     && ($scope.awsKeyId) && ($scope.awsKeyId != '') 
-	     && ($scope.awsSecret) && ($scope.awsSecret != '')) {
-	     	awsService.testCredentials();
-	     }
-	
+	if (    ($scope.credentials.awsRegion) && ($scope.credentials.awsRegion != '') 
+	     && ($scope.credentials.awsKeyId) && ($scope.credentials.awsKeyId != '') 
+	     && ($scope.credentials.awsSecret) && ($scope.credentials.awsSecret != '')) {
+ 		awsService.testCredentials();
+     }
+		
 	$scope.setCredentials = function() {
-		awsService.setCredentials($scope.awsKeyId, $scope.awsSecret);
-		awsService.setRegion($scope.awsRegion);
+		awsService.setCredentials($scope.credentials.awsKeyId, $scope.credentials.awsSecret);
+		awsService.setRegion($scope.credentials.awsRegion);
 		awsService.testCredentials();
 	};
 }])
@@ -87,20 +83,10 @@ angular.module('awsSetup', [])
 		$scope.$digest();
 	});
 }])
-.controller('WorkerSetupCtrl', ['$scope', 'localStorageService', '$http', 'awsService', function($scope, localStorageService, $http, awsService) {
-	//Load source/destination if it is stored
-	$scope.projectSource = localStorageService.get('projectSource');
-	$scope.frameDestination = localStorageService.get('frameDestination');
+.controller('S3Ctrl', ['$scope', 'localStorageService', function($scope, localStorageService) {
 	
-	//Persist source/destination when changed
-	$scope.$watch('projectSource', function(newVal) {
-		localStorageService.set('projectSource', newVal);
-	});
-	
-	$scope.$watch('frameDestination', function(newVal) {
-		localStorageService.set('frameDestination', newVal);
-	});
-	
+}])
+.controller('WorkerSetupCtrl', ['$scope', 'localStorageService', '$http', 'awsService', function($scope, localStorageService, $http, awsService) {	
 	//Get list of AMIs to choose from
 	$scope.amis = [];
 	
@@ -156,9 +142,9 @@ angular.module('awsSetup', [])
 				'/usr/local/bin/brenda-node --daemon <<EOF\n' +
 				'AWS_ACCESS_KEY=' + awsService.getKeyId() + '\n' +
 				'AWS_SECRET_KEY=' + awsService.getKeySecret() + '\n' +
-				'BLENDER_PROJECT=' + $scope.projectSource + '\n' +
+				'BLENDER_PROJECT=' + $scope.s3.projectSource + '\n' +
 				'WORK_QUEUE=sqs://' + awsService.getQueue().split('/').pop() + '\n' +
-				'RENDER_OUTPUT=' + $scope.frameDestination + '\n' +
+				'RENDER_OUTPUT=' + $scope.s3.frameDestination + '\n' +
 				'DONE=shutdown\n' +
 				'EOF\n';
 
@@ -181,9 +167,28 @@ angular.module('awsSetup', [])
 			awsService.requestOndemand($scope.amiSelect, $scope.sshKey, 'brenda', $scope.generateScript(), $scope.instanceSize, $scope.numInstances, $scope.showStatus);
 		}
 	};
+}])
+.controller('SetupCtrl', ['$scope', 'localStorageService', 'awsService', function($scope, localStorageService, awsService) {
+	$scope.credentials = {
+		awsRegion: awsService.getRegion(),
+		awsKeyId: awsService.getKeyId(),
+		awsSecret: awsService.getKeySecret()
+	};
+
+	//Load source/destination if it is stored
+	$scope.s3 = {
+		projectSource: localStorageService.get('projectSource'),
+		frameDestination: localStorageService.get('frameDestination')
+	};
 	
+	//Persist source/destination when changed
+	$scope.$watch('s3.projectSource', function(newVal) {
+		localStorageService.set('projectSource', newVal);
+	});
 	
-	
+	$scope.$watch('s3.frameDestination', function(newVal) {
+		localStorageService.set('frameDestination', newVal);
+	});
 }])
 .directive('awsLoginStatus', [function() {
 	return {

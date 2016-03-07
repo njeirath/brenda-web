@@ -9,6 +9,12 @@ function getAwsServiceMock() {
 		getKeySecret: function() {
 			return 'secretKey';
 		},
+		getRegion: function() {
+			return 'region';
+		},
+		testCredentials: function() {},
+		setCredentials: function(key, secret) {},
+		setRegion: function(region) {},
 		getQueue: function() {
 			return 'sqs/url/queueName';
 		},
@@ -18,6 +24,10 @@ function getAwsServiceMock() {
 		
 	spyOn(mock, 'getKeyId').and.callThrough();
 	spyOn(mock, 'getKeySecret').and.callThrough();
+	spyOn(mock, 'getRegion').and.callThrough();
+	spyOn(mock, 'testCredentials').and.callThrough();
+	spyOn(mock, 'setCredentials');
+	spyOn(mock, 'setRegion');
 	spyOn(mock, 'getQueue').and.callThrough();
 	spyOn(mock, 'requestSpot');
 	spyOn(mock, 'requestOndemand');
