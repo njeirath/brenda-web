@@ -7,12 +7,16 @@ angular.module('brendaWeb', [
   'ui.bootstrap',
   'LocalStorageModule',
   'awsSetup',
-  'duScroll'
+  'duScroll',
+  'angulartics', 
+  'angulartics.google.analytics'
 ]).
 config(['$stateProvider', function($stateProvider) {
   $stateProvider.state('root', {
-    url: '',
     templateUrl: 'index.html'
+  }).state('root.landing', {
+  	url: '',
+  	templateUrl: "landing.html"
   }).state('root.setup', {
   	templateUrl: 'jobSetup/jobSetup.partial.html',
   	controller: 'SetupCtrl'
@@ -25,4 +29,10 @@ config(['$stateProvider', function($stateProvider) {
   		'workers': {templateUrl: 'awsSetup/workerSetup.html', controller: 'WorkerSetupCtrl'}
   	}
   });
+}])
+.run(['$rootScope', '$location', '$window', function($rootScope, $location, $window) {
+	$window.ga('create', 'UA-74793002-1', 'auto');
+	$rootScope.$on('$stateChangeSuccess', function (event) {
+	    $window.ga('send', 'pageview', $location.path());
+	});
 }]);

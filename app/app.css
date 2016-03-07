@@ -1,4 +1,8 @@
 /* app css stylesheet */
+.jumbotron {
+  text-align: center;
+  background-color: transparent;
+}
 
 .menu {
   list-style: none;
