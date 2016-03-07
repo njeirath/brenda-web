@@ -4,7 +4,7 @@ describe('Brenda Web', function() {
 
 	describe('awsSetup page', function() {
 		beforeEach(function() {
-			browser.get('/app/#/awsSetup');
+			browser.get('/app/#/setup');
 		});
 		
 		it('should have no values set by default', function() {
@@ -24,7 +24,7 @@ describe('Brenda Web', function() {
 			
 			expect(element(by.id('loginStatus')).getText()).toBe('Error: AuthFailure: AWS was not able to validate the provided access credentials');
 			
-			browser.get('/app/#/awsSetup');
+			browser.get('/app/#/setup');
 
 			expect(element(by.id('awsKeyId')).getAttribute('value')).toBe('abc');
 			expect(element(by.id('awsSecret')).getAttribute('value')).toBe('def');
@@ -34,7 +34,7 @@ describe('Brenda Web', function() {
 	
 	describe('jobSetup page', function() {
 		beforeEach(function() {
-			browser.get('/app/#/jobSetup');
+			browser.get('/app/#/setup');
 		});
 		
 		it('should have only start/end frames set by default', function() {
@@ -45,9 +45,9 @@ describe('Brenda Web', function() {
 		});
 	});
 	
-	describe('workerSetup page', function() {
+	describe('s3 page', function() {
 		beforeEach(function() {
-			browser.get('/app/#/workerSetup');
+			browser.get('/app/#/setup');
 		});
 		
 		it('should have the fields presented with defaults', function() {
@@ -59,7 +59,7 @@ describe('Brenda Web', function() {
 			element(by.id('projectSource')).sendKeys('abc');
 			element(by.id('frameDestination')).sendKeys('def');
 			
-			browser.get('/app/#/workerSetup');
+			browser.get('/app/#/setup');
 			
 			expect(element(by.id('projectSource')).getAttribute('value')).toBe('abc');
 			expect(element(by.id('frameDestination')).getAttribute('value')).toBe('def');

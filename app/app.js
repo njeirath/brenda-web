@@ -6,23 +6,23 @@ angular.module('brendaWeb', [
   'ui.router',
   'ui.bootstrap',
   'LocalStorageModule',
-  'awsSetup'
+  'awsSetup',
+  'duScroll'
 ]).
 config(['$stateProvider', function($stateProvider) {
-  $stateProvider.state('cfg', {
+  $stateProvider.state('root', {
     url: '',
     templateUrl: 'index.html'
-  }).state('cfg.aws', {
-  	url: '/awsSetup',
-  	templateUrl: 'awsSetup/awsSetup.html',
-  	controller: 'AwsSetupCtrl'
-  }).state('cfg.job', {
-  	url: '/jobSetup',
-  	templateUrl: 'awsSetup/jobSetup.html',
-  	controller: 'JobSetupCtrl'
-  }).state('cfg.worker', {
-  	url: '/workerSetup',
-  	templateUrl: 'awsSetup/workerSetup.html',
-  	controller: 'WorkerSetupCtrl'
+  }).state('root.setup', {
+  	templateUrl: 'jobSetup/jobSetup.partial.html',
+  	controller: 'SetupCtrl'
+  }).state('root.setup.view', {
+  	url: '/setup',
+  	views: {
+  		'credentials': {templateUrl: 'awsSetup/awsSetup.html', controller: 'AwsSetupCtrl'},
+  		'queue': {templateUrl: 'awsSetup/jobSetup.html', controller: 'JobSetupCtrl'},
+  		's3': {templateUrl: 'awsSetup/s3Setup.html', controller: 'S3Ctrl'},
+  		'workers': {templateUrl: 'awsSetup/workerSetup.html', controller: 'WorkerSetupCtrl'}
+  	}
   });
 }]);
