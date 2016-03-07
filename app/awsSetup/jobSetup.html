@@ -1,7 +1,3 @@
-<div class="page-header">
-	<h2>Job Setup</h2>
-</div>
-
 <div class="panel panel-default">
   <div class="panel-heading">
     <h3 class="panel-title">Work Queue</h3>
@@ -10,7 +6,7 @@
     <form>
 		<div class="form-group">
 			<label for="workQueue">Work Queue</label>
-			<select name="workQueue" id="workQueue" ng-model="workQueue">
+			<select name="workQueue" id="workQueue" ng-model="queue.workQueue">
 				<option ng-repeat="queue in queues" value="{{queue.id}}">{{queue.name}}</option>
 			</select>
 		</div>

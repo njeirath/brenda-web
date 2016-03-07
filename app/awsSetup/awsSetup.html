@@ -1,20 +1,24 @@
-<div class="page-header">
-	<h2>Credentials</h2>
+<div class="panel panel-default">
+	<div class="panel-heading">
+		<h3 class="panel-title">AWS Credentials</h3>
+	</div>
+	<div class="panel-body">
+		<form>
+			<div class="form-group">
+				<label for="awsKeyId">AWS Access Key ID</label>
+				<input type="text" class="form-control" id="awsKeyId" ng-model="credentials.awsKeyId" placeholder="Key ID">
+			</div>
+			<div class="form-group">
+				<label for="awsSecret">AWS Access Key Secret</label>
+				<input type="text" class="form-control" id="awsSecret" ng-model="credentials.awsSecret" placeholder="Key Secret" />
+			</div>
+			<div class="form-group">
+				<label for="awsRegion">AWS Region</label>
+				<input type="text" class="form-control" id="awsRegion" ng-model="credentials.awsRegion" placeholder="Region" />
+			</div>
+			<button type="submit" ng-click="setCredentials()" id="setCredentialsBtn">Set Credentials</button>
+			<div aws-login-status id="loginStatus"></div>
+			<!-- <aws-login aws-key-id="awsKeyId" aws-secret="awsSecret" region="awsRegion"></aws-login> -->
+		</form>
+	</div>
 </div>
-<form>
-	<div class="form-group">
-		<label for="awsKeyId">AWS Access Key ID</label>
-		<input type="text" class="form-control" id="awsKeyId" ng-model="awsKeyId" placeholder="Key ID">
-	</div>
-	<div class="form-group">
-		<label for="awsSecret">AWS Access Key Secret</label>
-		<input type="text" class="form-control" id="awsSecret" ng-model="awsSecret" placeholder="Key Secret" />
-	</div>
-	<div class="form-group">
-		<label for="awsRegion">AWS Region</label>
-		<input type="text" class="form-control" id="awsRegion" ng-model="awsRegion" placeholder="Region" />
-	</div>
-	<button type="submit" ng-click="setCredentials()" id="setCredentialsBtn">Set Credentials</button>
-	<div aws-login-status id="loginStatus"></div>
-	<!-- <aws-login aws-key-id="awsKeyId" aws-secret="awsSecret" region="awsRegion"></aws-login> -->
-</form>

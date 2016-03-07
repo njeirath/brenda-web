@@ -14,77 +14,44 @@ describe('awsSetup', function() {
 		
 		
 		describe('AwsSetupCtrl', function() {
-			var awsServiceMock;
+			var awsServiceMock, ctrl;
 			
 			beforeEach(function() {
-				awsServiceMock = {
-					region: '',
-					keyId: '',
-					secret: '',
-					testCredsCalled: false,
-					getRegion: function() {
-						return this.region;
-					},
-					getKeyId: function() {
-						return this.keyId;
-					},
-					getKeySecret: function() {
-						return this.secret;
-					},
-					testCredentials: function() {
-						this.testCredsCalled = true;
-					},
-					setCredentials: function(id, keySecret) {
-						this.keyId = id;
-						this.secret = keySecret;
-					},
-					setRegion: function(reg) {
-						this.region = reg;
-					}
+				awsServiceMock = getAwsServiceMock();
+				
+				//Mock out inherited objects
+				$rootScope.credentials = {
+					awsRegion: '',
+					awsKeyId: '',
+					awsSecret: ''
 				};
+				
+				var ctrl = $controller('AwsSetupCtrl', {$scope: $rootScope, awsService: awsServiceMock});
 			});
 			
 			describe('initialization procedures', function() {
 				it('should start with empty scope vars, and not call testCredentials', function() {
-					var ctrl = $controller('AwsSetupCtrl', {$scope: $rootScope, awsService: awsServiceMock});
+					expect($rootScope.credentials.awsRegion).toBe('');
+					expect($rootScope.credentials.awsKeyId).toBe('');
+					expect($rootScope.credentials.awsSecret).toBe('');
 					
-					expect($rootScope.awsRegion).toBe('');
-					expect($rootScope.awsKeyId).toBe('');
-					expect($rootScope.awsSecret).toBe('');
-					
-					expect(awsServiceMock.testCredsCalled).toBe(false);
-				});
-				
-				it('should initialize scope based on awsService, and call testCredentials', function() {
-					awsServiceMock.region = 'region';
-					awsServiceMock.keyId = 'ID';
-					awsServiceMock.secret = 'secret';
-					
-					var ctrl = $controller('AwsSetupCtrl', {$scope: $rootScope, awsService: awsServiceMock});
-					
-					expect($rootScope.awsRegion).toBe('region');
-					expect($rootScope.awsKeyId).toBe('ID');
-					expect($rootScope.awsSecret).toBe('secret');
-					
-					expect(awsServiceMock.testCredsCalled).toBe(true);
+					expect(awsServiceMock.testCredentials).not.toHaveBeenCalled();
 				});
 			});
 			
 			describe('$scope.setCredentials()', function() {
-				it('should call into awsService with scope vars', function() {			
-					var ctrl = $controller('AwsSetupCtrl', {$scope: $rootScope, awsService: awsServiceMock});
-					
-					$rootScope.awsRegion = 'reg';
-					$rootScope.awsKeyId = 'id';
-					$rootScope.awsSecret = 'shh';
+				it('should call into awsService with scope vars', function() {					
+					$rootScope.credentials = {
+						awsRegion: 'reg',
+						awsKeyId: 'id',
+						awsSecret: 'shh'
+					};
 					
 					$rootScope.setCredentials();
 					
-					expect(awsServiceMock.region).toBe('reg');
-					expect(awsServiceMock.keyId).toBe('id');
-					expect(awsServiceMock.secret).toBe('shh');
-					
-					expect(awsServiceMock.testCredsCalled).toBe(true);
+					expect(awsServiceMock.setCredentials).toHaveBeenCalledWith('id', 'shh');
+					expect(awsServiceMock.setRegion).toHaveBeenCalledWith('reg');
+					expect(awsServiceMock.testCredentials).toHaveBeenCalled();
 				});
 			});
 		});
@@ -93,12 +60,11 @@ describe('awsSetup', function() {
 			var awsServiceMock, ctrl;
 			
 			beforeEach(function() {
-				awsServiceMock = {
-					getQueuesCalled: false,
-					
-					getQueues: function() {
-						this.getQueuesCalled = true;
-					}
+				awsServiceMock = getAwsServiceMock();
+				
+				//Setup inherited scope var
+				$rootScope.queue = {
+					workQueue: ''
 				};
 				
 				ctrl = $controller('JobSetupCtrl', {$scope: $rootScope, awsService: awsServiceMock});
@@ -106,7 +72,7 @@ describe('awsSetup', function() {
 			
 			it('should initialize array to empty and call getQueues', function() {				
 				expect($rootScope.queues.length).toBe(0);
-				expect(awsServiceMock.getQueuesCalled).toBe(true);
+				expect(awsServiceMock.getQueues).toHaveBeenCalled();
 			});
 			
 			it('should update array when success event received', function() {
@@ -152,7 +118,7 @@ describe('awsSetup', function() {
 						callback(5);
 					};
 					
-					$rootScope.workQueue = 'testUrl';
+					$rootScope.queue.workQueue = 'testUrl';
 					$rootScope.updateQueueSize();
 					expect($rootScope.queueSize).toBe(5);
 				});
@@ -168,7 +134,7 @@ describe('awsSetup', function() {
 					};
 					
 					$rootScope.workList = function() {return ['job1', 'job2'];};
-					$rootScope.workQueue = 'testUrl';
+					$rootScope.queue.workQueue = 'testUrl';
 					$rootScope.sendWork();
 				});
 			});
@@ -179,7 +145,7 @@ describe('awsSetup', function() {
 						expect(queueUrl).toBe('testUrl');
 					};
 					
-					$rootScope.workQueue = 'testUrl';
+					$rootScope.queue.workQueue = 'testUrl';
 					$rootScope.clearQueue();
 				});
 			});
@@ -193,14 +159,47 @@ describe('awsSetup', function() {
 			});
 		});
 		
+		describe('SetupCtrl', function() {
+			var ctrl, localStorageService, awsServiceMock;
+			
+			beforeEach(function() {
+				localStorageService = getLocalStorageMock();
+				awsServiceMock = getAwsServiceMock();
+				localStorageService.data['projectSource'] = 'source location';
+				localStorageService.data['frameDestination'] = 'frame dest';
+				
+				ctrl = $controller('SetupCtrl', {$scope: $rootScope, localStorageService: localStorageService, awsService: awsServiceMock});
+			});
+			
+			it('should get initial values for projectSource and frameDestination from local storage', function() {
+				expect(localStorageService.get).toHaveBeenCalledWith('projectSource');
+				expect(localStorageService.get).toHaveBeenCalledWith('frameDestination');
+				
+				expect($rootScope.s3.projectSource).toBe('source location');
+				expect($rootScope.s3.frameDestination).toBe('frame dest');
+			});
+			
+			it('should update local storage on projectSource and frameDestination changes', function() {
+				$rootScope.s3.projectSource = 'new source';
+				$rootScope.s3.frameDestination = 'new dest';
+				$rootScope.$digest();
+				
+				expect(localStorageService.set).toHaveBeenCalledWith('projectSource', 'new source');
+				expect(localStorageService.set).toHaveBeenCalledWith('frameDestination', 'new dest');
+			});
+			
+			it('should initialize scope based on awsService, and call testCredentials', function() {				
+				expect($rootScope.credentials.awsRegion).toBe('region');
+				expect($rootScope.credentials.awsKeyId).toBe('accessKey');
+				expect($rootScope.credentials.awsSecret).toBe('secretKey');
+			});
+			
+		});
+		
 		describe('WorkerSetupCtrl', function() {
 			var ctrl, localStorageService, amiListHandler, instanceHandler, awsServiceMock;
 			
 			beforeEach(function() {
-				localStorageService = getLocalStorageMock();
-				localStorageService.data['projectSource'] = 'source location';
-				localStorageService.data['frameDestination'] = 'frame dest';
-				
 				amiListHandler = $httpBackend.when('GET', 'amiList.json').respond({
 					"ami-0529086c": {
 						"blenderVersion": "??"
@@ -211,26 +210,21 @@ describe('awsSetup', function() {
 				
 				instanceHandler = $httpBackend.when('GET', 'instances.json').respond(['c1.xlarge', 'm3.2xlarge']);
 				
+				//Mock up inherited scope objects
+				$rootScope.s3 = {
+					projectSource: 'source location',
+					frameDestination: 'frame dest'
+				};
+				
+				$rootScope.queue = {
+					workQueue: 'queueName'
+				};
+				
 				ctrl = $controller('WorkerSetupCtrl', {$scope: $rootScope, localStorageService: localStorageService, awsService: awsServiceMock});
 			});
 			
-			it('should get initial values for projectSource and frameDestination from local storage', function() {
-				expect(localStorageService.get).toHaveBeenCalledWith('projectSource');
-				expect(localStorageService.get).toHaveBeenCalledWith('frameDestination');
-				
-				expect($rootScope.projectSource).toBe('source location');
-				expect($rootScope.frameDestination).toBe('frame dest');
-				
+			it('should start with spot selected as default', function() {
 				expect($rootScope.instanceType).toBe('spot');
-			});
-			
-			it('should update local storage on projectSource and frameDestination changes', function() {
-				$rootScope.projectSource = 'new source';
-				$rootScope.frameDestination = 'new dest';
-				$rootScope.$digest();
-				
-				expect(localStorageService.set).toHaveBeenCalledWith('projectSource', 'new source');
-				expect(localStorageService.set).toHaveBeenCalledWith('frameDestination', 'new dest');
 			});
 			
 			it('should populate list based on http response and default select first item', function() {
