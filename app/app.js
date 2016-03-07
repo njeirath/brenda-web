@@ -11,8 +11,10 @@ angular.module('brendaWeb', [
 ]).
 config(['$stateProvider', function($stateProvider) {
   $stateProvider.state('root', {
-    url: '',
     templateUrl: 'index.html'
+  }).state('root.landing', {
+  	url: '',
+  	templateUrl: "landing.html"
   }).state('root.setup', {
   	templateUrl: 'jobSetup/jobSetup.partial.html',
   	controller: 'SetupCtrl'
