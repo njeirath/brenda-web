@@ -100,30 +100,7 @@ describe('awsSetup', function() {
 					expect(workList[1]).toBe('blender -b *.blend -F PNG -o $OUTDIR/frame_###### -s 2 -e 2 -j 1 -t 0 -a');
 				});
 			});
-			
-			describe('$scope.updateQueueSize', function() {
-				it('should display default message if no queue selected', function() {
-					$rootScope.workQueue = '';
-					$rootScope.updateQueueSize();
-					expect($rootScope.queueSize).toBe('No Queue Selected');
-					
-					$rootScope.workQueue = undefined;
-					$rootScope.updateQueueSize();
-					expect($rootScope.queueSize).toBe('No Queue Selected');
-				});
-				
-				it('should call awsService if queue is selected', function() {
-					awsServiceMock.getQueueSize = function(queue, callback) {
-						expect(queue).toBe('testUrl');
-						callback(5);
-					};
-					
-					$rootScope.queue.workQueue = 'testUrl';
-					$rootScope.updateQueueSize();
-					expect($rootScope.queueSize).toBe(5);
-				});
-			});
-			
+						
 			describe('$scope.sendWork', function() {
 				it('should call awsService with queue name and work list', function() {
 					awsServiceMock.sendToQueue = function(queueUrl, workList) {
@@ -193,6 +170,30 @@ describe('awsSetup', function() {
 				expect($rootScope.credentials.awsKeyId).toBe('accessKey');
 				expect($rootScope.credentials.awsSecret).toBe('secretKey');
 			});
+			
+			describe('$scope.updateQueueSize', function() {
+				it('should display default message if no queue selected', function() {
+					$rootScope.workQueue = '';
+					$rootScope.updateQueueSize();
+					expect($rootScope.queue.queueSize).toBe('No Queue Selected');
+					
+					$rootScope.workQueue = undefined;
+					$rootScope.updateQueueSize();
+					expect($rootScope.queue.queueSize).toBe('No Queue Selected');
+				});
+				
+				it('should call awsService if queue is selected', function() {
+					awsServiceMock.getQueueSize = function(queue, callback) {
+						expect(queue).toBe('testUrl');
+						callback(5);
+					};
+					
+					$rootScope.queue.workQueue = 'testUrl';
+					$rootScope.updateQueueSize();
+					expect($rootScope.queue.queueSize).toBe(5);
+				});
+			});
+
 			
 		});
 		
