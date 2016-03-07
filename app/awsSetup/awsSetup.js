@@ -160,7 +160,7 @@ angular.module('awsSetup', [])
 	//Queue setup
 	$scope.queue = {
 		workQueue: '',
-		queueSize: ''
+		queueSize: '-'
 	};
 	
 	$scope.updateQueueSize = function() {
@@ -169,7 +169,7 @@ angular.module('awsSetup', [])
 				$scope.queue.queueSize = size;
 			});
 		} else {
-			$scope.queue.queueSize = 'No Queue Selected';
+			$scope.queue.queueSize = '-';
 		}
 	};
 	

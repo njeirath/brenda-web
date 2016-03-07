@@ -175,11 +175,11 @@ describe('awsSetup', function() {
 				it('should display default message if no queue selected', function() {
 					$rootScope.workQueue = '';
 					$rootScope.updateQueueSize();
-					expect($rootScope.queue.queueSize).toBe('No Queue Selected');
+					expect($rootScope.queue.queueSize).toBe('-');
 					
 					$rootScope.workQueue = undefined;
 					$rootScope.updateQueueSize();
-					expect($rootScope.queue.queueSize).toBe('No Queue Selected');
+					expect($rootScope.queue.queueSize).toBe('-');
 				});
 				
 				it('should call awsService if queue is selected', function() {
