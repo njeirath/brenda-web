@@ -360,7 +360,7 @@ describe('awsSetup', function() {
 				
 				beforeEach(function() {
 					callback = jasmine.createSpy();
-					awsService.requestSpot('ami_123', 'brendaKey', 'brendaSG', 'bunches of stuff here', 'c3.large', 0.02, 1, 'one-time', callback);
+					awsService.requestSpot('ami_123', 'brendaKey', 'brendaSG', 'bunches of stuff here', 'c3.large', 0.02, 1, 'one-time', 'queueName', callback);
 					serviceCallback = awsMock.EC2requestSpotInstances.calls.argsFor(0)[1];
 				});
 				
@@ -380,14 +380,41 @@ describe('awsSetup', function() {
 					});
 				});
 				
-				it('should call callback with danger and error message on error', function() {
+				it('should call callback with danger and message on error', function() {
 					serviceCallback('Error message', null);
 					expect(callback).toHaveBeenCalledWith('danger', 'Error message');
 				});
 				
-				it('should call callback with success and message on success', function() {
-					serviceCallback(null, 'it worked');
-					expect(callback).toHaveBeenCalledWith('success', 'Spot instances requested');
+				it('should call to set tags on request instances', function() {
+					serviceCallback(null, {
+						SpotInstanceRequests: [{SpotInstanceRequestId: 'requestId1'}]
+					});
+					expect(awsMock.EC2createTags).toHaveBeenCalledWith({
+						Resources: ['requestId1'],
+						Tags: [{Key: 'brenda-queue', Value: 'queueName'}]
+					}, jasmine.any(Function));
+				});
+				
+				describe('setTags callback', function() {
+					var setTagsCallback;
+					
+					beforeEach(function() {
+						serviceCallback(null, {
+							SpotInstanceRequests: [{SpotInstanceRequestId: 'requestId1'}]
+						});
+						
+						setTagsCallback = awsMock.EC2createTags.calls.argsFor(0)[1];
+					});
+					
+					it('should call status callback with warning on tagging error', function() {
+						setTagsCallback('Error happened', null);
+						expect(callback).toHaveBeenCalledWith('warning', 'Spot instances requested but could not set tags (may affect dashboard)');
+					});
+					
+					it('should call status callback with success on tagging success', function() {
+						setTagsCallback(null, 'success');
+						expect(callback).toHaveBeenCalledWith('success', 'Spot instances requested');
+					});
 				});
 			});
 			
@@ -396,7 +423,7 @@ describe('awsSetup', function() {
 				
 				beforeEach(function() {
 					callback = jasmine.createSpy();
-					awsService.requestOndemand('ami_123', 'brendaKey', 'brendaSG', 'bunches of stuff here', 'c3.large', 1, callback);
+					awsService.requestOndemand('ami_123', 'brendaKey', 'brendaSG', 'bunches of stuff here', 'c3.large', 1, 'queueName', callback);
 					serviceCallback = awsMock.EC2runInstances.calls.argsFor(0)[1];
 				});
 				
@@ -419,9 +446,36 @@ describe('awsSetup', function() {
 					expect(callback).toHaveBeenCalledWith('danger', 'Error message');
 				});
 				
-				it('should call callback with success and message on success', function() {
-					serviceCallback(null, 'it worked');
-					expect(callback).toHaveBeenCalledWith('success', 'On demand instances requested');
+				it('should call to set tags on new instances', function() {
+					serviceCallback(null, {
+						SpotInstanceRequests: [{SpotInstanceRequestId: 'instanceId1'}]
+					});
+					expect(awsMock.EC2createTags).toHaveBeenCalledWith({
+						Resources: ['instanceId1'],
+						Tags: [{Key: 'brenda-queue', Value: 'queueName'}]
+					}, jasmine.any(Function));
+				});
+				
+				describe('setTags callback', function() {
+					var setTagsCallback;
+					
+					beforeEach(function() {
+						serviceCallback(null, {
+							SpotInstanceRequests: [{SpotInstanceRequestId: 'instanceId1'}]
+						});
+						
+						setTagsCallback = awsMock.EC2createTags.calls.argsFor(0)[1];
+					});
+					
+					it('should call status callback with warning on tagging error', function() {
+						setTagsCallback('Error happened', null);
+						expect(callback).toHaveBeenCalledWith('warning', 'On demand instances requested but could not set tags (may affect dashboard)');
+					});
+					
+					it('should call status callback with success on tagging success', function() {
+						setTagsCallback(null, 'success');
+						expect(callback).toHaveBeenCalledWith('success', 'On demand instances requested');
+					});
 				});
 			});
 		});

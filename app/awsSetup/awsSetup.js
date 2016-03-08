@@ -142,10 +142,10 @@ angular.module('awsSetup', [])
 	$scope.requestInstances = function() {
 		//ami, keyPair, securityGroup, userData, instanceType, spotPrice, count, type
 		if ($scope.instanceType == 'spot') {
-			awsService.requestSpot($scope.amiSelect, $scope.sshKey, 'brenda', $scope.generateScript(), $scope.instanceSize, $scope.spotPrice, $scope.numInstances, 'one-time', $scope.showStatus);
+			awsService.requestSpot($scope.amiSelect, $scope.sshKey, 'brenda', $scope.generateScript(), $scope.instanceSize, $scope.spotPrice, $scope.numInstances, 'one-time', $scope.queue.workQueue, $scope.showStatus);
 		} else {
 			//requestOndemand: function(ami, keyPair, securityGroup, userData, instanceType, count)
-			awsService.requestOndemand($scope.amiSelect, $scope.sshKey, 'brenda', $scope.generateScript(), $scope.instanceSize, $scope.numInstances, $scope.showStatus);
+			awsService.requestOndemand($scope.amiSelect, $scope.sshKey, 'brenda', $scope.generateScript(), $scope.instanceSize, $scope.numInstances, $scope.queue.workQueue, $scope.showStatus);
 		}
 	};
 }])
@@ -370,7 +370,16 @@ angular.module('awsSetup', [])
 				InstanceType: instanceType,
 			};
 		},
-		requestSpot: function(ami, keyPair, securityGroup, userData, instanceType, spotPrice, count, type, statusCallback) {
+		setTags: function(instances, tags, callback) {
+			var params = {
+				Resources: instances,
+				Tags: tags
+			};
+			
+			var ec2 = new aws.EC2();
+			ec2.createTags(params, callback);
+		},
+		requestSpot: function(ami, keyPair, securityGroup, userData, instanceType, spotPrice, count, type, queueName, statusCallback) {
 			var spec = this.getLaunchSpecification(ami, keyPair, securityGroup, userData, instanceType);
 			
 			var params = {
@@ -381,6 +390,8 @@ angular.module('awsSetup', [])
 				Type: type
 			};
 			
+			var self = this;
+			
 			var ec2 = new aws.EC2();
 			ec2.requestSpotInstances(params, function(err, data) {
 				if (err) {
@@ -388,16 +399,28 @@ angular.module('awsSetup', [])
 					statusCallback('danger', String(err));
 				} else {
 					$log.log(data);
-					statusCallback('success', 'Spot instances requested');
+					var spotRequests = data.SpotInstanceRequests.map(function(item) {
+						return item.SpotInstanceRequestId;
+					});
+					self.setTags(spotRequests, [{Key: 'brenda-queue', Value: queueName}], function(err, data) {
+						if (err) {
+							statusCallback('warning', 'Spot instances requested but could not set tags (may affect dashboard)');
+						} else {
+							statusCallback('success', 'Spot instances requested');
+						}
+					});
+					
 				}
 			});
 		},
-		requestOndemand: function(ami, keyPair, securityGroup, userData, instanceType, count, statusCallback) {
+		requestOndemand: function(ami, keyPair, securityGroup, userData, instanceType, count, queueName, statusCallback) {
 			var spec = this.getLaunchSpecification(ami, keyPair, securityGroup, userData, instanceType);
 			spec.MinCount = count;
 			spec.MaxCount = count;
 			spec.InstanceInitiatedShutdownBehavior = 'terminate';
 			// spec.DryRun = true;
+			
+			var self = this;
 			
 			var ec2 = new aws.EC2();
 			ec2.runInstances(spec, function(err, data) {
@@ -406,7 +429,16 @@ angular.module('awsSetup', [])
 					statusCallback('danger', String(err));
 				} else {
 					$log.log(data);
-					statusCallback('success', 'On demand instances requested');
+					var spotRequests = data.SpotInstanceRequests.map(function(item) {
+						return item.SpotInstanceRequestId;
+					});
+					self.setTags(spotRequests, [{Key: 'brenda-queue', Value: queueName}], function(err, data) {
+						if (err) {
+							statusCallback('warning', 'On demand instances requested but could not set tags (may affect dashboard)');
+						} else {
+							statusCallback('success', 'On demand instances requested');
+						}
+					});
 				}
 			});
 		}

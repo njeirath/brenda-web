@@ -300,13 +300,13 @@ describe('awsSetup', function() {
 				
 				it('should call requestSpot method when spot instances being requested', function() {
 					$rootScope.requestInstances();
-					expect(awsServiceMock.requestSpot).toHaveBeenCalledWith('ami_123', 'key', 'brenda', 'script', 'c3.large', '0.02', 1, 'one-time', jasmine.any(Function));
+					expect(awsServiceMock.requestSpot).toHaveBeenCalledWith('ami_123', 'key', 'brenda', 'script', 'c3.large', '0.02', 1, 'one-time', 'queueName', jasmine.any(Function));
 				});
 				
 				it('should call reqstOndemand method when on demand instances being requested', function() {
 					$rootScope.instanceType = 'onDemand';
 					$rootScope.requestInstances();
-					expect(awsServiceMock.requestOndemand).toHaveBeenCalledWith('ami_123', 'key', 'brenda', 'script', 'c3.large', 1, jasmine.any(Function));
+					expect(awsServiceMock.requestOndemand).toHaveBeenCalledWith('ami_123', 'key', 'brenda', 'script', 'c3.large', 1, 'queueName', jasmine.any(Function));
 				});
 			});
 			
