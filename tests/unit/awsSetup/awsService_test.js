@@ -287,11 +287,11 @@ describe('awsSetup', function() {
 			});
 			
 			describe('getQueueSize', function() {
-				var callback;
+				var promise, awsCallback;
 				
 				beforeEach(function() {
-					callback = jasmine.createSpy();
-					awsService.getQueueSize('url', callback);
+					promise = awsService.getQueueSize('url');
+					awsCallback = awsMock.SQSgetQueueAttributes.calls.argsFor(0)[1];
 				});
 				
 				it('should query aws for queue parameters', function() {
@@ -301,18 +301,34 @@ describe('awsSetup', function() {
 							QueueUrl: 'url', 
 							AttributeNames: ['ApproximateNumberOfMessages', 'ApproximateNumberOfMessagesNotVisible']
 						});
+					awsCallback('error', null);
+					$rootScope.$apply();
 				});
 				
 				it('should pass along the error message in case an error occurs', function() {
-					var awsCallback = awsMock.SQSgetQueueAttributes.calls.argsFor(0)[1];
 					awsCallback('error', null);
-					expect(callback).toHaveBeenCalledWith('error');
+					
+					var msg = '';
+					promise.then(function(data){
+					}, function(err){
+						msg = err;
+					});
+					$rootScope.$apply();
+					
+					expect(msg).toBe('error');
 				});
 				
 				it('should return the queue size upon success', function() {
-					var awsCallback = awsMock.SQSgetQueueAttributes.calls.argsFor(0)[1];
 					awsCallback(null, {Attributes: {ApproximateNumberOfMessages: 5}});
-					expect(callback).toHaveBeenCalledWith(5);
+					
+					var size = -1;
+					promise.then(function(data) {
+						size = data;
+					});
+					
+					$rootScope.$apply();
+					
+					expect(size).toBe(5);
 				});
 			});
 			
@@ -448,7 +464,7 @@ describe('awsSetup', function() {
 				
 				it('should call to set tags on new instances', function() {
 					serviceCallback(null, {
-						SpotInstanceRequests: [{SpotInstanceRequestId: 'instanceId1'}]
+						Instances: [{InstanceId: 'instanceId1'}]
 					});
 					expect(awsMock.EC2createTags).toHaveBeenCalledWith({
 						Resources: ['instanceId1'],
@@ -461,7 +477,7 @@ describe('awsSetup', function() {
 					
 					beforeEach(function() {
 						serviceCallback(null, {
-							SpotInstanceRequests: [{SpotInstanceRequestId: 'instanceId1'}]
+							Instances: [{InstanceId: 'instanceId1'}]
 						});
 						
 						setTagsCallback = awsMock.EC2createTags.calls.argsFor(0)[1];

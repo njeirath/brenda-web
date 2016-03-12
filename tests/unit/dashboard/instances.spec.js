@@ -3,13 +3,14 @@
 describe('dashboard instances', function() {
 	beforeEach(module('dashboard'));
 
-	var $rootScope, $controller, $httpBackend, ctrl, awsServiceMock, instanceDeferred, spotDeferred;
+	var $rootScope, $controller, $httpBackend, ctrl, awsServiceMock, instanceDeferred, spotDeferred, addQueueSpy;
 	var spotRet = {SpotInstanceRequests: [
 		{
 			SpotInstanceRequestId: 'sir_1',
 			InstanceId: 'i_1',
 			SpotPrice: 0.02,
-			Status: {Code: 'fulfilled'}
+			Status: {Code: 'fulfilled'},
+			Tags: [{Key: 'brenda-queue', Value: 'queueUrl'}]
 		}
 		]};
 		
@@ -19,7 +20,8 @@ describe('dashboard instances', function() {
 			{
 				InstanceId: 'i_1',
 				InstanceType: 'c3.large',
-				State: {Name: 'starting'}
+				State: {Name: 'starting'},
+				Tags: [{Key: 'brenda-queue', Value: 'queueUrl'}]
 			}]
 		}
 	]};
@@ -36,6 +38,9 @@ describe('dashboard instances', function() {
 		
 		spyOn(awsServiceMock, 'getInstanceDetails').and.returnValue(instanceDeferred.promise);
 		spyOn(awsServiceMock, 'getSpotRequests').and.returnValue(spotDeferred.promise);
+		
+		$rootScope.queues = {addQueue: function(){}};
+		spyOn($rootScope.queues, 'addQueue');
 	
 		ctrl = $controller('instancesCtrl', {$scope: $rootScope, awsService: awsServiceMock});
 	}));
@@ -54,6 +59,7 @@ describe('dashboard instances', function() {
 		$rootScope.$apply();
 		
 		expect(awsServiceMock.getInstanceDetails).toHaveBeenCalledWith(['i_1']);
+		expect($rootScope.queues.addQueue).toHaveBeenCalledWith('queueUrl');
 	});
 	
 	it('should update table with returned data', function() {
@@ -90,6 +96,8 @@ describe('dashboard instances', function() {
 			tasksCompleted: '-',
 			cpuLoad: '-'
 		});
+		
+		expect($rootScope.queues.addQueue).toHaveBeenCalledWith('queueUrl');
 	});
 	
 	describe('$rootScope.getInstanceStats', function() {
@@ -110,7 +118,7 @@ describe('dashboard instances', function() {
 		});
 		
 		it('should call individual servers for status', function() {
-			$httpBackend.expectGET('http://1.2.3.4/uptime.txt?d=' + new Date().valueOf()).respond("20.3 10.5\n1.9 1.5 1.1 1/5 9\n3");
+			$httpBackend.expectGET(/http:\/\/1.2.3.4\/uptime.txt\?d=(.+)/).respond("20.3 10.5\n1.9 1.5 1.1 1/5 9\n3");
 			
 			$rootScope.getInstanceStats();
 			$httpBackend.flush();
@@ -131,7 +139,7 @@ describe('dashboard instances', function() {
 		});
 		
 		it('should set unknown values when error occurs', function() {
-			$httpBackend.expectGET('http://1.2.3.4/uptime.txt?d=' + new Date().valueOf()).respond(500, '');
+			$httpBackend.expectGET(/http:\/\/1.2.3.4\/uptime.txt\?d=(.+)/).respond(500, '');
 			
 			$rootScope.getInstanceStats();
 			$httpBackend.flush();

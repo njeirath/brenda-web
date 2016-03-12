@@ -30,9 +30,14 @@ config(['$stateProvider', function($stateProvider) {
   		'workers': {templateUrl: 'awsSetup/workerSetup.html', controller: 'WorkerSetupCtrl'}
   	}
   }).state('root.dashboard', {
-  	url: '/dashboard',
   	templateUrl: 'dashboard/dashboard.partial.html',
-  	controller: 'instancesCtrl'
+  	controller: 'dashboardParentCtrl'
+  }).state('root.dashboard.view', {
+  	url: '/dashboard',
+  	views: {
+  		'queues': {templateUrl: 'dashboard/queues.partial.html'},
+  		'instances': {templateUrl: 'dashboard/instances.partial.html', controller: 'instancesCtrl'}
+  	}
   });
 }])
 .run(['$rootScope', '$location', '$window', function($rootScope, $location, $window) {

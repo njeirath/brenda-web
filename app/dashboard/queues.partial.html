@@ -1,0 +1,21 @@
+<div class="panel panel-default">
+	<div class="panel-heading">
+    	<h3 class="panel-title">Queues</h3>
+	</div>
+	<div class="panel-body">
+		<table class="table">
+			<thead>
+				<tr>
+					<th>Queue</th>
+					<th>Size</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr ng-repeat="queue in queues.queues">
+					<td>{{queue.url | queueToName}}</td>
+					<td>{{queue.size}}</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+</div>

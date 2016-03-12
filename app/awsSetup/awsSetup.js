@@ -166,8 +166,11 @@ angular.module('awsSetup', [])
 	
 	$scope.updateQueueSize = function() {
 		if(($scope.queue.workQueue != '') && ($scope.queue.workQueue != undefined)) {
-			awsService.getQueueSize($scope.queue.workQueue, function(size) {
+			awsService.getQueueSize($scope.queue.workQueue)
+			.then(function(size) {
 				$scope.queue.queueSize = size;
+			}, function(err) {
+				$scope.queue.queueSize = 'Error';
 			});
 		} else {
 			$scope.queue.queueSize = '-';
@@ -336,20 +339,24 @@ angular.module('awsSetup', [])
 				
 			});
 		},
-		getQueueSize: function(queueUrl, callback) {
+		getQueueSize: function(queueUrl) {
 			var sqs = new aws.SQS();
 			var params = {
 				QueueUrl: queueUrl, 
 				AttributeNames: ['ApproximateNumberOfMessages', 'ApproximateNumberOfMessagesNotVisible']
 			};
 			
+			var deferred = $q.defer();
+			
 			sqs.getQueueAttributes(params, function(err, data) {
 				if (err) {
-					callback(String(err));
+					deferred.reject(String(err));
 				} else {
-					callback(data.Attributes.ApproximateNumberOfMessages);
+					deferred.resolve(data.Attributes.ApproximateNumberOfMessages);
 				}
 			});
+			
+			return deferred.promise;
 		},
 		getKeyPairs: function(callback) {
 			var ec2 = new aws.EC2();
@@ -430,10 +437,10 @@ angular.module('awsSetup', [])
 					statusCallback('danger', String(err));
 				} else {
 					$log.log(data);
-					var spotRequests = data.SpotInstanceRequests.map(function(item) {
-						return item.SpotInstanceRequestId;
+					var instanceIds = data.Instances.map(function(item) {
+						return item.InstanceId;
 					});
-					self.setTags(spotRequests, [{Key: 'brenda-queue', Value: queueName}], function(err, data) {
+					self.setTags(instanceIds, [{Key: 'brenda-queue', Value: queueName}], function(err, data) {
 						if (err) {
 							statusCallback('warning', 'On demand instances requested but could not set tags (may affect dashboard)');
 						} else {
@@ -496,4 +503,9 @@ angular.module('awsSetup', [])
 }])
 .factory('aws', [function() {
 	return AWS;
-}]);
+}])
+.filter('queueToName', function() {
+    return function(url) {
+        return url.split("/").pop();
+    };
+});

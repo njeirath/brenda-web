@@ -55,6 +55,12 @@ angular.module('dashboard')
 				row.instanceId = instId;
 				row.spotPrice = item.SpotPrice;
 				row.spotStatus = item.Status.Code;
+				
+				item.Tags.forEach(function(tag) {
+					if (tag.Key == 'brenda-queue') {
+						$scope.queues.addQueue(tag.Value);
+					}
+				});
 			});
 			
 			return awsService.getInstanceDetails(instanceIds);
@@ -80,6 +86,12 @@ angular.module('dashboard')
 					
 					updateInstance(row, instance);
 					newRows.push(row);
+					
+					instance.Tags.forEach(function(tag) {
+						if (tag.Key == 'brenda-queue') {
+							$scope.queues.addQueue(tag.Value);
+						}
+					});
 				});
 			});
 			

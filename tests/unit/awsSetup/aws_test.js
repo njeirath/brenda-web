@@ -172,6 +172,12 @@ describe('awsSetup', function() {
 			});
 			
 			describe('$scope.updateQueueSize', function() {
+				var $q;
+				
+				beforeEach(inject(function(_$q_) {
+					$q = _$q_;
+				}));
+				
 				it('should display default message if no queue selected', function() {
 					$rootScope.workQueue = '';
 					$rootScope.updateQueueSize();
@@ -183,13 +189,16 @@ describe('awsSetup', function() {
 				});
 				
 				it('should call awsService if queue is selected', function() {
+					var deferred = $q.defer();
 					awsServiceMock.getQueueSize = function(queue, callback) {
 						expect(queue).toBe('testUrl');
-						callback(5);
+						return deferred.promise;
 					};
 					
 					$rootScope.queue.workQueue = 'testUrl';
 					$rootScope.updateQueueSize();
+					deferred.resolve(5);
+					$rootScope.$apply();
 					expect($rootScope.queue.queueSize).toBe(5);
 				});
 			});

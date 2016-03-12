@@ -1,32 +1,3 @@
-<table class="table">
-	<thead>
-		<tr>
-			<th>Spot ID</th>
-			<th>Spot Price</th>
-			<th>Instance ID</th>
-			<th>Type</th>
-			<th>Spot Status</th>
-			<th>Instance Status</th>
-			<th>Instance IP</th>
-			<th>Uptime</th>
-			<th>Tasks Completed</th>
-			<th>Time/Task</th>
-			<th>CPU Load</th>
-		</tr>
-	</thead>
-	<tbody>
-		<tr ng-repeat="instance in instances.table">
-			<td>{{instance.spotId}}</td>
-			<td>{{instance.spotPrice | currency}}</td>
-			<td>{{instance.instanceId}}</td>
-			<td>{{instance.instanceType}}</td>
-			<td>{{instance.spotStatus}}</td>
-			<td>{{instance.instanceStatus}}</td>
-			<td>{{instance.instanceIp}}</td>
-			<td>{{instance.uptime | secondsToDateTime | date: 'HH:mm:ss'}}</td>
-			<td>{{instance.tasksCompleted}}</td>
-			<td>{{(instance.uptime / instance.tasksCompleted) | number : 2}}</td>
-			<td>{{instance.cpuLoad}}</td>
-		</tr>
-	</tbody>
-</table>
+<div ui-view="queues"></div>
+<hr>
+<div ui-view="instances"></div>
