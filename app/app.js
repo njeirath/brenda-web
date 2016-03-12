@@ -9,7 +9,8 @@ angular.module('brendaWeb', [
   'awsSetup',
   'duScroll',
   'angulartics', 
-  'angulartics.google.analytics'
+  'angulartics.google.analytics',
+  'dashboard'
 ]).
 config(['$stateProvider', function($stateProvider) {
   $stateProvider.state('root', {
@@ -28,6 +29,10 @@ config(['$stateProvider', function($stateProvider) {
   		's3': {templateUrl: 'awsSetup/s3Setup.html', controller: 'S3Ctrl'},
   		'workers': {templateUrl: 'awsSetup/workerSetup.html', controller: 'WorkerSetupCtrl'}
   	}
+  }).state('root.dashboard', {
+  	url: '/dashboard',
+  	templateUrl: 'dashboard/dashboard.partial.html',
+  	controller: 'instancesCtrl'
   });
 }])
 .run(['$rootScope', '$location', '$window', function($rootScope, $location, $window) {

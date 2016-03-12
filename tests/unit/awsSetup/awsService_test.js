@@ -478,6 +478,93 @@ describe('awsSetup', function() {
 					});
 				});
 			});
+			
+			describe('getSpotRequests', function() {
+				var promise, serviceCallback;
+				
+				beforeEach(function() {
+					promise = awsService.getSpotRequests();
+					serviceCallback = awsMock.EC2describeSpotInstanceRequests.calls.argsFor(0)[1];
+				});
+				
+				it('should request spot instances from aws', function() {
+					expect(awsMock.EC2describeSpotInstanceRequests)
+						.toHaveBeenCalledWith({Filters: [{Name: 'tag-key', Values: ['brenda-queue']}]}, jasmine.any(Function));
+				});
+				
+				it('should reject promise on error', function() {
+					serviceCallback('error message', null);
+					
+					var msg = '';
+					promise.then(function(data) {
+					}, function(error) {
+						msg = error;
+					});
+					
+					$rootScope.$apply();
+					
+					expect(msg).toBe('error message');
+				});
+				
+				it('should resolve the promise on success', function() {
+					serviceCallback(null, 'success datas');
+					
+					var msg = '';
+					promise.then(function(data) {
+						msg = data;
+					});
+					
+					$rootScope.$apply();
+					expect(msg).toBe('success datas');
+				});
+			});
+			
+			describe('getInstanceDetails', function() {
+				var promise, serviceCallback;
+				
+				beforeEach(function() {
+					promise = awsService.getInstanceDetails();
+					serviceCallback = awsMock.EC2describeInstances.calls.argsFor(0)[1];
+				});
+				
+				it('should request instances from aws by tag if no params passed in', function() {
+					expect(awsMock.EC2describeInstances)
+						.toHaveBeenCalledWith({Filters: [{Name: 'tag-key', Values: ['brenda-queue']}]}, jasmine.any(Function));
+				});
+				
+				it('should request specific instances if a list is provided', function() {
+					promise = awsService.getInstanceDetails(['i_1', 'i_2']);
+					
+					expect(awsMock.EC2describeInstances)
+						.toHaveBeenCalledWith({InstanceIds: ['i_1', 'i_2']}, jasmine.any(Function));
+				});
+				
+				it('should reject promise on error', function() {
+					serviceCallback('error message', null);
+					
+					var msg = '';
+					promise.then(function(data) {
+					}, function(error) {
+						msg = error;
+					});
+					
+					$rootScope.$apply();
+					
+					expect(msg).toBe('error message');
+				});
+				
+				it('should resolve the promise on success', function() {
+					serviceCallback(null, 'success datas');
+					
+					var msg = '';
+					promise.then(function(data) {
+						msg = data;
+					});
+					
+					$rootScope.$apply();
+					expect(msg).toBe('success datas');
+				});
+			});
 		});
 	});
 });
