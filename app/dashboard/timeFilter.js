@@ -7,6 +7,10 @@ angular.module('dashboard')
     		return '-';
     	}
     	
+    	if (!Number.isFinite(seconds)) {
+    		return '-';
+    	}
+    	
     	var d = new Date(0,0,0,0,0,0,0);
         d.setSeconds(seconds);
         

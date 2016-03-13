@@ -1,11 +1,7 @@
 'use strict';
 
 angular.module('dashboard')
-.controller('instancesCtrl', ['$scope', 'awsService', '$interval', '$http', function($scope, awsService, $interval, $http) {
-	$scope.instances = {
-		table: []
-	};
-	
+.controller('instancesCtrl', ['$scope', 'awsService', '$interval', '$http', function($scope, awsService, $interval, $http) {	
 	function createRow() {
 		return {
 			spotId: '-',

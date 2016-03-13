@@ -31,6 +31,11 @@ describe('dashboard instances', function() {
 		$controller = _$controller_;
 		$httpBackend = _$httpBackend_;
 		
+		//Seed scope with normally inherited object
+		$rootScope.instances = {
+			table: []
+		};
+		
 		awsServiceMock = getAwsServiceMock();
 		
 		instanceDeferred = $q.defer();
