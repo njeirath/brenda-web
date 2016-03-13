@@ -18,7 +18,8 @@ angular.module('dashboard')
 			instanceIp: '-',
 			uptime: '-',
 			tasksCompleted: '-',
-			cpuLoad: '-'
+			cpuLoad: '-',
+			queueUrl: ''
 		};
 	}
 	
@@ -57,6 +58,7 @@ angular.module('dashboard')
 				item.Tags.forEach(function(tag) {
 					if (tag.Key == 'brenda-queue') {
 						$scope.queues.addQueue(tag.Value);
+						row.queueUrl = tag.Value;
 					}
 				});
 			});
@@ -91,6 +93,7 @@ angular.module('dashboard')
 					instance.Tags.forEach(function(tag) {
 						if (tag.Key == 'brenda-queue') {
 							$scope.queues.addQueue(tag.Value);
+							row.queueUrl = tag.Value;
 						}
 					});
 				});

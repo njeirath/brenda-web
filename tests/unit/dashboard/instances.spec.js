@@ -80,7 +80,8 @@ describe('dashboard instances', function() {
 			instanceIp: undefined,
 			uptime: '-',
 			tasksCompleted: '-',
-			cpuLoad: '-'
+			cpuLoad: '-',
+			queueUrl: 'queueUrl'
 		});
 		
 		expect($rootScope.instances.table[1]).toEqual({
@@ -94,7 +95,8 @@ describe('dashboard instances', function() {
 			instanceIp: undefined,
 			uptime: '-',
 			tasksCompleted: '-',
-			cpuLoad: '-'
+			cpuLoad: '-',
+			queueUrl: 'queueUrl'
 		});
 		
 		expect($rootScope.queues.addQueue).toHaveBeenCalledWith('queueUrl');
