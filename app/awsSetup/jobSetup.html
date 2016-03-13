@@ -7,7 +7,7 @@
 		<div class="form-group">
 			<label for="workQueue">Work Queue</label>
 			<select name="workQueue" id="workQueue" ng-model="queue.workQueue">
-				<option ng-repeat="queue in queues" value="{{queue.id}}">{{queue.name}}</option>
+				<option ng-repeat="queue in queues" value="{{queue}}">{{queue | queueToName}}</option>
 			</select>
 		</div>
 		<div>

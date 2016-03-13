@@ -79,10 +79,8 @@ describe('awsSetup', function() {
 				$rootScope.$emit('aws-sqs-success', {QueueUrls: ['http://queue/url/name1', 'http://queue/url/name2']});
 				
 				expect($rootScope.queues.length).toBe(2);
-				expect($rootScope.queues[0].id).toBe('http://queue/url/name1');
-				expect($rootScope.queues[0].name).toBe('name1');
-				expect($rootScope.queues[1].id).toBe('http://queue/url/name2');
-				expect($rootScope.queues[1].name).toBe('name2');
+				expect($rootScope.queues[0]).toBe('http://queue/url/name1');
+				expect($rootScope.queues[1]).toBe('http://queue/url/name2');
 			});
 			
 			it('should initialize template, start and end frame', function() {

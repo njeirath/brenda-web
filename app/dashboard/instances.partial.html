@@ -28,9 +28,9 @@
 					<td>{{instance.spotStatus}}</td>
 					<td>{{instance.instanceStatus}}</td>
 					<td>{{instance.instanceIp}}</td>
-					<td>{{instance.uptime | secondsToDateTime | date: 'HH:mm:ss'}}</td>
+					<td>{{instance.uptime | secondsToDateTime}}</td>
 					<td>{{instance.tasksCompleted}}</td>
-					<td>{{(instance.uptime / instance.tasksCompleted) | number : 2}}</td>
+					<td>{{(instance.uptime / instance.tasksCompleted) | secondsToDateTime}}</td>
 					<td>{{instance.cpuLoad}}</td>
 				</tr>
 			</tbody>

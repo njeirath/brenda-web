@@ -62,18 +62,24 @@ angular.module('dashboard')
 					}
 				});
 			});
-			
-			return awsService.getInstanceDetails(instanceIds);
+			return instanceIds;
+		}).then(function(instanceIds) {
+			if (instanceIds.length > 0) {
+				return awsService.getInstanceDetails(instanceIds);
+			} else {
+				return null;
+			}
 		}).then(function(instances) {
-			console.log(instances);
-			instances.Reservations.forEach(function(reservation) {
-				reservation.Instances.forEach(function(instance) {
-					var instId = instance.InstanceId;
-					var row = newRows.find(function(r) {return instId == r.instanceId;});
-					updateInstance(row, instance);
+			if (instances) {
+				console.log(instances);
+				instances.Reservations.forEach(function(reservation) {
+					reservation.Instances.forEach(function(instance) {
+						var instId = instance.InstanceId;
+						var row = newRows.find(function(r) {return instId == r.instanceId;});
+						updateInstance(row, instance);
+					});
 				});
-			});
-			
+			}
 			return instanceDetailsDeferred;
 		}).then(function(instances) {
 			console.log(instances);

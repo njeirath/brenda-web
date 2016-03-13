@@ -58,7 +58,7 @@ angular.module('awsSetup', [])
 		$scope.queues = [];
 		
 		args.QueueUrls.forEach(function(entry) {
-			$scope.queues.push({id: entry, name: entry.split("/").pop()});
+			$scope.queues.push(entry);
 		});
 		
 		$scope.$digest();
