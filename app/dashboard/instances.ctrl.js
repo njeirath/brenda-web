@@ -36,8 +36,6 @@ angular.module('dashboard')
 		
 		awsService.getSpotRequests()
 		.then(function(spotInstances) {
-			console.log(spotInstances);
-			
 			var instanceIds = [];
 			spotInstances.SpotInstanceRequests.forEach(function(item) {
 				var sir = item.SpotInstanceRequestId;
@@ -71,7 +69,6 @@ angular.module('dashboard')
 			}
 		}).then(function(instances) {
 			if (instances) {
-				console.log(instances);
 				instances.Reservations.forEach(function(reservation) {
 					reservation.Instances.forEach(function(instance) {
 						var instId = instance.InstanceId;
@@ -82,8 +79,6 @@ angular.module('dashboard')
 			}
 			return instanceDetailsDeferred;
 		}).then(function(instances) {
-			console.log(instances);
-			
 			instances.Reservations.forEach(function(reservation) {
 				reservation.Instances.forEach(function(instance) {
 					var instId = instance.InstanceId;
