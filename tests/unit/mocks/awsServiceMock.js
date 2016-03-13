@@ -20,7 +20,9 @@ function getAwsServiceMock() {
 			return 'sqs/url/queueName';
 		},
 		requestSpot: function(){},
-		requestOndemand: function(){}
+		requestOndemand: function(){},
+		getInstanceDetails: function(){},
+		getSpotRequests: function(){}
 	};
 		
 	spyOn(mock, 'getKeyId').and.callThrough();

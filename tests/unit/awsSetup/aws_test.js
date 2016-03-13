@@ -79,10 +79,8 @@ describe('awsSetup', function() {
 				$rootScope.$emit('aws-sqs-success', {QueueUrls: ['http://queue/url/name1', 'http://queue/url/name2']});
 				
 				expect($rootScope.queues.length).toBe(2);
-				expect($rootScope.queues[0].id).toBe('http://queue/url/name1');
-				expect($rootScope.queues[0].name).toBe('name1');
-				expect($rootScope.queues[1].id).toBe('http://queue/url/name2');
-				expect($rootScope.queues[1].name).toBe('name2');
+				expect($rootScope.queues[0]).toBe('http://queue/url/name1');
+				expect($rootScope.queues[1]).toBe('http://queue/url/name2');
 			});
 			
 			it('should initialize template, start and end frame', function() {
@@ -172,6 +170,12 @@ describe('awsSetup', function() {
 			});
 			
 			describe('$scope.updateQueueSize', function() {
+				var $q;
+				
+				beforeEach(inject(function(_$q_) {
+					$q = _$q_;
+				}));
+				
 				it('should display default message if no queue selected', function() {
 					$rootScope.workQueue = '';
 					$rootScope.updateQueueSize();
@@ -183,13 +187,16 @@ describe('awsSetup', function() {
 				});
 				
 				it('should call awsService if queue is selected', function() {
+					var deferred = $q.defer();
 					awsServiceMock.getQueueSize = function(queue, callback) {
 						expect(queue).toBe('testUrl');
-						callback(5);
+						return deferred.promise;
 					};
 					
 					$rootScope.queue.workQueue = 'testUrl';
 					$rootScope.updateQueueSize();
+					deferred.resolve(5);
+					$rootScope.$apply();
 					expect($rootScope.queue.queueSize).toBe(5);
 				});
 			});
@@ -256,18 +263,19 @@ describe('awsSetup', function() {
 					var expected = 
 						'#!/bin/bash\n' +
 						'# run Brenda on the EC2 instance store volume\n' +
+						'B="/mnt/brenda"\n' +
 						'sudo apt-get update\n' +
 						'sudo apt-get -y install nginx\n' +
-						'sudo service nginx start\n' +
+						"sudo sed -i '29 i\\ add_header 'Access-Control-Allow-Origin' '*';' /etc/nginx/sites-enabled/default\n" +
 						'sudo echo "* * * * * root tail -n1000 /mnt/brenda/log > /usr/share/nginx/www/log_tail.txt" >> /etc/crontab\n' +
-						'sudo echo "* * * * * root uptime > /usr/share/nginx/www/uptime.txt" >> /etc/crontab\n' +
-						'B="/mnt/brenda"\n' +
+						'sudo echo "* * * * * root cat /proc/uptime /proc/loadavg $B/task_count > /usr/share/nginx/www/uptime.txt" >> /etc/crontab\n' +
 						'if ! [ -d "$B" ]; then\n' +
 						'  for f in brenda.pid log task_count task_last DONE ; do\n' +
 						'    ln -s "$B/$f" "/root/$f"\n' +
 						'    sudo ln -s "$B/$f" "/usr/share/nginx/www/$f"\n' +
 						'  done\n' +
 						'fi\n' +
+						'sudo service nginx start\n' +
 						'export BRENDA_WORK_DIR="."\n' +
 						'mkdir -p "$B"\n' +
 						'cd "$B"\n' +
@@ -300,13 +308,13 @@ describe('awsSetup', function() {
 				
 				it('should call requestSpot method when spot instances being requested', function() {
 					$rootScope.requestInstances();
-					expect(awsServiceMock.requestSpot).toHaveBeenCalledWith('ami_123', 'key', 'brenda', 'script', 'c3.large', '0.02', 1, 'one-time', jasmine.any(Function));
+					expect(awsServiceMock.requestSpot).toHaveBeenCalledWith('ami_123', 'key', 'brenda', 'script', 'c3.large', '0.02', 1, 'one-time', 'queueName', jasmine.any(Function));
 				});
 				
 				it('should call reqstOndemand method when on demand instances being requested', function() {
 					$rootScope.instanceType = 'onDemand';
 					$rootScope.requestInstances();
-					expect(awsServiceMock.requestOndemand).toHaveBeenCalledWith('ami_123', 'key', 'brenda', 'script', 'c3.large', 1, jasmine.any(Function));
+					expect(awsServiceMock.requestOndemand).toHaveBeenCalledWith('ami_123', 'key', 'brenda', 'script', 'c3.large', 1, 'queueName', jasmine.any(Function));
 				});
 			});
 			

@@ -287,11 +287,11 @@ describe('awsSetup', function() {
 			});
 			
 			describe('getQueueSize', function() {
-				var callback;
+				var promise, awsCallback;
 				
 				beforeEach(function() {
-					callback = jasmine.createSpy();
-					awsService.getQueueSize('url', callback);
+					promise = awsService.getQueueSize('url');
+					awsCallback = awsMock.SQSgetQueueAttributes.calls.argsFor(0)[1];
 				});
 				
 				it('should query aws for queue parameters', function() {
@@ -301,18 +301,34 @@ describe('awsSetup', function() {
 							QueueUrl: 'url', 
 							AttributeNames: ['ApproximateNumberOfMessages', 'ApproximateNumberOfMessagesNotVisible']
 						});
+					awsCallback('error', null);
+					$rootScope.$apply();
 				});
 				
 				it('should pass along the error message in case an error occurs', function() {
-					var awsCallback = awsMock.SQSgetQueueAttributes.calls.argsFor(0)[1];
 					awsCallback('error', null);
-					expect(callback).toHaveBeenCalledWith('error');
+					
+					var msg = '';
+					promise.then(function(data){
+					}, function(err){
+						msg = err;
+					});
+					$rootScope.$apply();
+					
+					expect(msg).toBe('error');
 				});
 				
 				it('should return the queue size upon success', function() {
-					var awsCallback = awsMock.SQSgetQueueAttributes.calls.argsFor(0)[1];
 					awsCallback(null, {Attributes: {ApproximateNumberOfMessages: 5}});
-					expect(callback).toHaveBeenCalledWith(5);
+					
+					var size = -1;
+					promise.then(function(data) {
+						size = data;
+					});
+					
+					$rootScope.$apply();
+					
+					expect(size).toBe(5);
 				});
 			});
 			
@@ -360,7 +376,7 @@ describe('awsSetup', function() {
 				
 				beforeEach(function() {
 					callback = jasmine.createSpy();
-					awsService.requestSpot('ami_123', 'brendaKey', 'brendaSG', 'bunches of stuff here', 'c3.large', 0.02, 1, 'one-time', callback);
+					awsService.requestSpot('ami_123', 'brendaKey', 'brendaSG', 'bunches of stuff here', 'c3.large', 0.02, 1, 'one-time', 'queueName', callback);
 					serviceCallback = awsMock.EC2requestSpotInstances.calls.argsFor(0)[1];
 				});
 				
@@ -380,14 +396,41 @@ describe('awsSetup', function() {
 					});
 				});
 				
-				it('should call callback with danger and error message on error', function() {
+				it('should call callback with danger and message on error', function() {
 					serviceCallback('Error message', null);
 					expect(callback).toHaveBeenCalledWith('danger', 'Error message');
 				});
 				
-				it('should call callback with success and message on success', function() {
-					serviceCallback(null, 'it worked');
-					expect(callback).toHaveBeenCalledWith('success', 'Spot instances requested');
+				it('should call to set tags on request instances', function() {
+					serviceCallback(null, {
+						SpotInstanceRequests: [{SpotInstanceRequestId: 'requestId1'}]
+					});
+					expect(awsMock.EC2createTags).toHaveBeenCalledWith({
+						Resources: ['requestId1'],
+						Tags: [{Key: 'brenda-queue', Value: 'queueName'}]
+					}, jasmine.any(Function));
+				});
+				
+				describe('setTags callback', function() {
+					var setTagsCallback;
+					
+					beforeEach(function() {
+						serviceCallback(null, {
+							SpotInstanceRequests: [{SpotInstanceRequestId: 'requestId1'}]
+						});
+						
+						setTagsCallback = awsMock.EC2createTags.calls.argsFor(0)[1];
+					});
+					
+					it('should call status callback with warning on tagging error', function() {
+						setTagsCallback('Error happened', null);
+						expect(callback).toHaveBeenCalledWith('warning', 'Spot instances requested but could not set tags (may affect dashboard)');
+					});
+					
+					it('should call status callback with success on tagging success', function() {
+						setTagsCallback(null, 'success');
+						expect(callback).toHaveBeenCalledWith('success', 'Spot instances requested');
+					});
 				});
 			});
 			
@@ -396,7 +439,7 @@ describe('awsSetup', function() {
 				
 				beforeEach(function() {
 					callback = jasmine.createSpy();
-					awsService.requestOndemand('ami_123', 'brendaKey', 'brendaSG', 'bunches of stuff here', 'c3.large', 1, callback);
+					awsService.requestOndemand('ami_123', 'brendaKey', 'brendaSG', 'bunches of stuff here', 'c3.large', 1, 'queueName', callback);
 					serviceCallback = awsMock.EC2runInstances.calls.argsFor(0)[1];
 				});
 				
@@ -419,9 +462,123 @@ describe('awsSetup', function() {
 					expect(callback).toHaveBeenCalledWith('danger', 'Error message');
 				});
 				
-				it('should call callback with success and message on success', function() {
-					serviceCallback(null, 'it worked');
-					expect(callback).toHaveBeenCalledWith('success', 'On demand instances requested');
+				it('should call to set tags on new instances', function() {
+					serviceCallback(null, {
+						Instances: [{InstanceId: 'instanceId1'}]
+					});
+					expect(awsMock.EC2createTags).toHaveBeenCalledWith({
+						Resources: ['instanceId1'],
+						Tags: [{Key: 'brenda-queue', Value: 'queueName'}]
+					}, jasmine.any(Function));
+				});
+				
+				describe('setTags callback', function() {
+					var setTagsCallback;
+					
+					beforeEach(function() {
+						serviceCallback(null, {
+							Instances: [{InstanceId: 'instanceId1'}]
+						});
+						
+						setTagsCallback = awsMock.EC2createTags.calls.argsFor(0)[1];
+					});
+					
+					it('should call status callback with warning on tagging error', function() {
+						setTagsCallback('Error happened', null);
+						expect(callback).toHaveBeenCalledWith('warning', 'On demand instances requested but could not set tags (may affect dashboard)');
+					});
+					
+					it('should call status callback with success on tagging success', function() {
+						setTagsCallback(null, 'success');
+						expect(callback).toHaveBeenCalledWith('success', 'On demand instances requested');
+					});
+				});
+			});
+			
+			describe('getSpotRequests', function() {
+				var promise, serviceCallback;
+				
+				beforeEach(function() {
+					promise = awsService.getSpotRequests();
+					serviceCallback = awsMock.EC2describeSpotInstanceRequests.calls.argsFor(0)[1];
+				});
+				
+				it('should request spot instances from aws', function() {
+					expect(awsMock.EC2describeSpotInstanceRequests)
+						.toHaveBeenCalledWith({Filters: [{Name: 'tag-key', Values: ['brenda-queue']}]}, jasmine.any(Function));
+				});
+				
+				it('should reject promise on error', function() {
+					serviceCallback('error message', null);
+					
+					var msg = '';
+					promise.then(function(data) {
+					}, function(error) {
+						msg = error;
+					});
+					
+					$rootScope.$apply();
+					
+					expect(msg).toBe('error message');
+				});
+				
+				it('should resolve the promise on success', function() {
+					serviceCallback(null, 'success datas');
+					
+					var msg = '';
+					promise.then(function(data) {
+						msg = data;
+					});
+					
+					$rootScope.$apply();
+					expect(msg).toBe('success datas');
+				});
+			});
+			
+			describe('getInstanceDetails', function() {
+				var promise, serviceCallback;
+				
+				beforeEach(function() {
+					promise = awsService.getInstanceDetails();
+					serviceCallback = awsMock.EC2describeInstances.calls.argsFor(0)[1];
+				});
+				
+				it('should request instances from aws by tag if no params passed in', function() {
+					expect(awsMock.EC2describeInstances)
+						.toHaveBeenCalledWith({Filters: [{Name: 'tag-key', Values: ['brenda-queue']}]}, jasmine.any(Function));
+				});
+				
+				it('should request specific instances if a list is provided', function() {
+					promise = awsService.getInstanceDetails(['i_1', 'i_2']);
+					
+					expect(awsMock.EC2describeInstances)
+						.toHaveBeenCalledWith({InstanceIds: ['i_1', 'i_2']}, jasmine.any(Function));
+				});
+				
+				it('should reject promise on error', function() {
+					serviceCallback('error message', null);
+					
+					var msg = '';
+					promise.then(function(data) {
+					}, function(error) {
+						msg = error;
+					});
+					
+					$rootScope.$apply();
+					
+					expect(msg).toBe('error message');
+				});
+				
+				it('should resolve the promise on success', function() {
+					serviceCallback(null, 'success datas');
+					
+					var msg = '';
+					promise.then(function(data) {
+						msg = data;
+					});
+					
+					$rootScope.$apply();
+					expect(msg).toBe('success datas');
 				});
 			});
 		});

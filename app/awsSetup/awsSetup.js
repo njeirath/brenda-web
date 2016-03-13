@@ -58,7 +58,7 @@ angular.module('awsSetup', [])
 		$scope.queues = [];
 		
 		args.QueueUrls.forEach(function(entry) {
-			$scope.queues.push({id: entry, name: entry.split("/").pop()});
+			$scope.queues.push(entry);
 		});
 		
 		$scope.$digest();
@@ -105,18 +105,19 @@ angular.module('awsSetup', [])
 	$scope.generateScript = function() {
 		return 	'#!/bin/bash\n' +
 				'# run Brenda on the EC2 instance store volume\n' +
+				'B="/mnt/brenda"\n' +
 				'sudo apt-get update\n' +
 				'sudo apt-get -y install nginx\n' +
-				'sudo service nginx start\n' +
+				"sudo sed -i '29 i\\ add_header 'Access-Control-Allow-Origin' '*';' /etc/nginx/sites-enabled/default\n" +
 				'sudo echo "* * * * * root tail -n1000 /mnt/brenda/log > /usr/share/nginx/www/log_tail.txt" >> /etc/crontab\n' +
-				'sudo echo "* * * * * root uptime > /usr/share/nginx/www/uptime.txt" >> /etc/crontab\n' +
-				'B="/mnt/brenda"\n' +
+				'sudo echo "* * * * * root cat /proc/uptime /proc/loadavg $B/task_count > /usr/share/nginx/www/uptime.txt" >> /etc/crontab\n' +
 				'if ! [ -d "$B" ]; then\n' +
 				'  for f in brenda.pid log task_count task_last DONE ; do\n' +
 				'    ln -s "$B/$f" "/root/$f"\n' +
 				'    sudo ln -s "$B/$f" "/usr/share/nginx/www/$f"\n' +
 				'  done\n' +
 				'fi\n' +
+				'sudo service nginx start\n' +
 				'export BRENDA_WORK_DIR="."\n' +
 				'mkdir -p "$B"\n' +
 				'cd "$B"\n' +
@@ -142,10 +143,10 @@ angular.module('awsSetup', [])
 	$scope.requestInstances = function() {
 		//ami, keyPair, securityGroup, userData, instanceType, spotPrice, count, type
 		if ($scope.instanceType == 'spot') {
-			awsService.requestSpot($scope.amiSelect, $scope.sshKey, 'brenda', $scope.generateScript(), $scope.instanceSize, $scope.spotPrice, $scope.numInstances, 'one-time', $scope.showStatus);
+			awsService.requestSpot($scope.amiSelect, $scope.sshKey, 'brenda', $scope.generateScript(), $scope.instanceSize, $scope.spotPrice, $scope.numInstances, 'one-time', $scope.queue.workQueue, $scope.showStatus);
 		} else {
 			//requestOndemand: function(ami, keyPair, securityGroup, userData, instanceType, count)
-			awsService.requestOndemand($scope.amiSelect, $scope.sshKey, 'brenda', $scope.generateScript(), $scope.instanceSize, $scope.numInstances, $scope.showStatus);
+			awsService.requestOndemand($scope.amiSelect, $scope.sshKey, 'brenda', $scope.generateScript(), $scope.instanceSize, $scope.numInstances, $scope.queue.workQueue, $scope.showStatus);
 		}
 	};
 }])
@@ -165,8 +166,11 @@ angular.module('awsSetup', [])
 	
 	$scope.updateQueueSize = function() {
 		if(($scope.queue.workQueue != '') && ($scope.queue.workQueue != undefined)) {
-			awsService.getQueueSize($scope.queue.workQueue, function(size) {
+			awsService.getQueueSize($scope.queue.workQueue)
+			.then(function(size) {
 				$scope.queue.queueSize = size;
+			}, function(err) {
+				$scope.queue.queueSize = 'Error';
 			});
 		} else {
 			$scope.queue.queueSize = '-';
@@ -177,7 +181,7 @@ angular.module('awsSetup', [])
 		$scope.updateQueueSize();
 	}, 5000);
 	
-	$scope.$on('destroy', function() {
+	$scope.$on('$destroy', function() {
 		$interval.cancel(timer);
 	});
 
@@ -215,7 +219,7 @@ angular.module('awsSetup', [])
 		}
 	};
 }])
-.factory('awsService', ['$log', '$rootScope', 'localStorageService', 'aws', function($log, $rootScope, localStorageService, aws) {
+.factory('awsService', ['$log', '$rootScope', 'localStorageService', 'aws', '$q', function($log, $rootScope, localStorageService, aws, $q) {
 	var service = {
 		setCredentials: function(keyId, secret) {
 			aws.config.update({accessKeyId: keyId, secretAccessKey: secret});
@@ -335,20 +339,24 @@ angular.module('awsSetup', [])
 				
 			});
 		},
-		getQueueSize: function(queueUrl, callback) {
+		getQueueSize: function(queueUrl) {
 			var sqs = new aws.SQS();
 			var params = {
 				QueueUrl: queueUrl, 
 				AttributeNames: ['ApproximateNumberOfMessages', 'ApproximateNumberOfMessagesNotVisible']
 			};
 			
+			var deferred = $q.defer();
+			
 			sqs.getQueueAttributes(params, function(err, data) {
 				if (err) {
-					callback(String(err));
+					deferred.reject(String(err));
 				} else {
-					callback(data.Attributes.ApproximateNumberOfMessages);
+					deferred.resolve(data.Attributes.ApproximateNumberOfMessages);
 				}
 			});
+			
+			return deferred.promise;
 		},
 		getKeyPairs: function(callback) {
 			var ec2 = new aws.EC2();
@@ -370,7 +378,16 @@ angular.module('awsSetup', [])
 				InstanceType: instanceType,
 			};
 		},
-		requestSpot: function(ami, keyPair, securityGroup, userData, instanceType, spotPrice, count, type, statusCallback) {
+		setTags: function(instances, tags, callback) {
+			var params = {
+				Resources: instances,
+				Tags: tags
+			};
+			
+			var ec2 = new aws.EC2();
+			ec2.createTags(params, callback);
+		},
+		requestSpot: function(ami, keyPair, securityGroup, userData, instanceType, spotPrice, count, type, queueName, statusCallback) {
 			var spec = this.getLaunchSpecification(ami, keyPair, securityGroup, userData, instanceType);
 			
 			var params = {
@@ -381,6 +398,8 @@ angular.module('awsSetup', [])
 				Type: type
 			};
 			
+			var self = this;
+			
 			var ec2 = new aws.EC2();
 			ec2.requestSpotInstances(params, function(err, data) {
 				if (err) {
@@ -388,16 +407,28 @@ angular.module('awsSetup', [])
 					statusCallback('danger', String(err));
 				} else {
 					$log.log(data);
-					statusCallback('success', 'Spot instances requested');
+					var spotRequests = data.SpotInstanceRequests.map(function(item) {
+						return item.SpotInstanceRequestId;
+					});
+					self.setTags(spotRequests, [{Key: 'brenda-queue', Value: queueName}], function(err, data) {
+						if (err) {
+							statusCallback('warning', 'Spot instances requested but could not set tags (may affect dashboard)');
+						} else {
+							statusCallback('success', 'Spot instances requested');
+						}
+					});
+					
 				}
 			});
 		},
-		requestOndemand: function(ami, keyPair, securityGroup, userData, instanceType, count, statusCallback) {
+		requestOndemand: function(ami, keyPair, securityGroup, userData, instanceType, count, queueName, statusCallback) {
 			var spec = this.getLaunchSpecification(ami, keyPair, securityGroup, userData, instanceType);
 			spec.MinCount = count;
 			spec.MaxCount = count;
 			spec.InstanceInitiatedShutdownBehavior = 'terminate';
 			// spec.DryRun = true;
+			
+			var self = this;
 			
 			var ec2 = new aws.EC2();
 			ec2.runInstances(spec, function(err, data) {
@@ -406,9 +437,53 @@ angular.module('awsSetup', [])
 					statusCallback('danger', String(err));
 				} else {
 					$log.log(data);
-					statusCallback('success', 'On demand instances requested');
+					var instanceIds = data.Instances.map(function(item) {
+						return item.InstanceId;
+					});
+					self.setTags(instanceIds, [{Key: 'brenda-queue', Value: queueName}], function(err, data) {
+						if (err) {
+							statusCallback('warning', 'On demand instances requested but could not set tags (may affect dashboard)');
+						} else {
+							statusCallback('success', 'On demand instances requested');
+						}
+					});
 				}
 			});
+		},
+		getSpotRequests: function() {
+			var ec2 = new aws.EC2();
+			
+			var deferred = $q.defer();
+			ec2.describeSpotInstanceRequests({Filters: [{Name: 'tag-key', Values: ['brenda-queue']}]}, function(err, data) {
+				if (err) {
+					deferred.reject(String(err));
+				} else {
+					deferred.resolve(data);
+				}
+			});
+			
+			return deferred.promise;
+		},
+		getInstanceDetails: function(instanceList) {
+			var ec2 = new aws.EC2();
+			
+			var deferred = $q.defer();
+			var params = {};
+			if (instanceList) {
+				params.InstanceIds = instanceList;
+			} else {
+				params.Filters = [{Name: 'tag-key', Values: ['brenda-queue']}];
+			}
+			
+			ec2.describeInstances(params, function(err, data) {
+				if (err) {
+					deferred.reject(String(err));
+				} else {
+					deferred.resolve(data);
+				}
+			});
+			
+			return deferred.promise;
 		}
 	};
 	
@@ -428,4 +503,9 @@ angular.module('awsSetup', [])
 }])
 .factory('aws', [function() {
 	return AWS;
-}]);
+}])
+.filter('queueToName', function() {
+    return function(url) {
+        return url.split("/").pop();
+    };
+});

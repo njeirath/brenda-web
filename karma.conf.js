@@ -9,12 +9,14 @@ module.exports = function(config){
       'app/bower_components/angular-mocks/angular-mocks.js',
       'app/components/**/*.js',
       'app/awsSetup/*.js',
+      'app/dashboard/*.js',
       'app/app.js',
       'tests/unit/**/*.js'
     ],
     
     preprocessors: {
     	'app/awsSetup/*.js': ['coverage'],
+    	'app/dashboard/*.js': ['coverage'],
     	'app/app.js': ['coverage']
     },
 
