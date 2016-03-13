@@ -1,11 +1,7 @@
 'use strict';
 
 angular.module('dashboard')
-.controller('instancesCtrl', ['$scope', 'awsService', '$interval', '$http', function($scope, awsService, $interval, $http) {
-	$scope.instances = {
-		table: []
-	};
-	
+.controller('instancesCtrl', ['$scope', 'awsService', '$interval', '$http', function($scope, awsService, $interval, $http) {	
 	function createRow() {
 		return {
 			spotId: '-',
@@ -18,7 +14,8 @@ angular.module('dashboard')
 			instanceIp: '-',
 			uptime: '-',
 			tasksCompleted: '-',
-			cpuLoad: '-'
+			cpuLoad: '-',
+			queueUrl: ''
 		};
 	}
 	
@@ -36,8 +33,6 @@ angular.module('dashboard')
 		
 		awsService.getSpotRequests()
 		.then(function(spotInstances) {
-			console.log(spotInstances);
-			
 			var instanceIds = [];
 			spotInstances.SpotInstanceRequests.forEach(function(item) {
 				var sir = item.SpotInstanceRequestId;
@@ -59,6 +54,7 @@ angular.module('dashboard')
 				item.Tags.forEach(function(tag) {
 					if (tag.Key == 'brenda-queue') {
 						$scope.queues.addQueue(tag.Value);
+						row.queueUrl = tag.Value;
 					}
 				});
 			});
@@ -71,7 +67,6 @@ angular.module('dashboard')
 			}
 		}).then(function(instances) {
 			if (instances) {
-				console.log(instances);
 				instances.Reservations.forEach(function(reservation) {
 					reservation.Instances.forEach(function(instance) {
 						var instId = instance.InstanceId;
@@ -82,8 +77,6 @@ angular.module('dashboard')
 			}
 			return instanceDetailsDeferred;
 		}).then(function(instances) {
-			console.log(instances);
-			
 			instances.Reservations.forEach(function(reservation) {
 				reservation.Instances.forEach(function(instance) {
 					var instId = instance.InstanceId;
@@ -96,6 +89,7 @@ angular.module('dashboard')
 					instance.Tags.forEach(function(tag) {
 						if (tag.Key == 'brenda-queue') {
 							$scope.queues.addQueue(tag.Value);
+							row.queueUrl = tag.Value;
 						}
 					});
 				});

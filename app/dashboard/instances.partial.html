@@ -6,6 +6,7 @@
 		<table class="table">
 			<thead>
 				<tr>
+					<th>Queue</th>
 					<th>Spot ID</th>
 					<th>Spot Price</th>
 					<th>Instance ID</th>
@@ -21,6 +22,7 @@
 			</thead>
 			<tbody>
 				<tr ng-repeat="instance in instances.table">
+					<td>{{instance.queueUrl | queueToName}}</td>
 					<td>{{instance.spotId}}</td>
 					<td>{{instance.spotPrice | currency}}</td>
 					<td>{{instance.instanceId}}</td>

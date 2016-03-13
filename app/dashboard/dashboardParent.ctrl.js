@@ -26,6 +26,10 @@ angular.module('dashboard')
 		}
 	};
 	
+	$scope.instances = {
+		table: []
+	};
+	
 	var queueTimer = $interval(function() {
 		$scope.queues.updateSize();
 	}, 15000);

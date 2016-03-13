@@ -31,6 +31,11 @@ describe('dashboard instances', function() {
 		$controller = _$controller_;
 		$httpBackend = _$httpBackend_;
 		
+		//Seed scope with normally inherited object
+		$rootScope.instances = {
+			table: []
+		};
+		
 		awsServiceMock = getAwsServiceMock();
 		
 		instanceDeferred = $q.defer();
@@ -80,7 +85,8 @@ describe('dashboard instances', function() {
 			instanceIp: undefined,
 			uptime: '-',
 			tasksCompleted: '-',
-			cpuLoad: '-'
+			cpuLoad: '-',
+			queueUrl: 'queueUrl'
 		});
 		
 		expect($rootScope.instances.table[1]).toEqual({
@@ -94,7 +100,8 @@ describe('dashboard instances', function() {
 			instanceIp: undefined,
 			uptime: '-',
 			tasksCompleted: '-',
-			cpuLoad: '-'
+			cpuLoad: '-',
+			queueUrl: 'queueUrl'
 		});
 		
 		expect($rootScope.queues.addQueue).toHaveBeenCalledWith('queueUrl');
