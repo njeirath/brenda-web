@@ -1,17 +1,61 @@
 'use strict';
 
-angular.module('awsSetup', [])
-.controller('AwsSetupCtrl', ['$scope', 'awsService', function($scope, awsService) {
+angular.module('awsSetup')
+.controller('AwsSetupCtrl', ['$scope', 'awsService', '$uibModal', function($scope, awsService, $uibModal) {
+	$scope.credentialCheck = {
+		status: 'info', 
+		msg: 'AWS credentials not checked yet'
+	};
+	$scope.securityGroupCheck = {
+		status: 'info', 
+		msg: 'Security group not checked yet'
+	};
+	
+	$scope.awsChecks = function() {
+		$scope.credentialCheck.status = 'info';
+		$scope.credentialCheck.msg = 'AWS credentials being checked...';
+		$scope.securityGroupCheck.status = 'info';
+		$scope.securityGroupCheck.msg = 'Security group being checked...';
+		
+		awsService.testCredentials()
+		.then(function() {
+			$scope.credentialCheck.status = 'success';
+			$scope.credentialCheck.msg = 'AWS credentials look good!';
+		}, function(err) {
+			$scope.credentialCheck.status = 'danger';
+			$scope.credentialCheck.msg = "AWS credentials couldn't be validated: " + err;
+			throw "Credentials not valid";
+		}).then(function() {
+			return awsService.getSecurityGroups('brenda-web');
+		}).then(function() {
+			$scope.securityGroupCheck.status = 'success';
+			$scope.securityGroupCheck.msg = 'Security group found!';
+		}, function(err) {
+			$scope.securityGroupCheck.status = 'danger';
+			$scope.securityGroupCheck.msg = 'Security group check failed: ' + err;
+		});
+	};
+	
+	$scope.createSG = function() {
+		awsService.createSecurityGroup()
+		.then(function() {
+			$scope.awsChecks();
+		}, function(err) {
+			$scope.securityGroupCheck.status = 'danger';
+			$scope.securityGroupCheck.msg = 'Security group creation failed: ' + err;
+		});
+	};
+	
 	if (    ($scope.credentials.awsRegion) && ($scope.credentials.awsRegion != '') 
 	     && ($scope.credentials.awsKeyId) && ($scope.credentials.awsKeyId != '') 
 	     && ($scope.credentials.awsSecret) && ($scope.credentials.awsSecret != '')) {
- 		awsService.testCredentials();
+ 		$scope.awsChecks();
      }
 		
 	$scope.setCredentials = function() {
 		awsService.setCredentials($scope.credentials.awsKeyId, $scope.credentials.awsSecret);
 		awsService.setRegion($scope.credentials.awsRegion);
-		awsService.testCredentials();
+		$scope.awsChecks();
 	};
 }])
 .controller('JobSetupCtrl', ['$scope', 'awsService', function($scope, awsService) {
@@ -143,10 +187,10 @@ angular.module('awsSetup', [])
 	$scope.requestInstances = function() {
 		//ami, keyPair, securityGroup, userData, instanceType, spotPrice, count, type
 		if ($scope.instanceType == 'spot') {
-			awsService.requestSpot($scope.amiSelect, $scope.sshKey, 'brenda', $scope.generateScript(), $scope.instanceSize, $scope.spotPrice, $scope.numInstances, 'one-time', $scope.queue.workQueue, $scope.showStatus);
+			awsService.requestSpot($scope.amiSelect, $scope.sshKey, 'brenda-web', $scope.generateScript(), $scope.instanceSize, $scope.spotPrice, $scope.numInstances, 'one-time', $scope.queue.workQueue, $scope.showStatus);
 		} else {
 			//requestOndemand: function(ami, keyPair, securityGroup, userData, instanceType, count)
-			awsService.requestOndemand($scope.amiSelect, $scope.sshKey, 'brenda', $scope.generateScript(), $scope.instanceSize, $scope.numInstances, $scope.queue.workQueue, $scope.showStatus);
+			awsService.requestOndemand($scope.amiSelect, $scope.sshKey, 'brenda-web', $scope.generateScript(), $scope.instanceSize, $scope.numInstances, $scope.queue.workQueue, $scope.showStatus);
 		}
 	};
 }])
@@ -200,25 +244,6 @@ angular.module('awsSetup', [])
 		localStorageService.set('frameDestination', newVal);
 	});
 }])
-.directive('awsLoginStatus', [function() {
-	return {
-		restrict: 'A',
-		link: function(scope, element, attrs) {
-			element.addClass('alert alert-info');
-			element.html("<b>Unchecked:</b> Credentials haven't been tested yet");
-			
-			scope.$on('aws-login-error', function(event, args) {
-				element.removeClass('alert-info alert-danger alert-success').addClass('alert-danger');
-				element.html('<b>Error:</b> ' + args);
-			});
-			
-			scope.$on('aws-login-success', function(event, args) {
-				element.removeClass('alert-info alert-danger alert-success').addClass('alert-success');
-				element.html('<b>Success:</b> Credentials look good!');
-			});
-		}
-	};
-}])
 .factory('awsService', ['$log', '$rootScope', 'localStorageService', 'aws', '$q', function($log, $rootScope, localStorageService, aws, $q) {
 	var service = {
 		setCredentials: function(keyId, secret) {
@@ -251,14 +276,21 @@ angular.module('awsSetup', [])
 		},
 		testCredentials: function() {
 			var ec2 = new aws.EC2();
+			
+			var deferred = $q.defer();
+			
 			ec2.describeKeyPairs({}, function(err, data) {
 				if (err) {
+					deferred.reject(String(err));
 					$log.log("Error with credentials: " + err);
 					$rootScope.$broadcast('aws-login-error', String(err));
 				} else {
+					deferred.resolve();
 					$rootScope.$broadcast('aws-login-success');
 				}
 			});
+			
+			return deferred.promise;
 		},
 		getQueues: function() {
 			var sqs = new aws.SQS();
@@ -480,6 +512,74 @@ angular.module('awsSetup', [])
 					deferred.reject(String(err));
 				} else {
 					deferred.resolve(data);
+				}
+			});
+			
+			return deferred.promise;
+		},
+		getSecurityGroups: function(groupName) {
+			var ec2 = new aws.EC2();
+			
+			var deferred = $q.defer();
+			ec2.describeSecurityGroups({GroupNames: [groupName]}, function(err, data) {
+				if (err) {
+					deferred.reject(String(err));
+				} else {
+					deferred.resolve(data);
+				}
+			});
+			
+			return deferred.promise;
+		},
+		createSecurityGroup: function() {
+			var ec2 = new aws.EC2();
+			
+			var deferred = $q.defer();
+			
+			var sgParams = {
+				GroupName: 'brenda-web',
+				Description: 'Security group used by brenda-web.com'
+			};
+			
+			var ingressParams = {
+				IpPermissions: [{
+					FromPort: 22,
+					IpProtocol: 'tcp',
+					IpRanges: [{
+						CidrIp: '0.0.0.0/0'
+					}],
+					ToPort: 22
+				}, {
+					FromPort: 80,
+					IpProtocol: 'tcp',
+					IpRanges: [{
+						CidrIp: '0.0.0.0/0'
+					}],
+					ToPort: 80
+				}, {
+					FromPort: -1,
+					IpProtocol: 'icmp',
+					IpRanges: [{
+						CidrIp: '0.0.0.0/0'
+					}],
+					ToPort: -1
+				}]
+			};
+			
+			
+			ec2.createSecurityGroup(sgParams, function(err, data) {
+				if (err) {
+					deferred.reject(String(err));
+				} else {
+					ingressParams.GroupId = data.GroupId;
+					ec2.authorizeSecurityGroupIngress(ingressParams, function(err, data) {
+						if (err) {
+							deferred.reject(String(err));
+						} else {
+							deferred.resolve();
+						}
+					});
+					
 				}
 			});
 			

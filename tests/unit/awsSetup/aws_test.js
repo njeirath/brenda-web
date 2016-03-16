@@ -4,20 +4,26 @@ describe('awsSetup', function() {
 	beforeEach(module('awsSetup'));
 	
 	describe('Controllers', function() {
-		var $rootScope, $controller, $httpBackend;
+		var $rootScope, $controller, $httpBackend, $q;
 			
-		beforeEach(inject(function(_$controller_, _$rootScope_, _$httpBackend_) {
+		beforeEach(inject(function(_$controller_, _$rootScope_, _$httpBackend_, _$q_) {
 			$rootScope = _$rootScope_;
 			$controller = _$controller_;
 			$httpBackend = _$httpBackend_;
+			$q = _$q_;
 		}));
 		
 		
 		describe('AwsSetupCtrl', function() {
-			var awsServiceMock, ctrl;
+			var awsServiceMock, ctrl, testCredentialsDeferred, getSgDeferred;
 			
 			beforeEach(function() {
 				awsServiceMock = getAwsServiceMock();
+				testCredentialsDeferred = $q.defer();
+				awsServiceMock.testCredentials.and.returnValue(testCredentialsDeferred.promise);
+				
+				getSgDeferred = $q.defer();
+				awsServiceMock.getSecurityGroups.and.returnValue(getSgDeferred.promise);
 				
 				//Mock out inherited objects
 				$rootScope.credentials = {
@@ -52,6 +58,74 @@ describe('awsSetup', function() {
 					expect(awsServiceMock.setCredentials).toHaveBeenCalledWith('id', 'shh');
 					expect(awsServiceMock.setRegion).toHaveBeenCalledWith('reg');
 					expect(awsServiceMock.testCredentials).toHaveBeenCalled();
+				});
+			});
+			
+			describe('$scope.awsChecks', function() {
+				beforeEach(function() {
+					$rootScope.awsChecks();
+				});
+				
+				it('should make a call to testCredentials', function() {
+					expect(awsServiceMock.testCredentials).toHaveBeenCalled();
+				});
+				
+				it('should update model when testCredentials resolves', function() {
+					testCredentialsDeferred.resolve();
+					$rootScope.$apply();
+					
+					expect($rootScope.credentialCheck).toEqual({status: 'success', msg: 'AWS credentials look good!'});
+					expect(awsServiceMock.getSecurityGroups).toHaveBeenCalledWith('brenda-web');
+				});
+				
+				it('should update model when testCredentials are rejected', function() {
+					testCredentialsDeferred.reject('error message');
+					expect($rootScope.$apply).toThrow();
+					
+					expect($rootScope.credentialCheck).toEqual({status: 'danger', msg: "AWS credentials couldn't be validated: error message"});
+					expect(awsServiceMock.getSecurityGroups).not.toHaveBeenCalled();
+				});
+				
+				it('should update model when SG check resolves', function() {
+					testCredentialsDeferred.resolve();
+					getSgDeferred.resolve();
+					$rootScope.$apply();
+					
+					expect($rootScope.securityGroupCheck).toEqual({status: 'success', msg: 'Security group found!'});
+				});
+				
+				it('should update model with SG check is rejected', function() {
+					testCredentialsDeferred.resolve();
+					getSgDeferred.reject('SG error');
+					$rootScope.$apply();
+					
+					expect($rootScope.securityGroupCheck).toEqual({status: 'danger', msg: 'Security group check failed: SG error'});
+				});
+			});
+			
+			describe('$scope.createSG', function() {
+				var createSgDeferred; 
+				
+				beforeEach(function() {
+					createSgDeferred = $q.defer();
+					awsServiceMock.createSecurityGroup.and.returnValue(createSgDeferred.promise);
+					spyOn($rootScope, 'awsChecks');
+					
+					$rootScope.createSG();
+				});
+				
+				it('should trigger AWS checks when resolved', function() {
+					createSgDeferred.resolve();
+					$rootScope.$apply();
+					
+					expect($rootScope.awsChecks).toHaveBeenCalled();
+				});
+				
+				it('should update model when rejected', function() {
+					createSgDeferred.reject('err msg');
+					$rootScope.$apply();
+					
+					expect($rootScope.securityGroupCheck).toEqual({status: 'danger', msg: 'Security group creation failed: err msg'});
 				});
 			});
 		});
@@ -308,13 +382,13 @@ describe('awsSetup', function() {
 				
 				it('should call requestSpot method when spot instances being requested', function() {
 					$rootScope.requestInstances();
-					expect(awsServiceMock.requestSpot).toHaveBeenCalledWith('ami_123', 'key', 'brenda', 'script', 'c3.large', '0.02', 1, 'one-time', 'queueName', jasmine.any(Function));
+					expect(awsServiceMock.requestSpot).toHaveBeenCalledWith('ami_123', 'key', 'brenda-web', 'script', 'c3.large', '0.02', 1, 'one-time', 'queueName', jasmine.any(Function));
 				});
 				
 				it('should call reqstOndemand method when on demand instances being requested', function() {
 					$rootScope.instanceType = 'onDemand';
 					$rootScope.requestInstances();
-					expect(awsServiceMock.requestOndemand).toHaveBeenCalledWith('ami_123', 'key', 'brenda', 'script', 'c3.large', 1, 'queueName', jasmine.any(Function));
+					expect(awsServiceMock.requestOndemand).toHaveBeenCalledWith('ami_123', 'key', 'brenda-web', 'script', 'c3.large', 1, 'queueName', jasmine.any(Function));
 				});
 			});
 			
@@ -328,32 +402,5 @@ describe('awsSetup', function() {
 				});
 			});
 		});
-	});
-	
-	
-	describe('awsLoginStatus', function() {
-		var $compile, $rootScope, element;
-		
-		beforeEach(inject(function(_$compile_, _$rootScope_){
-			$compile = _$compile_;
-			$rootScope = _$rootScope_;
-			element = $compile('<div aws-login-status></div>')($rootScope);
-		}));
-		
-		it('initializes to the unknown state and message', function() {
-			expect(element.html()).toBe("<b>Unchecked:</b> Credentials haven't been tested yet");
-		});
-		
-		it('sets success message on receiving success event', function() {
-			$rootScope.$emit('aws-login-success');
-			expect(element.html()).toBe("<b>Success:</b> Credentials look good!");
-		});
-		
-		it('sets error message on receiving error event', function() {
-			$rootScope.$emit('aws-login-error', 'Invalid password');
-			expect(element.html()).toBe("<b>Error:</b> Invalid password");
-		});
-	});
-	
-	
+	});	
 });

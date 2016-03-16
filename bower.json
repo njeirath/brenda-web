@@ -15,6 +15,7 @@
     "angular-local-storage": "~0.1.4",
     "angular-ui-router": "~0.2.18",
     "angular-scroll": "~1.0.0",
-    "angulartics-google-analytics": "~0.1.4"
+    "angulartics-google-analytics": "~0.1.4",
+    "angular-bootstrap": "~0.14.3"
   }
 }

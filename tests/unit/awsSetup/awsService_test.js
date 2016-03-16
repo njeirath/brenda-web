@@ -581,6 +581,83 @@ describe('awsSetup', function() {
 					expect(msg).toBe('success datas');
 				});
 			});
+			
+			describe('getSecurityGroups', function() {
+				var promise, serviceCallback;
+				
+				beforeEach(function() {
+					promise = awsService.getSecurityGroups('brenda-web');
+					serviceCallback = awsMock.EC2describeSecurityGroups.calls.argsFor(0)[1];
+				});
+				
+				it('should call to describe security groups', function() {
+					expect(awsMock.EC2describeSecurityGroups).toHaveBeenCalledWith({GroupNames: ['brenda-web']}, jasmine.any(Function));
+				});
+				
+				it('should reject if error received', function() {
+					serviceCallback('err msg', null);
+					
+					var msg = '';
+					promise.then(function(data){}, function(err) {
+						msg = err;
+					});
+					$rootScope.$apply();
+					
+					expect(msg).toBe('err msg');
+				});
+				
+				it('should resolve if success', function() {
+					serviceCallback(null, 'success');
+					
+					var msg = '';
+					promise.then(function(data) {
+						msg = data;
+					});
+					$rootScope.$apply();
+					
+					expect(msg).toBe('success');
+				});
+			});
+			
+			describe('createSecurityGroup', function() {
+				var promise, createSGcallback, errResp, dataResp;
+				
+				beforeEach(function() {
+					promise = awsService.createSecurityGroup();
+					createSGcallback = awsMock.EC2createSecurityGroup.calls.argsFor(0)[1];
+					
+					promise.then(function(data) {
+						dataResp = data;
+					}, function(err) {
+						errResp = err;
+					});
+				});
+				
+				it('should call to create SG', function() {
+					expect(awsMock.EC2createSecurityGroup).toHaveBeenCalledWith({
+						GroupName: 'brenda-web',
+						Description: 'Security group used by brenda-web.com'
+					}, jasmine.any(Function));
+				});
+				
+				it('should reject if error creating SG', function() {
+					createSGcallback('SG err', null);
+					$rootScope.$apply();
+					expect(errResp).toBe('SG err');
+				});
+				
+				it('should call to setup ingress on create SG success', function() {
+					createSGcallback(null, {GroupId: 'sg_123'});
+					expect(awsMock.EC2authorizeSecurityGroupIngress).toHaveBeenCalledWith({
+						IpPermissions: [
+							{FromPort: 22, IpProtocol: 'tcp', IpRanges: [{CidrIp: '0.0.0.0/0'}], ToPort: 22}, 
+							{FromPort: 80, IpProtocol: 'tcp', IpRanges: [{CidrIp: '0.0.0.0/0'}], ToPort: 80}, 
+							{FromPort: -1, IpProtocol: 'icmp', IpRanges: [{CidrIp: '0.0.0.0/0'}], ToPort: -1}
+						],
+						GroupId: 'sg_123'
+					}, jasmine.any(Function));
+				});
+			});
 		});
 	});
 });
