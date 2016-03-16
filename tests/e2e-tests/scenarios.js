@@ -22,7 +22,7 @@ describe('Brenda Web', function() {
 			
 			browser.sleep(1000);
 			
-			expect(element(by.id('loginStatus')).getText()).toBe('Error: AuthFailure: AWS was not able to validate the provided access credentials');
+			expect(element(by.id('loginStatus')).getText()).toBe("AWS credentials couldn't be validated: AuthFailure: AWS was not able to validate the provided access credentials");
 			
 			browser.get('/app/#/setup');
 

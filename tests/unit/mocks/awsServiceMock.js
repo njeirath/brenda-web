@@ -22,7 +22,9 @@ function getAwsServiceMock() {
 		requestSpot: function(){},
 		requestOndemand: function(){},
 		getInstanceDetails: function(){},
-		getSpotRequests: function(){}
+		getSpotRequests: function(){},
+		getSecurityGroups: function(){},
+		createSecurityGroup: function(){}
 	};
 		
 	spyOn(mock, 'getKeyId').and.callThrough();
@@ -35,6 +37,8 @@ function getAwsServiceMock() {
 	spyOn(mock, 'getQueue').and.callThrough();
 	spyOn(mock, 'requestSpot');
 	spyOn(mock, 'requestOndemand');
+	spyOn(mock, 'getSecurityGroups');
+	spyOn(mock, 'createSecurityGroup');
 		
 	return mock;
 }
