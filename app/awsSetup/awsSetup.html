@@ -17,7 +17,13 @@
 				<input type="text" class="form-control" id="awsRegion" ng-model="credentials.awsRegion" placeholder="Region" />
 			</div>
 			<button type="submit" ng-click="setCredentials()" id="setCredentialsBtn">Set Credentials</button>
-			<div aws-login-status id="loginStatus"></div>
+			<ul class="list-group">
+				<li class="list-group-item list-group-item-{{credentialCheck.status}}" id="loginStatus">
+					{{credentialCheck.msg}}
+				</li>
+				<li class="list-group-item list-group-item-{{securityGroupCheck.status}}">{{securityGroupCheck.msg}} 
+					<a href ng-click="createSG()" ng-show="securityGroupCheck.status == 'danger'"><strong>Fix it</strong></a></li>
+			</ul>
 			<!-- <aws-login aws-key-id="awsKeyId" aws-secret="awsSecret" region="awsRegion"></aws-login> -->
 		</form>
 	</div>
