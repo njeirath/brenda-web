@@ -236,12 +236,6 @@ describe('awsSetup', function() {
 						controller: 'CreateQueueCtrl'
 					});
 				});
-				
-				it('should call to createQueue when dialog resolves', function() {
-					modalDeferred.resolve('queue name');
-					$rootScope.$apply();
-					expect(awsServiceMock.createQueue).toHaveBeenCalledWith('queue name');
-				});
 			});
 		});
 		
