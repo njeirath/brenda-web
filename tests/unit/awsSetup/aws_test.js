@@ -131,7 +131,7 @@ describe('awsSetup', function() {
 		});
 		
 		describe('JobSetupCtrl', function() {
-			var awsServiceMock, ctrl;
+			var awsServiceMock, ctrl, uibModalMock, modalDeferred;
 			
 			beforeEach(function() {
 				awsServiceMock = getAwsServiceMock();
@@ -141,7 +141,14 @@ describe('awsSetup', function() {
 					workQueue: ''
 				};
 				
-				ctrl = $controller('JobSetupCtrl', {$scope: $rootScope, awsService: awsServiceMock});
+				modalDeferred = $q.defer();
+				uibModalMock = {
+					open: function() {}
+				};
+				
+				spyOn(uibModalMock, 'open').and.returnValue({result: modalDeferred.promise});
+				
+				ctrl = $controller('JobSetupCtrl', {$scope: $rootScope, awsService: awsServiceMock, $uibModal: uibModalMock});
 			});
 			
 			it('should initialize array to empty and call getQueues', function() {				
@@ -205,6 +212,36 @@ describe('awsSetup', function() {
 				});
 				
 				expect($rootScope.sendStatus.status).toBe('test status');
+			});
+			
+			it('should get queues when refreshQueues called', function() {
+				$rootScope.refreshQueues();
+				expect(awsServiceMock.getQueues).toHaveBeenCalled();
+			});
+			
+			describe('$scope.closeAlert', function() {
+				it('should remove correct alert when dismissed', function() {
+					$rootScope.queueAlerts = [1, 2, 3];
+					$rootScope.closeAlert(1);
+					expect($rootScope.queueAlerts).toEqual([1,3]);
+				});
+			});
+			
+			describe('$scope.addQueue', function() {
+				it('should open dialog', function() {
+					$rootScope.addQueue();
+					expect(uibModalMock.open).toHaveBeenCalledWith({
+						animation: true,
+						templateUrl: 'awsSetup/createQueue.html',
+						controller: 'CreateQueueCtrl'
+					});
+				});
+				
+				it('should call to createQueue when dialog resolves', function() {
+					modalDeferred.resolve('queue name');
+					$rootScope.$apply();
+					expect(awsServiceMock.createQueue).toHaveBeenCalledWith('queue name');
+				});
 			});
 		});
 		

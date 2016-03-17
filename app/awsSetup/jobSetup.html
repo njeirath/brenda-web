@@ -6,10 +6,17 @@
     <form>
 		<div class="form-group">
 			<label for="workQueue">Work Queue</label>
-			<select name="workQueue" id="workQueue" ng-model="queue.workQueue">
-				<option ng-repeat="queue in queues" value="{{queue}}">{{queue | queueToName}}</option>
-			</select>
+			<div class="input-group">
+				<span class="input-group-btn">
+		        	<button class="btn btn-default" type="button" ng-click="addQueue()"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button>
+		        	<button class="btn btn-default" type="button" ng-click="refreshQueues()"><span class="glyphicon glyphicon-refresh" aria-hidden="true"></span></button>
+		      	</span>
+				<select name="workQueue" id="workQueue" ng-model="queue.workQueue" class="form-control">
+					<option ng-repeat="queue in queues" value="{{queue}}">{{queue | queueToName}}</option>
+				</select>
+			</div>
 		</div>
+		<uib-alert ng-repeat="alert in queueAlerts" type="{{alert.type}}" close="closeAlert($index)">{{alert.msg}}</uib-alert>
 		<div>
 			Queue size: {{queue.queueSize}}
 		</div>

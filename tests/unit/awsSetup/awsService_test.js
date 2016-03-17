@@ -658,6 +658,42 @@ describe('awsSetup', function() {
 					}, jasmine.any(Function));
 				});
 			});
+			
+			describe('createQueue', function() {
+				var promise, serviceCallback, errResp, dataResp;
+				
+				beforeEach(function() {
+					promise = awsService.createQueue('brenda-web');
+					serviceCallback = awsMock.SQScreateQueue.calls.argsFor(0)[1];
+					
+					promise.then(function(data) {
+						dataResp = data;
+					}, function(err) {
+						errResp = err;
+					});
+				});
+				
+				it('should call to create queue', function() {
+					expect(awsMock.SQScreateQueue).toHaveBeenCalledWith({
+						QueueName: 'brenda-web',
+						Attributes: {
+							VisibilityTimeout: '120'
+						}
+					}, jasmine.any(Function));
+				});
+				
+				it('should reject on error', function() {
+					serviceCallback('err msg', null);
+					$rootScope.$apply();
+					expect(errResp).toBe('err msg');
+				});
+				
+				it('should resolve on success', function() {
+					serviceCallback(null, 'success');
+					$rootScope.$apply();
+					expect(dataResp).toBe('success');
+				});
+			});
 		});
 	});
 });

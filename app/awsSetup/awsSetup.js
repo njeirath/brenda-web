@@ -1,7 +1,7 @@
 'use strict';
 
 angular.module('awsSetup')
-.controller('AwsSetupCtrl', ['$scope', 'awsService', '$uibModal', function($scope, awsService, $uibModal) {
+.controller('AwsSetupCtrl', ['$scope', 'awsService', function($scope, awsService) {
 	$scope.credentialCheck = {
 		status: 'info', 
 		msg: 'AWS credentials not checked yet'
@@ -58,7 +58,7 @@ angular.module('awsSetup')
 		$scope.awsChecks();
 	};
 }])
-.controller('JobSetupCtrl', ['$scope', 'awsService', function($scope, awsService) {
+.controller('JobSetupCtrl', ['$scope', 'awsService', '$uibModal', '$interval', function($scope, awsService, $uibModal, $interval) {
 	$scope.queues = [];
 	$scope.queueSize = 'No Queue Selected';
 	
@@ -67,6 +67,35 @@ angular.module('awsSetup')
 	$scope.endFrame = 240;
 	
 	awsService.getQueues();
+	
+	$scope.refreshQueues = function() {
+		awsService.getQueues();
+	};
+	
+	$scope.queueAlerts = [];
+	
+	$scope.closeAlert = function(index) {
+	    $scope.queueAlerts.splice(index, 1);
+	};
+	
+	$scope.addQueue = function() {
+		var queueModal = $uibModal.open({
+			animation: true,
+			templateUrl: 'awsSetup/createQueue.html',
+			controller: 'CreateQueueCtrl'
+		});
+		
+		queueModal.result.then(function(queueName) {
+			awsService.createQueue(queueName)
+			.then(function() {
+				$scope.queueAlerts.push({type: 'success', msg: 'Queue ' + queueName + ' successfully created! (Note: may take up to 60 seconds for queue to be available)'});
+				
+				$interval(awsService.getQueues, 30000, 2);
+			}, function(err) {
+				$scope.queueAlerts.push({type: 'danger', msg: 'Create ' + queueName + ': ' + err});
+			});
+		});
+	};
 	
 	$scope.workList = function() {
 		var list = [];
@@ -580,6 +609,27 @@ angular.module('awsSetup')
 						}
 					});
 					
+				}
+			});
+			
+			return deferred.promise;
+		},
+		createQueue: function(queueName) {
+			var params = {
+				QueueName: queueName,
+				Attributes: {
+					VisibilityTimeout: '120'
+				}
+			};
+			
+			var sqs = new aws.SQS();
+			var deferred = $q.defer();
+			
+			sqs.createQueue(params, function(err, data) {
+				if (err) {
+					deferred.reject(String(err));
+				} else {
+					deferred.resolve(data);
 				}
 			});
 			
