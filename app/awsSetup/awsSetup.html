@@ -16,7 +16,7 @@
 				<label for="awsRegion">AWS Region</label>
 				<input type="text" class="form-control" id="awsRegion" ng-model="credentials.awsRegion" placeholder="Region" />
 			</div>
-			<button type="submit" ng-click="setCredentials()" id="setCredentialsBtn">Set Credentials</button>
+			<button type="submit" ng-click="setCredentials()" id="setCredentialsBtn" class="btn btn-primary">Set Credentials</button>
 			<ul class="list-group">
 				<li class="list-group-item list-group-item-{{credentialCheck.status}}" id="loginStatus">
 					{{credentialCheck.msg}}

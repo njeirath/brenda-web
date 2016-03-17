@@ -12,6 +12,7 @@ function getAwsMock() {
 	var SQSSendMessageBatchSpy = jasmine.createSpy();
 	var SQSpurgeQueueSpy = jasmine.createSpy();
 	var SQSgetQueueAttributesSpy = jasmine.createSpy();
+	var SQScreateQueueSpy = jasmine.createSpy();
 	
 	awsMock = {
 		config: {
@@ -43,11 +44,13 @@ function getAwsMock() {
 		SQSSendMessageBatch: SQSSendMessageBatchSpy,
 		SQSpurgeQueue: SQSpurgeQueueSpy,
 		SQSgetQueueAttributes: SQSgetQueueAttributesSpy,
+		SQScreateQueue: SQScreateQueueSpy,
 		SQS: function() {
 			this.listQueues = SQSlistQueuesSpy;
 			this.sendMessageBatch = SQSSendMessageBatchSpy;
 			this.purgeQueue = SQSpurgeQueueSpy;
 			this.getQueueAttributes = SQSgetQueueAttributesSpy;
+			this.createQueue = SQScreateQueueSpy;
 		}
 	};
 	
