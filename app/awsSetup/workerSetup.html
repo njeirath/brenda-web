@@ -58,7 +58,7 @@
 				<textarea class="form-control" id="startupScript" rows="5" readonly>{{generateScript()}}</textarea>
 			</div>
 			
-			<button type="submit" ng-click="requestInstances()">Request Instances</button>
+			<button type="submit" ng-click="requestInstances()" class="btn btn-primary">Request Instances</button>
 			<uib-alert ng-repeat="status in statuses" type="{{status.type}}" close="">{{status.text}}</uib-alert>
 		</form>
 	</div>
