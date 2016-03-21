@@ -216,10 +216,10 @@ angular.module('awsSetup')
 	$scope.requestInstances = function() {
 		//ami, keyPair, securityGroup, userData, instanceType, spotPrice, count, type
 		if ($scope.instanceType == 'spot') {
-			awsService.requestSpot($scope.amiSelect, $scope.sshKey, 'brenda-web', $scope.generateScript(), $scope.instanceSize, $scope.spotPrice, $scope.numInstances, 'one-time', $scope.queue.workQueue, $scope.showStatus);
+			awsService.requestSpot($scope.amiSelect, $scope.sshKey, 'brenda-web', $scope.generateScript(), $scope.instanceSize, $scope.spotPrice, $scope.numInstances, 'one-time', $scope.queue.workQueue, $scope.s3.frameDestination, $scope.showStatus);
 		} else {
 			//requestOndemand: function(ami, keyPair, securityGroup, userData, instanceType, count)
-			awsService.requestOndemand($scope.amiSelect, $scope.sshKey, 'brenda-web', $scope.generateScript(), $scope.instanceSize, $scope.numInstances, $scope.queue.workQueue, $scope.showStatus);
+			awsService.requestOndemand($scope.amiSelect, $scope.sshKey, 'brenda-web', $scope.generateScript(), $scope.instanceSize, $scope.numInstances, $scope.queue.workQueue, $scope.s3.frameDestination, $scope.showStatus);
 		}
 	};
 }])
@@ -448,7 +448,7 @@ angular.module('awsSetup')
 			var ec2 = new aws.EC2();
 			ec2.createTags(params, callback);
 		},
-		requestSpot: function(ami, keyPair, securityGroup, userData, instanceType, spotPrice, count, type, queueName, statusCallback) {
+		requestSpot: function(ami, keyPair, securityGroup, userData, instanceType, spotPrice, count, type, queueName, s3Destination, statusCallback) {
 			var spec = this.getLaunchSpecification(ami, keyPair, securityGroup, userData, instanceType);
 			
 			var params = {
@@ -471,7 +471,7 @@ angular.module('awsSetup')
 					var spotRequests = data.SpotInstanceRequests.map(function(item) {
 						return item.SpotInstanceRequestId;
 					});
-					self.setTags(spotRequests, [{Key: 'brenda-queue', Value: queueName}], function(err, data) {
+					self.setTags(spotRequests, [{Key: 'brenda-queue', Value: queueName}, {Key: 'brenda-dest', Value: s3Destination}], function(err, data) {
 						if (err) {
 							statusCallback('warning', 'Spot instances requested but could not set tags (may affect dashboard)');
 						} else {
@@ -482,7 +482,7 @@ angular.module('awsSetup')
 				}
 			});
 		},
-		requestOndemand: function(ami, keyPair, securityGroup, userData, instanceType, count, queueName, statusCallback) {
+		requestOndemand: function(ami, keyPair, securityGroup, userData, instanceType, count, queueName, s3Destination, statusCallback) {
 			var spec = this.getLaunchSpecification(ami, keyPair, securityGroup, userData, instanceType);
 			spec.MinCount = count;
 			spec.MaxCount = count;
@@ -501,7 +501,7 @@ angular.module('awsSetup')
 					var instanceIds = data.Instances.map(function(item) {
 						return item.InstanceId;
 					});
-					self.setTags(instanceIds, [{Key: 'brenda-queue', Value: queueName}], function(err, data) {
+					self.setTags(instanceIds, [{Key: 'brenda-queue', Value: queueName}, {Key: 'brenda-dest', Value: s3Destination}], function(err, data) {
 						if (err) {
 							statusCallback('warning', 'On demand instances requested but could not set tags (may affect dashboard)');
 						} else {
