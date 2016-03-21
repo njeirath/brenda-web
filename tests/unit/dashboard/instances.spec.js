@@ -10,7 +10,7 @@ describe('dashboard instances', function() {
 			InstanceId: 'i_1',
 			SpotPrice: 0.02,
 			Status: {Code: 'fulfilled'},
-			Tags: [{Key: 'brenda-queue', Value: 'queueUrl'}]
+			Tags: [{Key: 'brenda-queue', Value: 'queueUrl'}, {Key: 'brenda-dest', Value: 'dest bucket'}]
 		}
 		]};
 		
@@ -21,7 +21,7 @@ describe('dashboard instances', function() {
 				InstanceId: 'i_1',
 				InstanceType: 'c3.large',
 				State: {Name: 'starting'},
-				Tags: [{Key: 'brenda-queue', Value: 'queueUrl'}]
+				Tags: [{Key: 'brenda-queue', Value: 'queueUrl'}, {Key: 'brenda-dest', Value: 'dest bucket'}]
 			}]
 		}
 	]};
@@ -45,7 +45,9 @@ describe('dashboard instances', function() {
 		spyOn(awsServiceMock, 'getSpotRequests').and.returnValue(spotDeferred.promise);
 		
 		$rootScope.queues = {addQueue: function(){}};
+		$rootScope.buckets = {addBucket: function(){}};
 		spyOn($rootScope.queues, 'addQueue');
+		spyOn($rootScope.buckets, 'addBucket');
 	
 		ctrl = $controller('instancesCtrl', {$scope: $rootScope, awsService: awsServiceMock});
 	}));
@@ -86,7 +88,8 @@ describe('dashboard instances', function() {
 			uptime: '-',
 			tasksCompleted: '-',
 			cpuLoad: '-',
-			queueUrl: 'queueUrl'
+			queueUrl: 'queueUrl',
+			destinationBucket: 'dest bucket'
 		});
 		
 		expect($rootScope.instances.table[1]).toEqual({
@@ -101,10 +104,12 @@ describe('dashboard instances', function() {
 			uptime: '-',
 			tasksCompleted: '-',
 			cpuLoad: '-',
-			queueUrl: 'queueUrl'
+			queueUrl: 'queueUrl',
+			destinationBucket: 'dest bucket'
 		});
 		
 		expect($rootScope.queues.addQueue).toHaveBeenCalledWith('queueUrl');
+		expect($rootScope.buckets.addBucket).toHaveBeenCalledWith('dest bucket');
 	});
 	
 	describe('$rootScope.getInstanceStats', function() {

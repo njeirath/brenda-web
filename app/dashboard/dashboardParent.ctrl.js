@@ -26,6 +26,35 @@ angular.module('dashboard')
 		}
 	};
 	
+	$scope.buckets = {
+		buckets: [],
+		
+		addBucket: function(bucketName) {
+			var bucket = this.buckets.find(function(bucket) {
+				return bucket.name == bucketName;
+			});
+			if (!bucket) {
+				this.buckets.push({name: bucketName, size: '-', files: []});
+			}
+		},
+		updateBucket: function() {
+			this.buckets.forEach(function(item) {
+				(function(b) {
+					awsService.listObjects(b.name.split('//').pop())
+					.then(function(data) {
+						b.files = [];
+						b.size = data.Contents.length;
+						data.Contents.forEach(function(obj) {
+							b.files.push({name: obj.Key, size: obj.Size, modified: obj.LastModified});
+						});
+					}, function(err) {
+						b.size = err;
+					});
+				}(item));
+			});
+		}
+	};
+	
 	$scope.instances = {
 		table: []
 	};
@@ -34,7 +63,12 @@ angular.module('dashboard')
 		$scope.queues.updateSize();
 	}, 15000);
 	
+	var bucketTimer = $interval(function() {
+		$scope.buckets.updateBucket();
+	}, 15000);
+	
 	$scope.$on('$destroy', function() {
 		$interval.cancel(queueTimer);
+		$interval.cancel(bucketTimer);
 	});
 }]);

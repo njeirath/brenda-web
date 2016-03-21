@@ -634,6 +634,20 @@ angular.module('awsSetup')
 			});
 			
 			return deferred.promise;
+		},
+		listObjects: function(bucket) {
+			var deferred = $q.defer();
+			var s3 = new aws.S3();
+			
+			s3.listObjects({Bucket: bucket}, function(err, data) {
+				if (err) {
+					deferred.reject(String(err));
+				} else {
+					deferred.resolve(data);
+				}
+			});
+			
+			return deferred.promise;
 		}
 	};
 	

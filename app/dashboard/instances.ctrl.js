@@ -15,7 +15,8 @@ angular.module('dashboard')
 			uptime: '-',
 			tasksCompleted: '-',
 			cpuLoad: '-',
-			queueUrl: ''
+			queueUrl: '',
+			destinationBucket: ''
 		};
 	}
 	
@@ -55,6 +56,9 @@ angular.module('dashboard')
 					if (tag.Key == 'brenda-queue') {
 						$scope.queues.addQueue(tag.Value);
 						row.queueUrl = tag.Value;
+					} else if(tag.Key == 'brenda-dest') {
+						$scope.buckets.addBucket(tag.Value);
+						row.destinationBucket = tag.Value;
 					}
 				});
 			});
@@ -90,6 +94,9 @@ angular.module('dashboard')
 						if (tag.Key == 'brenda-queue') {
 							$scope.queues.addQueue(tag.Value);
 							row.queueUrl = tag.Value;
+						} else if(tag.Key == 'brenda-dest') {
+							$scope.buckets.addBucket(tag.Value);
+							row.destinationBucket = tag.Value;
 						}
 					});
 				});

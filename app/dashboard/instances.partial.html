@@ -18,6 +18,7 @@
 					<th>Tasks Completed</th>
 					<th>Time/Task</th>
 					<th>CPU Load</th>
+					<th>Destination Bucket</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -34,6 +35,7 @@
 					<td>{{instance.tasksCompleted}}</td>
 					<td>{{(instance.uptime / instance.tasksCompleted) | secondsToDateTime}}</td>
 					<td>{{instance.cpuLoad}}</td>
+					<td>{{instance.destinationBucket}}</td>
 				</tr>
 			</tbody>
 		</table>

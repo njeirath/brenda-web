@@ -1,0 +1,23 @@
+<div class="panel panel-default" ng-repeat="bucket in buckets.buckets">
+	<div class="panel-heading">
+    	<h3 class="panel-title">Bucket: {{bucket.name}} <span class="badge">{{bucket.size}}</span></h3>
+	</div>
+	<div class="panel-body">
+		<table class="table">
+			<thead>
+				<tr>
+					<th>Name</th>
+					<th>Size</th>
+					<th>Modified</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr ng-repeat="file in bucket.files">
+					<td>{{file.name}}</td>
+					<td>{{file.size}}</td>
+					<td>{{file.modified}}</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+</div>

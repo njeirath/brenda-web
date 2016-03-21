@@ -36,7 +36,8 @@ config(['$stateProvider', function($stateProvider) {
   	url: '/dashboard',
   	views: {
   		'queues': {templateUrl: 'dashboard/queues.partial.html', controller: 'queuesCtrl'},
-  		'instances': {templateUrl: 'dashboard/instances.partial.html', controller: 'instancesCtrl'}
+  		'instances': {templateUrl: 'dashboard/instances.partial.html', controller: 'instancesCtrl'},
+  		'buckets': {templateUrl: 'dashboard/buckets.partial.html'}
   	}
   });
 }])
