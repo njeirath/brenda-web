@@ -45,7 +45,8 @@ angular.module('dashboard')
 						b.files = [];
 						b.size = data.Contents.length;
 						data.Contents.forEach(function(obj) {
-							b.files.push({name: obj.Key, size: obj.Size, modified: obj.LastModified});
+							var url = awsService.getObjectUri(b.name.split("//").pop(), obj.Key);
+							b.files.push({name: obj.Key, size: obj.Size, modified: obj.LastModified, url: url, caption: obj.Key});
 						});
 					}, function(err) {
 						b.size = err;

@@ -13,6 +13,8 @@ function getAwsMock() {
 	var SQSpurgeQueueSpy = jasmine.createSpy();
 	var SQSgetQueueAttributesSpy = jasmine.createSpy();
 	var SQScreateQueueSpy = jasmine.createSpy();
+	var S3listObjectsSpy = jasmine.createSpy();
+	var S3getSignedUrlSpy = jasmine.createSpy();
 	
 	awsMock = {
 		config: {
@@ -51,6 +53,12 @@ function getAwsMock() {
 			this.purgeQueue = SQSpurgeQueueSpy;
 			this.getQueueAttributes = SQSgetQueueAttributesSpy;
 			this.createQueue = SQScreateQueueSpy;
+		},
+		S3listObjects: S3listObjectsSpy,
+		S3getSignedUrl: S3getSignedUrlSpy,
+		S3: function() {
+			this.listObjects = S3listObjectsSpy;
+			this.getSignedUrl = S3getSignedUrlSpy;
 		}
 	};
 	

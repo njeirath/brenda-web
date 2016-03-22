@@ -648,6 +648,10 @@ angular.module('awsSetup')
 			});
 			
 			return deferred.promise;
+		},
+		getObjectUri: function(bucket, key) {
+			var s3 = new aws.S3();
+			return s3.getSignedUrl('getObject', {Bucket: bucket, Key: key});
 		}
 	};
 	

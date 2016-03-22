@@ -694,6 +694,31 @@ describe('awsSetup', function() {
 					expect(dataResp).toBe('success');
 				});
 			});
+			
+			describe('listObjects', function() {
+				var promise, errResp, dataResp;
+				
+				beforeEach(function() {
+					promise = awsService.listObjects('bucketName');
+					
+					promise.then(function(data) {
+						dataResp = data;
+					}, function(err) {
+						errResp = err;
+					});
+				});
+				
+				it('should call to list objects', function() {
+					expect(awsMock.S3listObjects).toHaveBeenCalledWith({Bucket: 'bucketName'}, jasmine.any(Function));
+				});
+			});
+			
+			describe('getObjectUri', function() {
+				it('should call to get a signed url', function() {
+					awsService.getObjectUri('bucket', 'key');
+					expect(awsMock.S3getSignedUrl).toHaveBeenCalledWith('getObject', {Bucket: 'bucket', Key: 'key'});
+				});
+			});
 		});
 	});
 });
