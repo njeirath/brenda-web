@@ -1,3 +1,3 @@
 'use strict';
 
-angular.module('dashboard', ['bootstrapLightbox']);
+angular.module('dashboard', ['bootstrapLightbox', 'ngMessages', 'brendaHelper']);

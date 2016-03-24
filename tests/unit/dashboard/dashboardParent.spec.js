@@ -69,7 +69,7 @@ describe('dashboard instances', function() {
 		it('should add a new bucket to the queue list', function() {
 			$rootScope.buckets.addBucket('new bucket');
 			expect($rootScope.buckets.buckets.length).toBe(1);
-			expect($rootScope.buckets.buckets[0]).toEqual({name: 'new bucket', size: '-', files: []});
+			expect($rootScope.buckets.buckets[0]).toEqual({name: 'new bucket', size: '-', files: [], errors: {}});
 		});
 		
 		it('should not add a bucket that is already in the list', function() {

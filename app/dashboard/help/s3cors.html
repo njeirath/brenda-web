@@ -1,0 +1,36 @@
+<div class="modal-header">
+    <h3 class="modal-title">Configure S3 CORS</h3>
+</div>
+<div class="modal-body">
+    <p>
+    	In order to view the contents of an S3 bucket, CORS needs to be enabled first.  Follow the following steps in 
+    	order to turn CORS on for your buckets.  For more information on CORS and S3, the 
+    	<a href="http://docs.aws.amazon.com/AmazonS3/latest/dev/cors.html" target="_blank">Amazon S3 CORS Documentation</a> 
+    	has additional information.
+    </p>
+    <hr />
+    <ol>
+    	<li>Go to the <a href="https://console.aws.amazon.com/s3/" target="_blank">S3 home page</a> (Log in to AWS if necessary)</li>
+    	<li>Highlight and click to select the desired bucket</li>
+    	<li>If not already open, click the "Properties" button to open the bucket properties panel</li>
+    	<li>Expand the "Permissions" section and click on "Add CORS Configuration"</li>
+    	<li>In the dialog that opens, paste the following configuration:
+    		<pre>
+&ltCORSConfiguration&gt
+    &ltCORSRule&gt
+        &ltAllowedOrigin&gt*&lt/AllowedOrigin&gt
+        &ltAllowedMethod&gtGET&lt/AllowedMethod&gt
+        &ltMaxAgeSeconds&gt3000&lt/MaxAgeSeconds&gt
+        &ltAllowedHeader&gt*&lt/AllowedHeader&gt
+    &lt/CORSRule&gt
+&lt/CORSConfiguration&gt
+</pre>
+    		</li>
+		<li>Click "Save"</li>
+    </ol>
+    
+    <div class="alert alert-info" role="alert"><span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span> Buckets refresh periodically on their own so should update shortly if settings were correct</div>
+</div>
+<div class="modal-footer">
+    <button class="btn btn-primary" type="button" ng-click="ok()">Done</button>
+</div>

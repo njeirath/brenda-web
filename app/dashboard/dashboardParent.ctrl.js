@@ -11,6 +11,7 @@ angular.module('dashboard')
 			});
 			if (!queue) {
 				this.queues.push({url: queueUrl, size: '-'});
+				this.updateSize();
 			}
 		},
 		updateSize: function() {
@@ -34,22 +35,24 @@ angular.module('dashboard')
 				return bucket.name == bucketName;
 			});
 			if (!bucket) {
-				this.buckets.push({name: bucketName, size: '-', files: []});
+				this.buckets.push({name: bucketName, size: '-', files: [], errors: {}});
+				this.updateBucket();
 			}
 		},
 		updateBucket: function() {
 			this.buckets.forEach(function(item) {
 				(function(b) {
-					awsService.listObjects(b.name.split('//').pop())
+					awsService.listObjects(b.name)
 					.then(function(data) {
+						b.errors = {};
 						b.files = [];
 						b.size = data.Contents.length;
 						data.Contents.forEach(function(obj) {
-							var url = awsService.getObjectUri(b.name.split("//").pop(), obj.Key);
+							var url = awsService.getObjectUri(b.name, obj.Key);
 							b.files.push({name: obj.Key, size: obj.Size, modified: obj.LastModified, url: url, caption: obj.Key});
 						});
 					}, function(err) {
-						b.size = err;
+						b.errors.error = err;
 					});
 				}(item));
 			});
