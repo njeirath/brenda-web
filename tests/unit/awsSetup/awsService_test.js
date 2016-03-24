@@ -376,7 +376,7 @@ describe('awsSetup', function() {
 				
 				beforeEach(function() {
 					callback = jasmine.createSpy();
-					awsService.requestSpot('ami_123', 'brendaKey', 'brendaSG', 'bunches of stuff here', 'c3.large', 0.02, 1, 'one-time', 'queueName', callback);
+					awsService.requestSpot('ami_123', 'brendaKey', 'brendaSG', 'bunches of stuff here', 'c3.large', 0.02, 1, 'one-time', 'queueName', 'frame dest', callback);
 					serviceCallback = awsMock.EC2requestSpotInstances.calls.argsFor(0)[1];
 				});
 				
@@ -407,7 +407,7 @@ describe('awsSetup', function() {
 					});
 					expect(awsMock.EC2createTags).toHaveBeenCalledWith({
 						Resources: ['requestId1'],
-						Tags: [{Key: 'brenda-queue', Value: 'queueName'}]
+						Tags: [{Key: 'brenda-queue', Value: 'queueName'}, {Key: 'brenda-dest', Value: 'frame dest'}]
 					}, jasmine.any(Function));
 				});
 				
@@ -439,7 +439,7 @@ describe('awsSetup', function() {
 				
 				beforeEach(function() {
 					callback = jasmine.createSpy();
-					awsService.requestOndemand('ami_123', 'brendaKey', 'brendaSG', 'bunches of stuff here', 'c3.large', 1, 'queueName', callback);
+					awsService.requestOndemand('ami_123', 'brendaKey', 'brendaSG', 'bunches of stuff here', 'c3.large', 1, 'queueName', 'frame dest', callback);
 					serviceCallback = awsMock.EC2runInstances.calls.argsFor(0)[1];
 				});
 				
@@ -468,7 +468,7 @@ describe('awsSetup', function() {
 					});
 					expect(awsMock.EC2createTags).toHaveBeenCalledWith({
 						Resources: ['instanceId1'],
-						Tags: [{Key: 'brenda-queue', Value: 'queueName'}]
+						Tags: [{Key: 'brenda-queue', Value: 'queueName'}, {Key: 'brenda-dest', Value: 'frame dest'}]
 					}, jasmine.any(Function));
 				});
 				
@@ -692,6 +692,31 @@ describe('awsSetup', function() {
 					serviceCallback(null, 'success');
 					$rootScope.$apply();
 					expect(dataResp).toBe('success');
+				});
+			});
+			
+			describe('listObjects', function() {
+				var promise, errResp, dataResp;
+				
+				beforeEach(function() {
+					promise = awsService.listObjects('bucketName');
+					
+					promise.then(function(data) {
+						dataResp = data;
+					}, function(err) {
+						errResp = err;
+					});
+				});
+				
+				it('should call to list objects', function() {
+					expect(awsMock.S3listObjects).toHaveBeenCalledWith({Bucket: 'bucketName'}, jasmine.any(Function));
+				});
+			});
+			
+			describe('getObjectUri', function() {
+				it('should call to get a signed url', function() {
+					awsService.getObjectUri('bucket', 'key');
+					expect(awsMock.S3getSignedUrl).toHaveBeenCalledWith('getObject', {Bucket: 'bucket', Key: 'key'});
 				});
 			});
 		});
