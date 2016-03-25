@@ -58,7 +58,7 @@ angular.module('awsSetup')
 		$scope.awsChecks();
 	};
 }])
-.controller('JobSetupCtrl', ['$scope', 'awsService', '$uibModal', '$interval', function($scope, awsService, $uibModal, $interval) {
+.controller('JobSetupCtrl', ['$scope', 'awsService', '$uibModal', '$interval', 'localStorageService', function($scope, awsService, $uibModal, $interval, localStorageService) {
 	$scope.queues = [];
 	$scope.queueSize = 'No Queue Selected';
 	
@@ -67,6 +67,12 @@ angular.module('awsSetup')
 	$scope.endFrame = 240;
 	
 	awsService.getQueues();
+	
+	$scope.$watch('queue.workQueue', function(value) {
+		if (value != '') {
+			localStorageService.set('workQueue', value);
+		}
+	});
 	
 	$scope.refreshQueues = function() {
 		awsService.getQueues();
@@ -134,6 +140,7 @@ angular.module('awsSetup')
 			$scope.queues.push(entry);
 		});
 		
+		$scope.queue.workQueue = localStorageService.get('workQueue');
 		$scope.$digest();
 	});
 }])

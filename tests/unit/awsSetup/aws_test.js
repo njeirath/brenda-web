@@ -131,10 +131,11 @@ describe('awsSetup', function() {
 		});
 		
 		describe('JobSetupCtrl', function() {
-			var awsServiceMock, ctrl, uibModalMock, modalDeferred;
+			var awsServiceMock, ctrl, uibModalMock, modalDeferred, localStoreMock;
 			
 			beforeEach(function() {
 				awsServiceMock = getAwsServiceMock();
+				localStoreMock = getLocalStorageMock();
 				
 				//Setup inherited scope var
 				$rootScope.queue = {
@@ -148,7 +149,7 @@ describe('awsSetup', function() {
 				
 				spyOn(uibModalMock, 'open').and.returnValue({result: modalDeferred.promise});
 				
-				ctrl = $controller('JobSetupCtrl', {$scope: $rootScope, awsService: awsServiceMock, $uibModal: uibModalMock});
+				ctrl = $controller('JobSetupCtrl', {$scope: $rootScope, awsService: awsServiceMock, $uibModal: uibModalMock, localStorageService: localStoreMock});
 			});
 			
 			it('should initialize array to empty and call getQueues', function() {				
