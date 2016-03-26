@@ -147,7 +147,7 @@ angular.module('awsSetup')
 .controller('S3Ctrl', ['$scope', 'localStorageService', function($scope, localStorageService) {
 	
 }])
-.controller('WorkerSetupCtrl', ['$scope', 'localStorageService', '$http', 'awsService', function($scope, localStorageService, $http, awsService) {	
+.controller('WorkerSetupCtrl', ['$scope', 'localStorageService', '$http', 'awsService', '$q', function($scope, localStorageService, $http, awsService, $q) {	
 	//Get list of AMIs to choose from
 	$scope.amis = [];
 	
@@ -165,8 +165,48 @@ angular.module('awsSetup')
 	//Get list of instance types to choose from
 	$scope.instances = [];
 	
-	$http.get('instances.json').then(function(response) {
-		$scope.instances = response.data;
+	$scope.getSelectedInstance = function() {
+		return $scope.instances.find(function(inst) {
+			return inst.name == $scope.instance.size
+		})
+	};
+	
+	$scope.$on('aws-spotprice-update', function(event, data) {
+		data.SpotPriceHistory.forEach(function(price) {
+			var instance = $scope.instances.find(function(inst) {
+				return inst.name == price.InstanceType;
+			});
+			
+			if (!instance) {
+				console.log(price.InstanceType + " not found");
+			} else {
+				if (!instance.spotPrices[price.AvailabilityZone] || instance.spotPrices[price.AvailabilityZone].tstamp < price.Timestamp) {
+					instance.spotPrices[price.AvailabilityZone] = {price: price.SpotPrice, tstamp: price.Timestamp};
+				}
+			}
+		});
+		
+		if (data.NextToken) {
+			awsService.getSpotPrices(data.NextToken);
+		}
+	});
+	
+	$q.all([$http.get('instances.json'), awsService.getAvailabilityZones()])
+	.then(function(results) {
+		var instances = results[0];
+		var azList = results[1];
+		
+		instances.data.forEach(function(instance) {
+			var prices = {};
+			
+			azList.forEach(function(az) {
+				prices[az] = undefined;
+			})
+			
+			$scope.instances.push({name: instance, spotPrices: prices});
+		});
+		
+		awsService.getSpotPrices();
 	});
 	
 	$scope.numInstances = 1;
@@ -220,13 +260,17 @@ angular.module('awsSetup')
 		$scope.$digest();
 	};
 	
+	$scope.instance = {
+		size: ''
+	}
+	
 	$scope.requestInstances = function() {
 		//ami, keyPair, securityGroup, userData, instanceType, spotPrice, count, type
 		if ($scope.instanceType == 'spot') {
-			awsService.requestSpot($scope.amiSelect, $scope.sshKey, 'brenda-web', $scope.generateScript(), $scope.instanceSize, $scope.spotPrice, $scope.numInstances, 'one-time', $scope.queue.workQueue, $scope.s3.frameDestination.split('//').pop(), $scope.showStatus);
+			awsService.requestSpot($scope.amiSelect, $scope.sshKey, 'brenda-web', $scope.generateScript(), $scope.instance.size, $scope.spotPrice, $scope.numInstances, 'one-time', $scope.queue.workQueue, $scope.s3.frameDestination.split('//').pop(), $scope.showStatus);
 		} else {
 			//requestOndemand: function(ami, keyPair, securityGroup, userData, instanceType, count)
-			awsService.requestOndemand($scope.amiSelect, $scope.sshKey, 'brenda-web', $scope.generateScript(), $scope.instanceSize, $scope.numInstances, $scope.queue.workQueue, $scope.s3.frameDestination.split('//').pop(), $scope.showStatus);
+			awsService.requestOndemand($scope.amiSelect, $scope.sshKey, 'brenda-web', $scope.generateScript(), $scope.instance.size, $scope.numInstances, $scope.queue.workQueue, $scope.s3.frameDestination.split('//').pop(), $scope.showStatus);
 		}
 	};
 }])
@@ -280,7 +324,9 @@ angular.module('awsSetup')
 		localStorageService.set('frameDestination', newVal);
 	});
 }])
-.factory('awsService', ['$log', '$rootScope', 'localStorageService', 'aws', '$q', function($log, $rootScope, localStorageService, aws, $q) {
+.factory('awsService', ['$log', '$rootScope', 'localStorageService', 'aws', '$q', function($log, $rootScope, localStorageService, aws, $q) {	
+	var startDate = startDate = new Date(new Date() - 6*60*60*1000);
+	
 	var service = {
 		setCredentials: function(keyId, secret) {
 			aws.config.update({accessKeyId: keyId, secretAccessKey: secret});
@@ -659,6 +705,40 @@ angular.module('awsSetup')
 		getObjectUri: function(bucket, key) {
 			var s3 = new aws.S3();
 			return s3.getSignedUrl('getObject', {Bucket: bucket, Key: key});
+		},
+		getAvailabilityZones: function() {
+			var deferred = $q.defer();
+			var ec2 = new aws.EC2();
+			
+			ec2.describeAvailabilityZones({}, function(err, data) {
+				if(err) {
+					deferred.reject(String(err));
+				} else {
+					deferred.resolve(data.AvailabilityZones.map(function(item) {return item.ZoneName}));
+				}
+			})
+			
+			return deferred.promise;
+		},
+		getSpotPrices: function(nextToken) {
+			var ec2 = new aws.EC2();
+			
+			var params = {
+					Filters: [{Name: 'product-description', Values: ['Linux/UNIX']}],
+					StartTime: startDate
+			};
+			
+			if (nextToken) {
+				params.NextToken = nextToken;
+			}
+			
+			ec2.describeSpotPriceHistory(params, function(err, data) {
+				if (err) {
+					
+				} else {
+					$rootScope.$broadcast('aws-spotprice-update', data);
+				}
+			});
 		}
 	};
 	

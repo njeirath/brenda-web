@@ -719,6 +719,60 @@ describe('awsSetup', function() {
 					expect(awsMock.S3getSignedUrl).toHaveBeenCalledWith('getObject', {Bucket: 'bucket', Key: 'key'});
 				});
 			});
+			
+			describe('getAvailabilityZones', function() {
+				var promise, serviceCallback, errResp, dataResp;
+				
+				beforeEach(function() {
+					promise = awsService.getAvailabilityZones();
+					serviceCallback = awsMock.EC2describeAvailabilityZones.calls.argsFor(0)[1];
+					
+					promise.then(function(data) {
+						dataResp = data;
+					}, function(err) {
+						errResp = err;
+					});
+				});
+				
+				it('should call to get AZs from aws', function() {
+					expect(awsMock.EC2describeAvailabilityZones).toHaveBeenCalled();
+				});
+				
+				it('should reject promise on error', function() {
+					serviceCallback('error', null);
+					$rootScope.$apply();
+					expect(errResp).toBe('error');
+				});
+				
+				it('should resolve and return array on success', function() {
+					serviceCallback(null, {AvailabilityZones: [{ZoneName: 'zone1'}, {ZoneName: 'zone2'}]});
+					$rootScope.$apply();
+					expect(dataResp).toEqual(['zone1', 'zone2']);
+				});
+			});
+			
+			describe('getSpotPrices', function() {
+				var serviceCallback;
+				
+				beforeEach(function() {
+					awsService.getSpotPrices();
+					serviceCallback = awsMock.EC2describeSpotPriceHistory.calls.argsFor(0)[1];
+				});
+				
+				it('should request spot price history from aws', function() {
+					expect(awsMock.EC2describeSpotPriceHistory).toHaveBeenCalledWith({Filters: [{Name: 'product-description', Values: ['Linux/UNIX']}], StartTime: jasmine.any(Object)}, jasmine.any(Function));
+				});
+				
+				it('should set next token on request if provided', function() {
+					awsService.getSpotPrices('abc123');
+					expect(awsMock.EC2describeSpotPriceHistory).toHaveBeenCalledWith({NextToken: 'abc123', Filters: [{Name: 'product-description', Values: ['Linux/UNIX']}], StartTime: jasmine.any(Object)}, jasmine.any(Function));
+				});
+				
+				it('should broadcast aws-spotprice-update on success', function() {
+					serviceCallback(null, 'datas');
+					expect($rootScope.$broadcast).toHaveBeenCalledWith('aws-spotprice-update', 'datas')
+				});
+			});
 		});
 	});
 });
