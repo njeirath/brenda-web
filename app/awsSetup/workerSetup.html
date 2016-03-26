@@ -23,27 +23,47 @@
 				</label>
 			</div>
 			
+			<div class="panel panel-default">
+				<div class="panel-body">
+					<div class="panel panel-default col-lg-4" style="margin-bottom: 0px" ng-repeat="inst in instances">
+						<div class="panel-body">
+							<div class="radio">
+								<label>
+									<input type="radio" name="instanceSize" value="{{inst.name}}" ng-model="instance.size">
+									{{inst.name}}
+									<div uib-collapse="instanceType != 'spot'">
+										<div ng-repeat="(k, v) in inst.spotPrices">
+											<small>{{k}}: <strong>{{v.price | currency:"$":3}}</strong> - {{v.tstamp | date:'short'}}</small>
+										</div>
+									</div>
+								</label>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			
 			<div uib-collapse="instanceType != 'spot'">
 				<div class="form-group">
 					<label for="spotPrice">Spot Price</label>
 					<input type="text" class="form-control" id="spotPrice" ng-model="spotPrice" />
+					
 				</div>
 			</div>
 			
-			<div class="form-inline">
-				<div class="col-sm-4 form-group">
-					<label for="instanceType">Instance Size</label>
-					<select class="form-control" id="instanceSize" ng-model="instanceSize">
-						<option ng-repeat="instance in instances" value="{{instance}}">{{instance}}</option>
-					</select>
-				</div>
-				
-				<div class="col-sm-4 form-group">
+			<div class="row" uib-collapse="instanceType != 'spot' || !instance.size">
+				<div class="col-lg-1"><strong>{{instance.size}}</strong></div><div ng-repeat="(k, v) in getSelectedInstance().spotPrices" class="col-lg-2">{{k}}: {{v.price | currency:"$":3}}</div>
+				<br>
+			</div>
+			
+			<br>
+			<div class="form-inline">				
+				<div class="col-sm-6 form-group">
 					<label for="numInstances">Instance Count</label>
 					<input type="text" class="form-control" id="numInstances" ng-model="numInstances" />
 				</div>
 				
-				<div class="col-sm-4 form-group">
+				<div class="col-sm-6 form-group">
 					<label for="sshKey">SSH Key</label>
 					<select class="form-control" id="sshKey" ng-model="sshKey">
 						<option ng-repeat="key in keys" value="{{key}}">{{key}}</option>

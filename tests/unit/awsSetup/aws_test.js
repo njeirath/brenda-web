@@ -322,6 +322,8 @@ describe('awsSetup', function() {
 				
 				awsServiceMock = getAwsServiceMock();
 				
+				awsServiceMock.getAvailabilityZones.and.returnValue(['zone1', 'zone2']);
+				
 				instanceHandler = $httpBackend.when('GET', 'instances.json').respond(['c1.xlarge', 'm3.2xlarge']);
 				
 				//Mock up inherited scope objects
@@ -351,7 +353,37 @@ describe('awsSetup', function() {
 			it('should populate instance list based on http response', function() {
 				$httpBackend.flush();
 				expect($rootScope.instances.length).toBe(2);
-				expect($rootScope.instances[0]).toBe('c1.xlarge');
+				expect($rootScope.instances[0]).toEqual({name: 'c1.xlarge', spotPrices: {zone1: undefined, zone2: undefined}});
+				expect(awsServiceMock.getSpotPrices).toHaveBeenCalled();
+			});
+			
+			describe('$scope.$on(aws-spotprice-update', function() {
+				beforeEach(function() {
+					$httpBackend.flush();
+				});
+				
+				it('should update prices on data received', function() {
+					var curDate = new Date();
+					$rootScope.$broadcast('aws-spotprice-update', {SpotPriceHistory: 
+						[
+						 	{InstanceType: 'c1.xlarge', AvailabilityZone: 'zone1', Timestamp: curDate, SpotPrice: 0.023},
+						 	{InstanceType: 'c1.xlarge', AvailabilityZone: 'zone1', Timestamp: new Date(curDate - 100), SpotPrice: 0.025}	//Older data should be ignored
+					 	]});
+					
+					expect($rootScope.instances[0].spotPrices).toEqual({zone1: {price: 0.023, tstamp: curDate}, zone2: undefined});
+				})
+				
+				it('should call for next data if next token present', function() {
+					$rootScope.$broadcast('aws-spotprice-update', {SpotPriceHistory: [], NextToken: '123abc'});
+					
+					expect(awsServiceMock.getSpotPrices).toHaveBeenCalledWith('123abc');
+				})
+			});
+			
+			it('should return the currently selected instance when getSelectedInstance is called', function() {
+				$httpBackend.flush();
+				$rootScope.instance.size = 'c1.xlarge';
+				expect($rootScope.getSelectedInstance()).toEqual({name: 'c1.xlarge', spotPrices: {zone1: undefined, zone2: undefined}});
 			});
 			
 			it('should populate $scope.keys on callback from awsService.getKeyPairs', function() {
@@ -407,7 +439,7 @@ describe('awsSetup', function() {
 					$rootScope.generateScript = function() {
 						return 'script';
 					};
-					$rootScope.instanceSize = 'c3.large';
+					$rootScope.instance = {size: 'c3.large'};
 					$rootScope.spotPrice = '0.02';
 					$rootScope.numInstances = 1;
 				});
