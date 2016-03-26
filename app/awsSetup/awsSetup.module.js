@@ -1,3 +1,3 @@
 'use strict';
 
-angular.module('awsSetup', ['ui.bootstrap']);
+angular.module('awsSetup', ['ui.bootstrap', 'brendaHelper']);

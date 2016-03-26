@@ -1,7 +1,7 @@
 'use strict';
 
 angular.module('awsSetup')
-.controller('AwsSetupCtrl', ['$scope', 'awsService', function($scope, awsService) {
+.controller('AwsSetupCtrl', ['$scope', 'awsService', '$rootScope', function($scope, awsService, $rootScope) {
 	$scope.credentialCheck = {
 		status: 'info', 
 		msg: 'AWS credentials not checked yet'
@@ -30,6 +30,7 @@ angular.module('awsSetup')
 		}).then(function() {
 			$scope.securityGroupCheck.status = 'success';
 			$scope.securityGroupCheck.msg = 'Security group found!';
+			$rootScope.$broadcast('brenda-web-credentials-updated');
 		}, function(err) {
 			$scope.securityGroupCheck.status = 'danger';
 			$scope.securityGroupCheck.msg = 'Security group check failed: ' + err;
@@ -72,6 +73,10 @@ angular.module('awsSetup')
 		if (value != '') {
 			localStorageService.set('workQueue', value);
 		}
+	});
+	
+	$scope.$on('brenda-web-credentials-updated', function(event, data) {
+		$scope.refreshQueues();
 	});
 	
 	$scope.refreshQueues = function() {
@@ -191,35 +196,44 @@ angular.module('awsSetup')
 		}
 	});
 	
-	$q.all([$http.get('instances.json'), awsService.getAvailabilityZones()])
-	.then(function(results) {
-		var instances = results[0];
-		var azList = results[1];
-		
-		instances.data.forEach(function(instance) {
-			var prices = {};
+	$scope.updateTypes = function() {
+		$q.all([$http.get('instances.json'), awsService.getAvailabilityZones()])
+		.then(function(results) {
+			var instances = results[0];
+			var azList = results[1];
 			
-			azList.forEach(function(az) {
-				prices[az] = undefined;
-			})
+			instances.data.forEach(function(instance) {
+				var prices = {};
+				
+				azList.forEach(function(az) {
+					prices[az] = undefined;
+				})
+				
+				$scope.instances.push({name: instance, spotPrices: prices});
+			});
 			
-			$scope.instances.push({name: instance, spotPrices: prices});
+			awsService.getSpotPrices();
 		});
-		
-		awsService.getSpotPrices();
-	});
+	};
 	
 	$scope.numInstances = 1;
 	
 	//Get EC2 keypairs to choose from
 	$scope.keys = [];
 	
-	awsService.getKeyPairs(function(data) {
-		$scope.keys = [];
-		
-		data.KeyPairs.forEach(function(keyPair) {
-			$scope.keys.push(keyPair.KeyName);
-		});
+	$scope.refreshKeyPairs = function() {
+		awsService.getKeyPairs(function(data) {
+			$scope.keys = [];
+			
+			data.KeyPairs.forEach(function(keyPair) {
+				$scope.keys.push(keyPair.KeyName);
+			});
+		});	
+	};
+	
+	$scope.$on('brenda-web-credentials-updated', function(event, data) {
+		$scope.updateTypes();
+		$scope.refreshKeyPairs();
 	});
 	
 	$scope.generateScript = function() {

@@ -337,6 +337,7 @@ describe('awsSetup', function() {
 				};
 				
 				ctrl = $controller('WorkerSetupCtrl', {$scope: $rootScope, localStorageService: localStorageService, awsService: awsServiceMock});
+				$rootScope.$broadcast('brenda-web-credentials-updated');
 			});
 			
 			it('should start with spot selected as default', function() {
