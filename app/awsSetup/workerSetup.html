@@ -74,9 +74,14 @@
 				
 				<div class="col-sm-6 form-group">
 					<label for="sshKey">SSH Key</label>
-					<select class="form-control" id="sshKey" ng-model="sshKey">
-						<option ng-repeat="key in keys" value="{{key}}">{{key}}</option>
-					</select>
+					<div class="input-group">
+						<span class="input-group-btn">
+				        	<button class="btn btn-default" type="button" brenda-help="awsSetup/help/keyPairHelp.html"><span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span></button>
+				      	</span>
+						<select class="form-control" id="sshKey" ng-model="sshKey">
+							<option ng-repeat="key in keys" value="{{key}}">{{key}}</option>
+						</select>
+					</div>
 				</div>
 			</div>
 			
