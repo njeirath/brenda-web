@@ -6,14 +6,23 @@
 		<form>
 			<div class="form-group">
 				<label for="amiSelect">AMI</label>
-				<select class="form-control" name="amiSelect" id="amiSelect" ng-model="amiSelect">
-					<option ng-repeat="ami in amis" value="{{ami.name}}">{{ami.name}}</option>
-				</select>
+				<div class="input-group">
+					<span class="input-group-btn">
+			        	<button class="btn btn-default" type="button" brenda-help="awsSetup/help/amiHelp.html"><span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span></button>
+			      	</span>
+			      	<input type="text" class="form-control" id="amiSelect" ng-model="amiSelect" />
+			      	
+				</div>
+				<div class="col-lg-12">
+					<div class="col-lg-2" ng-repeat="ami in amis"><a href ng-click="setAmi(ami.name)">{{ami.name}} - blender {{ami.version}}</a></div>
+				</div>
 			</div>
+			<br>
 			
 			<div class="form-group">
 				<label>
-					Instance Type 
+					Instance Type
+					<a href brenda-help="awsSetup/help/spotHelp.html"><span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span></a>
 				</label>
 				<label class="radio-inline">
 					<input type="radio" ng-model="instanceType" value="spot" /> Spot
@@ -65,9 +74,14 @@
 				
 				<div class="col-sm-6 form-group">
 					<label for="sshKey">SSH Key</label>
-					<select class="form-control" id="sshKey" ng-model="sshKey">
-						<option ng-repeat="key in keys" value="{{key}}">{{key}}</option>
-					</select>
+					<div class="input-group">
+						<span class="input-group-btn">
+				        	<button class="btn btn-default" type="button" brenda-help="awsSetup/help/keyPairHelp.html"><span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span></button>
+				      	</span>
+						<select class="form-control" id="sshKey" ng-model="sshKey">
+							<option ng-repeat="key in keys" value="{{key}}">{{key}}</option>
+						</select>
+					</div>
 				</div>
 			</div>
 			
