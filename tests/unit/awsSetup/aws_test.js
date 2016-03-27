@@ -316,7 +316,7 @@ describe('awsSetup', function() {
 			beforeEach(function() {
 				amiListHandler = $httpBackend.when('GET', 'amiList.json').respond({
 					"ami-0529086c": {
-						"blenderVersion": "??"
+						"blenderVersion": "2.69"
 					}	
 				});
 				
@@ -347,7 +347,7 @@ describe('awsSetup', function() {
 			it('should populate list based on http response and default select first item', function() {
 				$httpBackend.flush();
 				expect($rootScope.amis.length).toBe(1);
-				expect($rootScope.amis[0]).toEqual({id: 0, name: 'ami-0529086c'});
+				expect($rootScope.amis[0]).toEqual({id: 0, name: 'ami-0529086c', version: '2.69'});
 				expect($rootScope.amiSelect).toBe('0');
 			});
 			

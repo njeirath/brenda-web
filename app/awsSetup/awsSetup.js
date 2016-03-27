@@ -159,11 +159,16 @@ angular.module('awsSetup')
 	$http.get('amiList.json').then(function(response) {
 		var i = 0;
 		Object.keys(response.data).forEach(function(item) {
-			$scope.amis[i] = {id: i, name: item}; 
+			$scope.amis[i] = {id: i, name: item, version: response.data[item]['blenderVersion']}; 
+			i++;
 		});
 		
-		$scope.amiSelect = '0';	
+		$scope.amiSelect = '';	
 	});
+	
+	$scope.setAmi = function(name) {
+		$scope.amiSelect = name;
+	};
 	
 	$scope.instanceType = 'spot';
 	
