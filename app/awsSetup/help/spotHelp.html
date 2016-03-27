@@ -1,0 +1,24 @@
+<div class="modal-header">
+    <h3 class="modal-title">Instance Type</h3>
+</div>
+<div class="modal-body">
+    <p>
+    	Brenda-web utilizes two types of instance requests from the AWS EC2 offerings, spot or on demand.
+	</p>
+	<p>
+    	On demand instances can be created as necessary and will continue to operate until the job is
+    	complete or the instance is terminated by the user.  On demand instances are charged per hour at
+    	a flat rate as described <a href="https://aws.amazon.com/ec2/pricing/" target="_blank">here</a>.
+    </p>
+    <p>
+    	Spot instances allow a user to bid on unused EC2 capacity and can generally be run at a significantly
+    	discounted price as compared to on demand instances.  The spot price fluctuates as a function of supply
+    	and demand over time.  As long as the spot price is below the price that was bid, the instances will
+    	continue to run.  If the spot price rises above the bid price, the instances will be terminated.  Any
+    	tasks that were being processed by a terminated worker will be returned to the work queue for later
+    	completion.  The latest spot price will be listed under the instance name for convenience. 
+    </p>
+</div>
+<div class="modal-footer">
+    <button class="btn btn-primary" type="button" ng-click="ok()">Done</button>
+</div>
