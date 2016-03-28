@@ -14,6 +14,8 @@ module.exports = function(config){
       'app/components/**/*.js',
       'app/awsSetup/awsSetup.module.js',
       'app/awsSetup/awsSetup.js',
+      'app/awsSetup/awsConfigure.ctrl.js',
+      'app/awsSetup/awsSetup.ctrl.js',
       'app/dashboard/dashboard.js',
       'app/dashboard/*.js',
       'app/app.js',

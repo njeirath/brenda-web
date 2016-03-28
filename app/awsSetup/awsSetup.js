@@ -1,64 +1,6 @@
 'use strict';
 
 angular.module('awsSetup')
-.controller('AwsSetupCtrl', ['$scope', 'awsService', '$rootScope', function($scope, awsService, $rootScope) {
-	$scope.credentialCheck = {
-		status: 'info', 
-		msg: 'AWS credentials not checked yet'
-	};
-	$scope.securityGroupCheck = {
-		status: 'info', 
-		msg: 'Security group not checked yet'
-	};
-	
-	$scope.awsChecks = function() {
-		$scope.credentialCheck.status = 'info';
-		$scope.credentialCheck.msg = 'AWS credentials being checked...';
-		$scope.securityGroupCheck.status = 'info';
-		$scope.securityGroupCheck.msg = 'Security group being checked...';
-		
-		awsService.testCredentials()
-		.then(function() {
-			$scope.credentialCheck.status = 'success';
-			$scope.credentialCheck.msg = 'AWS credentials look good!';
-		}, function(err) {
-			$scope.credentialCheck.status = 'danger';
-			$scope.credentialCheck.msg = "AWS credentials couldn't be validated: " + err;
-			throw "Credentials not valid";
-		}).then(function() {
-			return awsService.getSecurityGroups('brenda-web');
-		}).then(function() {
-			$scope.securityGroupCheck.status = 'success';
-			$scope.securityGroupCheck.msg = 'Security group found!';
-			$rootScope.$broadcast('brenda-web-credentials-updated');
-		}, function(err) {
-			$scope.securityGroupCheck.status = 'danger';
-			$scope.securityGroupCheck.msg = 'Security group check failed: ' + err;
-		});
-	};
-	
-	$scope.createSG = function() {
-		awsService.createSecurityGroup()
-		.then(function() {
-			$scope.awsChecks();
-		}, function(err) {
-			$scope.securityGroupCheck.status = 'danger';
-			$scope.securityGroupCheck.msg = 'Security group creation failed: ' + err;
-		});
-	};
-	
-	if (    ($scope.credentials.awsRegion) && ($scope.credentials.awsRegion != '') 
-	     && ($scope.credentials.awsKeyId) && ($scope.credentials.awsKeyId != '') 
-	     && ($scope.credentials.awsSecret) && ($scope.credentials.awsSecret != '')) {
- 		$scope.awsChecks();
-     }
-		
-	$scope.setCredentials = function() {
-		awsService.setCredentials($scope.credentials.awsKeyId, $scope.credentials.awsSecret);
-		awsService.setRegion($scope.credentials.awsRegion);
-		$scope.awsChecks();
-	};
-}])
 .controller('JobSetupCtrl', ['$scope', 'awsService', '$uibModal', '$interval', 'localStorageService', function($scope, awsService, $uibModal, $interval, localStorageService) {
 	$scope.queues = [];
 	$scope.queueSize = 'No Queue Selected';
@@ -294,13 +236,6 @@ angular.module('awsSetup')
 	};
 }])
 .controller('SetupCtrl', ['$scope', 'localStorageService', 'awsService', '$interval', function($scope, localStorageService, awsService, $interval) {
-	//Credentials setup
-	$scope.credentials = {
-		awsRegion: awsService.getRegion(),
-		awsKeyId: awsService.getKeyId(),
-		awsSecret: awsService.getKeySecret()
-	};
-	
 	//Queue setup
 	$scope.queue = {
 		workQueue: '',
@@ -350,8 +285,6 @@ angular.module('awsSetup')
 		setCredentials: function(keyId, secret) {
 			aws.config.update({accessKeyId: keyId, secretAccessKey: secret});
 			$log.log("Set keyId: " + keyId + " and secret: " + secret);
-			localStorageService.set('keyId', keyId);
-			localStorageService.set('keySecret', secret);
 		},
 		getKeyId: function() {
 			if (aws.config.credentials) {
@@ -370,7 +303,6 @@ angular.module('awsSetup')
 		setRegion: function(region) {
 			aws.config.region = region;
 			$log.log("Set region: " + region);
-			localStorageService.set('region', region);
 		},
 		getRegion: function() {
 			return aws.config.region;
@@ -760,18 +692,6 @@ angular.module('awsSetup')
 			});
 		}
 	};
-	
-	var storedKeyId = localStorageService.get('keyId');
-	var storedKeySecret = localStorageService.get('keySecret');
-	var storedRegion = localStorageService.get('region');
-	
-	if ((storedKeyId) && (storedKeyId != '') && (storedKeySecret) && (storedKeySecret != '')) {
-		service.setCredentials(storedKeyId, storedKeySecret);
-	}
-	
-	if ((storedRegion) && (storedRegion != '')) {
-		service.setRegion(storedRegion);
-	}
 	
 	return service;
 }])
