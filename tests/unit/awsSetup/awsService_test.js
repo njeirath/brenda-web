@@ -23,43 +23,6 @@ describe('awsSetup', function() {
 			spyOn($rootScope, '$broadcast');
 		}));
 		
-		describe('initialization process', function() {
-			var awsService;
-			
-			it('should attempt to retrieve settings from local storage', function() {				
-				inject(function($injector) {
-	    			awsService = $injector.get('awsService');
-	  			});
-	  			
-	  			expect(localStorageService.get).toHaveBeenCalled();
-	  			expect(localStorageService.get).toHaveBeenCalledWith('keyId');
-	  			expect(localStorageService.get).toHaveBeenCalledWith('keySecret');
-	  			expect(localStorageService.get).toHaveBeenCalledWith('region');
-			});
-			
-			it('should not initialize AWS if nothing in local storage', function() {
-				inject(function($injector) {
-	    			awsService = $injector.get('awsService');
-	  			});
-	  			
-	  			expect(awsMock.config.update).not.toHaveBeenCalled();
-	  			expect(awsMock.config.region).toBe(undefined);
-			});
-			
-			it('should initialize AWS if all vars are set in local storage', function() {
-				localStorageService.set('keyId', '123');
-				localStorageService.set('keySecret', '456');
-				localStorageService.set('region', 'us-east-1');
-				
-				inject(function($injector) {
-	    			awsService = $injector.get('awsService');
-	  			});
-	  			
-	  			expect(awsMock.config.update).toHaveBeenCalled();
-	  			expect(awsMock.config.region).toBe('us-east-1');
-			});
-		});
-		
 		describe('service functionality', function() {
 			var awsService;
 			
@@ -75,13 +38,6 @@ describe('awsSetup', function() {
 					
 					expect(awsMock.config.update).toHaveBeenCalled();
 					expect(awsMock.config.update).toHaveBeenCalledWith({accessKeyId: 'key', secretAccessKey: 'secret'});
-				});
-				
-				it('should update local storage', function() {
-					awsService.setCredentials('key', 'secret');
-					
-					expect(localStorageService.set).toHaveBeenCalledWith('keyId', 'key');
-					expect(localStorageService.set).toHaveBeenCalledWith('keySecret', 'secret');
 				});
 			});
 			
@@ -118,12 +74,6 @@ describe('awsSetup', function() {
 					awsService.setRegion('us-east-1');
 					
 					expect(awsMock.config.region).toBe('us-east-1');
-				});
-				
-				it('should save value to local storage', function() {
-					awsService.setRegion('us-east-1');
-					
-					expect(localStorageService.set).toHaveBeenCalledWith('region', 'us-east-1');
 				});
 			});
 			

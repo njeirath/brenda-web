@@ -15,119 +15,7 @@ describe('awsSetup', function() {
 		
 		
 		describe('AwsSetupCtrl', function() {
-			var awsServiceMock, ctrl, testCredentialsDeferred, getSgDeferred;
 			
-			beforeEach(function() {
-				awsServiceMock = getAwsServiceMock();
-				testCredentialsDeferred = $q.defer();
-				awsServiceMock.testCredentials.and.returnValue(testCredentialsDeferred.promise);
-				
-				getSgDeferred = $q.defer();
-				awsServiceMock.getSecurityGroups.and.returnValue(getSgDeferred.promise);
-				
-				//Mock out inherited objects
-				$rootScope.credentials = {
-					awsRegion: '',
-					awsKeyId: '',
-					awsSecret: ''
-				};
-				
-				var ctrl = $controller('AwsSetupCtrl', {$scope: $rootScope, awsService: awsServiceMock});
-			});
-			
-			describe('initialization procedures', function() {
-				it('should start with empty scope vars, and not call testCredentials', function() {
-					expect($rootScope.credentials.awsRegion).toBe('');
-					expect($rootScope.credentials.awsKeyId).toBe('');
-					expect($rootScope.credentials.awsSecret).toBe('');
-					
-					expect(awsServiceMock.testCredentials).not.toHaveBeenCalled();
-				});
-			});
-			
-			describe('$scope.setCredentials()', function() {
-				it('should call into awsService with scope vars', function() {					
-					$rootScope.credentials = {
-						awsRegion: 'reg',
-						awsKeyId: 'id',
-						awsSecret: 'shh'
-					};
-					
-					$rootScope.setCredentials();
-					
-					expect(awsServiceMock.setCredentials).toHaveBeenCalledWith('id', 'shh');
-					expect(awsServiceMock.setRegion).toHaveBeenCalledWith('reg');
-					expect(awsServiceMock.testCredentials).toHaveBeenCalled();
-				});
-			});
-			
-			describe('$scope.awsChecks', function() {
-				beforeEach(function() {
-					$rootScope.awsChecks();
-				});
-				
-				it('should make a call to testCredentials', function() {
-					expect(awsServiceMock.testCredentials).toHaveBeenCalled();
-				});
-				
-				it('should update model when testCredentials resolves', function() {
-					testCredentialsDeferred.resolve();
-					$rootScope.$apply();
-					
-					expect($rootScope.credentialCheck).toEqual({status: 'success', msg: 'AWS credentials look good!'});
-					expect(awsServiceMock.getSecurityGroups).toHaveBeenCalledWith('brenda-web');
-				});
-				
-				it('should update model when testCredentials are rejected', function() {
-					testCredentialsDeferred.reject('error message');
-					expect($rootScope.$apply).toThrow();
-					
-					expect($rootScope.credentialCheck).toEqual({status: 'danger', msg: "AWS credentials couldn't be validated: error message"});
-					expect(awsServiceMock.getSecurityGroups).not.toHaveBeenCalled();
-				});
-				
-				it('should update model when SG check resolves', function() {
-					testCredentialsDeferred.resolve();
-					getSgDeferred.resolve();
-					$rootScope.$apply();
-					
-					expect($rootScope.securityGroupCheck).toEqual({status: 'success', msg: 'Security group found!'});
-				});
-				
-				it('should update model with SG check is rejected', function() {
-					testCredentialsDeferred.resolve();
-					getSgDeferred.reject('SG error');
-					$rootScope.$apply();
-					
-					expect($rootScope.securityGroupCheck).toEqual({status: 'danger', msg: 'Security group check failed: SG error'});
-				});
-			});
-			
-			describe('$scope.createSG', function() {
-				var createSgDeferred; 
-				
-				beforeEach(function() {
-					createSgDeferred = $q.defer();
-					awsServiceMock.createSecurityGroup.and.returnValue(createSgDeferred.promise);
-					spyOn($rootScope, 'awsChecks');
-					
-					$rootScope.createSG();
-				});
-				
-				it('should trigger AWS checks when resolved', function() {
-					createSgDeferred.resolve();
-					$rootScope.$apply();
-					
-					expect($rootScope.awsChecks).toHaveBeenCalled();
-				});
-				
-				it('should update model when rejected', function() {
-					createSgDeferred.reject('err msg');
-					$rootScope.$apply();
-					
-					expect($rootScope.securityGroupCheck).toEqual({status: 'danger', msg: 'Security group creation failed: err msg'});
-				});
-			});
 		});
 		
 		describe('JobSetupCtrl', function() {
@@ -267,12 +155,6 @@ describe('awsSetup', function() {
 				
 				expect(localStorageService.set).toHaveBeenCalledWith('projectSource', 'new source');
 				expect(localStorageService.set).toHaveBeenCalledWith('frameDestination', 'new dest');
-			});
-			
-			it('should initialize scope based on awsService, and call testCredentials', function() {				
-				expect($rootScope.credentials.awsRegion).toBe('region');
-				expect($rootScope.credentials.awsKeyId).toBe('accessKey');
-				expect($rootScope.credentials.awsSecret).toBe('secretKey');
 			});
 			
 			describe('$scope.updateQueueSize', function() {

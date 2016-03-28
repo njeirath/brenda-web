@@ -112,6 +112,18 @@ describe('dashboard instances', function() {
 		expect($rootScope.buckets.addBucket).toHaveBeenCalledWith('dest bucket');
 	});
 	
+	it('should set ConfigError if rejected for that reason', function() {
+		spotDeferred.reject({code: 'ConfigError', message: 'config error'});
+		$rootScope.$apply();
+		expect($rootScope.errors.ConfigError).toBe('config error');
+	});
+	
+	it('should set CredentialsError if rejected for that reason', function() {
+		spotDeferred.reject({code: 'CredentialsError', message: 'creds error'});
+		$rootScope.$apply();
+		expect($rootScope.errors.CredentialsError).toBe('creds error');
+	});
+	
 	describe('$rootScope.getInstanceStats', function() {
 		beforeEach(function() {
 			$rootScope.instances.table = [{
