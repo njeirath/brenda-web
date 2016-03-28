@@ -27,7 +27,17 @@ angular.module('dashboard')
 		row.instanceType = instance.InstanceType;
 	}
 	
+	$scope.resetErrors = function() {
+		$scope.errors = {
+				ConfigError: false,
+				CredentialsError: false,
+				OtherError: false
+		};	
+	};
+	
+	
 	$scope.updateTable = function() {
+		$scope.resetErrors();
 		var newRows = [];
 		
 		var instanceDetailsDeferred = awsService.getInstanceDetails();
@@ -104,7 +114,13 @@ angular.module('dashboard')
 			
 			$scope.instances.table = newRows;
 		}).then($scope.getInstanceStats, function(error) {
-			console.log(error);
+			if(error.code == 'ConfigError') {
+				$scope.errors.ConfigError = error.message;
+			} else if(error.code == 'CredentialsError') {
+				$scope.errors.CredentialsError = error.message;
+			} else {
+				$scope.errors.OtherError = String(error);
+			}
 		});
 	};
 	
@@ -136,6 +152,10 @@ angular.module('dashboard')
 	
 	$scope.$on('$destroy', function() {
 		$interval.cancel(instancesTimer);
+	});
+	
+	$scope.$on('brenda-web-credentials-updated', function() {
+		$scope.updateTable();
 	});
 
 }]);

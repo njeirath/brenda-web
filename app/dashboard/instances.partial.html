@@ -3,6 +3,11 @@
     	<h3 class="panel-title">Workers</h3>
 	</div>
 	<div class="panel-body">
+		<div ng-messages="errors" role="alert">
+			<div ng-message="ConfigError" class="alert alert-danger">Configuration error: {{errors.ConfigError}}. <a href aws-configure><strong>Edit configuration</strong></a></div>
+			<div ng-message="CredentialsError" class="alert alert-danger">Configuration error: {{errors.CredentialsError}}. <a href aws-configure><strong>Edit configuration</strong></a></div>
+			<div ng-message="OtherError" class="alert alert-danger">Error: {{errors.OtherError}}</div>
+		</div>
 		<table class="table">
 			<thead>
 				<tr>

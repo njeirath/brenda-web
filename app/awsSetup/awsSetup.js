@@ -521,7 +521,7 @@ angular.module('awsSetup')
 			var deferred = $q.defer();
 			ec2.describeSpotInstanceRequests({Filters: [{Name: 'tag-key', Values: ['brenda-queue']}]}, function(err, data) {
 				if (err) {
-					deferred.reject(String(err));
+					deferred.reject(err);
 				} else {
 					deferred.resolve(data);
 				}
