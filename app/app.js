@@ -13,15 +13,13 @@ angular.module('brendaWeb', [
   'dashboard'
 ]).
 config(['$stateProvider', function($stateProvider) {
-  $stateProvider.state('root', {
-    templateUrl: 'index.html'
-  }).state('root.landing', {
+  $stateProvider.state('landing', {
   	url: '',
   	templateUrl: "landing.html"
-  }).state('root.setup', {
+  }).state('setup', {
   	templateUrl: 'jobSetup/jobSetup.partial.html',
   	controller: 'SetupCtrl'
-  }).state('root.setup.view', {
+  }).state('setup.view', {
   	url: '/setup',
   	views: {
   		'credentials': {templateUrl: 'awsSetup/awsSetup.html', controller: 'AwsSetupCtrl'},
@@ -29,10 +27,10 @@ config(['$stateProvider', function($stateProvider) {
   		's3': {templateUrl: 'awsSetup/s3Setup.html', controller: 'S3Ctrl'},
   		'workers': {templateUrl: 'awsSetup/workerSetup.html', controller: 'WorkerSetupCtrl'}
   	}
-  }).state('root.dashboard', {
+  }).state('dashboard', {
   	templateUrl: 'dashboard/dashboard.partial.html',
   	controller: 'dashboardParentCtrl'
-  }).state('root.dashboard.view', {
+  }).state('dashboard.view', {
   	url: '/dashboard',
   	views: {
   		'queues': {templateUrl: 'dashboard/queues.partial.html', controller: 'queuesCtrl'},
