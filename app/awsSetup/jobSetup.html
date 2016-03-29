@@ -3,7 +3,7 @@
     <h3 class="panel-title">Work Queue</h3>
   </div>
   <div class="panel-body">
-    <form>
+    <form name="jobForm">
 		<div class="form-group">
 			<label for="workQueue">Work Queue</label>
 			<div class="input-group">
@@ -32,13 +32,22 @@
 		<div class="form-inline">
 			<div class="form-group">
 				<label for="startFrame">Start Frame</label>
-				<input type="text" class="form-control" id="startFrame" ng-model="startFrame" />
+				<input type="number" name="startFrame" class="form-control" id="startFrame" ng-model="startFrame" required min="0" max="{{endFrame}}"/>
 			</div>
 			
 			<div class="form-group">
 				<label for="endFrame">End Frame</label>
-				<input type="text" class="form-control" id="endFrame" ng-model="endFrame" />
+				<input type="number" name="endFrame" class="form-control" id="endFrame" ng-model="endFrame" required min="{{startFrame}}"/>
 			</div>
+		</div>
+		<div ng-messages="jobForm.startFrame.$error">
+			<div ng-message="required" class="alert alert-danger">Start frame is required</div>
+			<div ng-message="min" class="alert alert-danger">Start frame must be greater than 0</div>
+			<div ng-message="max" class="alert alert-danger">Start frame must be less than end frame</div>
+		</div>
+		<div ng-messages="jobForm.endFrame.$error">
+			<div ng-message="required" class="alert alert-danger">End frame is required</div>
+			<div ng-message="min" class="alert alert-danger">End frame must be greater than startFrame</div>
 		</div>
 		
 		<div class="form-group">
@@ -51,7 +60,7 @@
 		<div class="row">
 			<div class="col-sm-4">
 				<div class="form-inline">
-					<button type="submit" ng-click="sendWork()" class="btn btn-primary">Queue Work</button>
+					<button type="submit" ng-click="sendWork()" class="btn btn-primary" ng-disabled="jobForm.$invalid">Queue Work</button>
 					<button type="submit" ng-click="clearQueue()" class="btn btn-warning">Clear Queue</button>
 				</div>
 			</div>
