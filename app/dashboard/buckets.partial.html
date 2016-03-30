@@ -3,6 +3,7 @@
     	<h3 class="panel-title">Bucket: {{bucket.name}} <span class="badge">{{bucket.size}}</span></h3>
 	</div>
 	<div class="panel-body">
+		<strong>Download All: </strong><a href ng-click="downloadModal(bucket.name)"><span class="glyphicon glyphicon-cloud-download"></span></a>
 		<div ng-messages="bucket.errors">
 			<div ng-message="error" class="alert alert-danger" role="alert">Error occurred, we can attempt to <a href brenda-help="dashboard/help/s3cors.html"><strong>fix it</strong></a></div>
 		</div>
