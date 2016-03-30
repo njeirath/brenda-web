@@ -32,7 +32,7 @@
 		<div class="form-inline">
 			<div class="form-group">
 				<label for="startFrame">Start Frame</label>
-				<input type="number" name="startFrame" class="form-control" id="startFrame" ng-model="startFrame" required min="0" max="{{endFrame}}"/>
+				<input type="number" name="startFrame" class="form-control" id="startFrame" ng-model="startFrame" required min="0" max="{{endFrame}}" size="15"/>
 			</div>
 			
 			<div class="form-group">
@@ -40,14 +40,14 @@
 				<input type="number" name="endFrame" class="form-control" id="endFrame" ng-model="endFrame" required min="{{startFrame}}"/>
 			</div>
 		</div>
-		<div ng-messages="jobForm.startFrame.$error">
-			<div ng-message="required" class="alert alert-danger">Start frame is required</div>
-			<div ng-message="min" class="alert alert-danger">Start frame must be greater than 0</div>
-			<div ng-message="max" class="alert alert-danger">Start frame must be less than end frame</div>
+		<div ng-messages="jobForm.startFrame.$error" role="alert">
+			<div ng-message="required">Start frame is required</div>
+			<div ng-message="min">Start frame must be greater than 0</div>
+			<div ng-message="max">Start frame must be less than end frame</div>
 		</div>
-		<div ng-messages="jobForm.endFrame.$error">
-			<div ng-message="required" class="alert alert-danger">End frame is required</div>
-			<div ng-message="min" class="alert alert-danger">End frame must be greater than startFrame</div>
+		<div ng-messages="jobForm.endFrame.$error" role="alert">
+			<div ng-message="required">End frame is required</div>
+			<div ng-message="min">End frame must be greater than startFrame</div>
 		</div>
 		
 		<div class="form-group">
