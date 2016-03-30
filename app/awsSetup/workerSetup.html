@@ -53,9 +53,9 @@
 			</div>
 			
 			<div uib-collapse="instanceType != 'spot'">
-				<div class="form-group">
+				<div class="form-group" ng-class="{ 'has-error': workerForm.spotPrice.$invalid}">
 					<label for="spotPrice">Spot Price</label>
-					<input type="number" class="form-control" id="spotPrice" ng-model="spotPrice" />
+					<input type="number" name="spotPrice" class="form-control" id="spotPrice" ng-model="spotPrice" ng-pattern="/^[0-9]*(\.[0-9]*)?$/" step=".0001"/>
 					
 				</div>
 			</div>

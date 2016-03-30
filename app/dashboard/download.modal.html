@@ -1,0 +1,25 @@
+<div class="modal-header">
+    <h3 class="modal-title">Download S3 Files</h3>
+</div>
+<div class="modal-body">
+    <p>Unfortunately, there is no convenient way to download all S3 files within a bucket from the browser.  Here
+    	are some potential alternatives to allow you to do so however:</p>
+    	
+    <hr>
+    <h3>AWS CLI</h3>
+    <p>The AWS Command Line Interface (CLI) is a Python utility built by Amazon.  
+    	<a href="http://docs.aws.amazon.com/cli/latest/userguide/installing.html" target="_blank">Installation instructions</a> are available
+    	to walk you through the installation process.  Once the tool is installed and 
+    	<a href="http://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html" target="_blank">configured</a>, the following 
+    	command will download all the files in your <code>{{bucket}}</code> bucket to your current folder</p>
+    	<code>aws s3 sync s3://{{bucket}} .</code>
+    	
+    <h3>s3cmd</h3>
+    <p><a href="http://s3tools.org/s3cmd" target="_blank">s3cmd</a> is another command line tool that is Python based.  Once you
+    	have it installed and configured, you may use the following command to download all files to your current folder
+	</p>
+	<code>s3cmd sync s3://{{bucket}}/ .</code>
+</div>
+<div class="modal-footer">
+    <button class="btn btn-primary" type="button" ng-click="ok()">Done</button>
+</div>
