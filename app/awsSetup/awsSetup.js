@@ -146,6 +146,7 @@ angular.module('awsSetup')
 	$scope.updateTypes = function() {
 		$q.all([$http.get('instances.json'), awsService.getAvailabilityZones()])
 		.then(function(results) {
+			$scope.instances = [];
 			var instances = results[0];
 			var azList = results[1];
 			
@@ -234,6 +235,9 @@ angular.module('awsSetup')
 			awsService.requestOndemand($scope.amiSelect, $scope.sshKey, 'brenda-web', $scope.generateScript(), $scope.instance.size, $scope.numInstances, $scope.queue.workQueue, $scope.s3.frameDestination.split('//').pop(), $scope.showStatus);
 		}
 	};
+	
+	$scope.updateTypes();
+	$scope.refreshKeyPairs();
 }])
 .controller('SetupCtrl', ['$scope', 'localStorageService', 'awsService', '$interval', function($scope, localStorageService, awsService, $interval) {
 	//Queue setup

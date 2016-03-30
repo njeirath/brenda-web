@@ -43,7 +43,12 @@ describe('awsSetup', function() {
 					awsSecret: 'shh'
 				};
 				
-				$scope.setCredentials();
+				var form = jasmine.createSpyObj('form', ['$setSubmitted']);
+				form.$valid = true;
+				
+				$scope.setCredentials(form);
+				
+				expect(form.$setSubmitted).toHaveBeenCalled();
 				
 				expect(awsServiceMock.setCredentials).toHaveBeenCalledWith('id', 'shh');
 				expect(awsServiceMock.setRegion).toHaveBeenCalledWith('reg');

@@ -3,7 +3,7 @@
 		<h3 class="panel-title">Add Workers</h3>
 	</div>
 	<div class="panel-body">
-		<form>
+		<form name="workerForm">
 			<div class="form-group">
 				<label for="amiSelect">AMI</label>
 				<div class="input-group">
@@ -55,7 +55,7 @@
 			<div uib-collapse="instanceType != 'spot'">
 				<div class="form-group">
 					<label for="spotPrice">Spot Price</label>
-					<input type="text" class="form-control" id="spotPrice" ng-model="spotPrice" />
+					<input type="number" class="form-control" id="spotPrice" ng-model="spotPrice" />
 					
 				</div>
 			</div>
@@ -66,10 +66,14 @@
 			</div>
 			
 			<br>
-			<div class="form-inline">				
-				<div class="col-sm-6 form-group">
+			<div class="form-inline">
+				<div class="col-sm-6 form-group" ng-class="{ 'has-error': workerForm.numInstances.$invalid}">
 					<label for="numInstances">Instance Count</label>
-					<input type="text" class="form-control" id="numInstances" ng-model="numInstances" />
+					<input type="number" name="numInstances" class="form-control" id="numInstances" ng-model="numInstances" required min="1"/>
+					<div ng-messages="workerForm.numInstances.$error" role="alert">
+						<div ng-message="required">This field is required</div>
+						<div ng-message="min">Enter a value that is greater than or equal to 1</div>
+					</div>
 				</div>
 				
 				<div class="col-sm-6 form-group">
@@ -92,7 +96,7 @@
 				<textarea class="form-control" id="startupScript" rows="5" readonly>{{generateScript()}}</textarea>
 			</div>
 			
-			<button type="submit" ng-click="requestInstances()" class="btn btn-primary">Request Instances</button>
+			<button type="submit" ng-click="requestInstances()" class="btn btn-primary" ng-disabled="workerForm.$invalid">Request Instances</button>
 			<uib-alert ng-repeat="status in statuses" type="{{status.type}}" close="">{{status.text}}</uib-alert>
 		</form>
 	</div>

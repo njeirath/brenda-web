@@ -59,15 +59,18 @@ angular.module('awsSetup')
  		$scope.awsChecks();
      }
 		
-	$scope.setCredentials = function() {
-		awsService.setCredentials($scope.credentials.awsKeyId, $scope.credentials.awsSecret);
-		localStorageService.set('keyId', $scope.credentials.awsKeyId);
-		localStorageService.set('keySecret', $scope.credentials.awsSecret);
-		
-		awsService.setRegion($scope.credentials.awsRegion);
-		localStorageService.set('region', $scope.credentials.awsRegion);
-		
-		$scope.awsChecks();
+	$scope.setCredentials = function(form) {
+		form.$setSubmitted();
+		if (form.$valid) {
+			awsService.setCredentials($scope.credentials.awsKeyId, $scope.credentials.awsSecret);
+			localStorageService.set('keyId', $scope.credentials.awsKeyId);
+			localStorageService.set('keySecret', $scope.credentials.awsSecret);
+			
+			awsService.setRegion($scope.credentials.awsRegion);
+			localStorageService.set('region', $scope.credentials.awsRegion);
+			
+			$scope.awsChecks();
+		}
 	};
 	
 	$scope.ok = function () {
