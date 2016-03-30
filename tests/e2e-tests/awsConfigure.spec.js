@@ -39,9 +39,9 @@ describe('AWS Configure Page', function() {
 		it('should show 3 errors when clicking set credentials without data', function() {
 			element(by.id('setCredentialsBtn')).click();
 			
-			element.all(by.css('.alert')).count().then(function(count) {
-				expect(count).toBe(3);
-			})
+			expect(element(by.css('[ng-messages="awsConfigure.awsKeyId.$error"]')).isPresent()).toBe(true);
+			expect(element(by.css('[ng-messages="awsConfigure.awsSecret.$error"]')).isPresent()).toBe(true);
+			expect(element(by.css('[ng-messages="awsConfigure.awsRegion.$error"]')).isPresent()).toBe(true);
 		});
 	});
 	
