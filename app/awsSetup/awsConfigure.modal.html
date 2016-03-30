@@ -8,20 +8,29 @@
 			<div class="pull-right"><a href brenda-help="awsSetup/help/awsSetupHelp.html"><span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span></a></div>
 		</div>
 		<div class="panel-body">
-			<form>
-				<div class="form-group">
+			<form name="awsConfigure">
+				<div class="form-group" ng-class="{ 'has-error': (awsConfigure.awsKeyId.$touched || awsConfigure.$submitted) && awsConfigure.awsKeyId.$invalid}">
 					<label for="awsKeyId">AWS Access Key ID</label>
-					<input type="text" class="form-control" id="awsKeyId" ng-model="credentials.awsKeyId" placeholder="Key ID">
+					<input type="text" name="awsKeyId" class="form-control" id="awsKeyId" ng-model="credentials.awsKeyId" placeholder="Key ID" required>
+					<div ng-messages="awsConfigure.awsKeyId.$error" ng-show="awsConfigure.awsKeyId.$touched || awsConfigure.$submitted" role="alert">
+						<div ng-message="required">Field is required</div>
+					</div>
 				</div>
-				<div class="form-group">
+				<div class="form-group"  ng-class="{ 'has-error': (awsConfigure.awsSecret.$touched || awsConfigure.$submitted) && awsConfigure.awsSecret.$invalid}">
 					<label for="awsSecret">AWS Access Key Secret</label>
-					<input type="text" class="form-control" id="awsSecret" ng-model="credentials.awsSecret" placeholder="Key Secret" />
+					<input type="text" name="awsSecret" class="form-control" id="awsSecret" ng-model="credentials.awsSecret" placeholder="Key Secret" required />
+					<div ng-messages="awsConfigure.awsSecret.$error"  ng-show="awsConfigure.awsSecret.$touched || awsConfigure.$submitted" role="alert">
+						<div ng-message="required">Field is required</div>
+					</div>
 				</div>
-				<div class="form-group">
+				<div class="form-group"  ng-class="{ 'has-error': (awsConfigure.awsRegion.$touched || awsConfigure.$submitted) && awsConfigure.awsRegion.$invalid}">
 					<label for="awsRegion">AWS Region</label>
-					<input type="text" class="form-control" id="awsRegion" ng-model="credentials.awsRegion" placeholder="Region" />
+					<input type="text" name="awsRegion" class="form-control" id="awsRegion" ng-model="credentials.awsRegion" placeholder="Region" required/>
+					<div ng-messages="awsConfigure.awsRegion.$error"  ng-show="awsConfigure.awsRegion.$touched || awsConfigure.$submitted" role="alert">
+						<div ng-message="required">Field is required</div>
+					</div>
 				</div>
-				<button type="submit" ng-click="setCredentials()" id="setCredentialsBtn" class="btn btn-primary">Set Credentials</button>
+				<button type="submit" ng-click="setCredentials(awsConfigure)" id="setCredentialsBtn" class="btn btn-primary">Set Credentials</button>
 				<ul class="list-group">
 					<li class="list-group-item list-group-item-{{credentialCheck.status}}" id="loginStatus">
 						{{credentialCheck.msg}}
@@ -29,7 +38,6 @@
 					<li class="list-group-item list-group-item-{{securityGroupCheck.status}}">{{securityGroupCheck.msg}} 
 						<a href ng-click="createSG()" ng-show="securityGroupCheck.status == 'danger'"><strong>Fix it</strong></a></li>
 				</ul>
-				<!-- <aws-login aws-key-id="awsKeyId" aws-secret="awsSecret" region="awsRegion"></aws-login> -->
 			</form>
 		</div>
 	</div>
