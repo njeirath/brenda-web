@@ -16,7 +16,7 @@
 			</thead>
 			<tbody>
 				<tr ng-repeat="file in bucket.files">
-					<td><a ng-click="openLightbox(bucket.name, $index)">{{file.name}}</a></td>
+					<td><a href="{{file.url}}" download={{file.name}}><span class="glyphicon glyphicon-download" aria-hidden="true"></span></a>  <a ng-click="openLightbox(bucket.name, $index)">{{file.name}}</a></td>
 					<td>{{file.size}}</td>
 					<td>{{file.modified}}</td>
 				</tr>
