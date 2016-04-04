@@ -2,30 +2,7 @@
     <h3 class="modal-title">AWS Credentials and Region</h3>
 </div>
 <div class="modal-body">
-    <p>
-    	In order for this tool to work, you will need to provide it with your AWS access key and 
-    	secret as well as specifying a region in which to operate.
-    </p>
-    <hr />
-    <ol>
-    	<li>If you haven't already done so, <a href="http://aws.amazon.com/" target="_blank">create an AWS account</a></li>
-    	<li>Create an AWS access key and secret by following the instructions <a href="http://docs.aws.amazon.com/general/latest/gr/managing-aws-access-keys.html" target="_blank">here</a></li>
-    	<li>Enter the access key and secret into the appropriate input fields</li>
-    	<li>Specify the region you'd like to use.  For more information about AWS regions, see the documentation <a href="http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-regions-availability-zones.html#concepts-available-regions" target="_blank">here</a></li>
-    	<li>Once the access key ID, secret, and region have been populated, click the "Set Credentials" button</li>
-    </ol>
-    
-    <hr />
-    <p>
-    	Clicking "Set Credentials" will cause the tool to test the provided credentials agains AWS.  If this is your first
-    	time using the tool (or first time within the provided region), the security group check is likely to fail.  Clicking 
-    	the "fix it" link that appears will let the tool attempt to create the security group in AWS. 
-    </p>
-    <p>
-    	To see the details of the created security group, it can be found by going to AWS then EC2 --> Security Groups
-    	Here, you should see a security group named "brenda-web".  This is the security group that was created and you can
-    	see the details of what was created. 
-    </p>
+    <div ng-include="'tutorial/awsCredentials.partial.html'"></div>
 </div>
 <div class="modal-footer">
     <button class="btn btn-primary" type="button" ng-click="ok()">Done</button>

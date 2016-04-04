@@ -38,82 +38,13 @@
 		
 		<section id="credentials">
 			<h3>Setup AWS Credentials</h3>
-			<p>
-				<div class="row">
-					<div class="col-lg-8">
-						To allow Brenda-Web access to create and access your AWS account and its resources, it needs to be given credentials
-						that are linked to your account.  To begin, log in to the AWS web interface and click on <strong>"Identity & Access Management"</strong>
-						found under <strong>"Security & Identity"</strong>
-					</div>
-					<div class="col-lg-4">
-						<img src="tutorial/res/credentials_IAM.png" class="img-responsive" alt="Identity and Access Management"/>
-					</div>
-				</div>
-			</p>
-			
-			<p>
-				Click on the <strong>Users</strong> link which will take you to a list of the current users configured for this 
-				account.  For fresh accounts, there should be a single user.  For the sake of simplicity, we'll leverage the 
-				existing user.  If you so desire, you may create a new user or isolated linked accounts but doing so is beyond
-				the scope of this tutorial.
-			</p>
-			
-			<p>
-				Click on the user you'd like to use, then click on the <strong>Security Credentials</strong> tab.
-			</p>
-			
-			<p>
-				You should now see a <strong>Create Access Key</strong> button, click on it.
-			</p>
-			
-			<p>
-				A dialog will open with your security credentials.  You may display them in the dialog or optionally download them
-				to a CSV file.  Note that once the dialog is closed, the credentials will no longer be accessible so make sure to
-				grab them and place them somewhere secure.
-			</p>
-			
-			<p>
-				At the top of the Brenda-Web page, click on the <strong>AWS Config</strong> button.  This will open a dialog in which
-				the AWS credentials should be inserted.  Place the access key ID and secret into their corresponding boxes in the dialog.
-			</p>
-			
-			<p>
-				For this tutorial, enter the value <code>us-east-1</code> in the <strong>AWS Region</strong> text box.  For more information
-				on what region means, refer to the AWS
-				<a href="http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-regions-availability-zones.html" target="_blank">Regions and Availability Zones</a>
-				documentation.
-			</p>
-			
-			<p>
-				Once all three text boxes are populated, click the <strong>Set Credentials</strong> button.  This will trigger a series
-				of checks to be performed to ensure credentials are valid.  If this is the first time using the tool, you'll likely get
-				an error saying the security group was not found, clicking on the <strong>Fix it</strong> link in the error message will
-				cause the necessary security group to be created.  Once the group is created, the checks will rerun and everything should
-				be successful at this point.
-			</p>
-			
-			<p>
-				Click <strong>Done</strong> to dismiss the dialog.
-			</p>
+			<div ng-include="'tutorial/awsCredentials.partial.html'"></div>
 			
 		</section>
 		<section id="createQueue">
 			<h3>Create Work Queue</h3>
-			
-			<p>
-				The work queue serves as a list of tasks that the workers will pull from.  Create a new one by clicking the
-				<span class="glyphicon glyphicon-plus" hide-aria="true"></span> icon.
-			</p>
-			
-			<p>
-				You'll be presented with a dialog prompting for a name for your new queue.  Enter a name of your choosing and
-				click <strong>OK</strong>.
-			</p>
-			
-			<p>
-				It may take up to 60 seconds for the queue to appear in the drop down list, once it does, select it.
-			</p>
-			
+			<div ng-include="'tutorial/createQueue.partial.html'"></div>
+						
 		</section>
 		<section id="tasks">
 			<h3>Setup Tasks</h3>
