@@ -1,0 +1,31 @@
+<p>
+	To setup the source, a bucket needs to be created and the blender project will need to be bundled
+	and uploaded.  
+</p>
+
+<ol>
+	<li>Log in to AWS and click on <strong>S3</strong></li>
+	<li>If a source bucket does not already exist, click the <strong>Create Bucket</strong> button and follow the prompts to create one</li>
+	<li>Bundle the project for upload by running a command similar to the following:
+		<br>
+		<code>tar cfzv myproject.tar.gz myproject</code>
+		<br>
+		In the above example replace "myproject" with the name of your project.
+		<div class="alert alert-info" role="alert">Before bundling the project, ensure 
+			references to resources are using relative paths so the workers will be able to find them
+		</div>
+	</li>
+	<li>
+		Upload the bundled project to S3 using the AWS console by selecting the bucket in S3 and 
+		selecting <strong>Actions</strong> --> <strong>Upload</strong> and follow the prompts
+	</li>
+	<li>
+		Fill the <strong>Project Location</strong> field with 
+		<br>
+		<code>s3://&lt;BUCKET_NAME&gt;/&lt;PROJECT_NAME&gt;</code>
+		<br>
+		Where &lt;BUCKET_NAME&gt; is the source bucket name and &lt;PROJECT_NAME&gt; is the bundled up project name from above
+		<br>
+		<small>Example: s3://&lt;source_bucket&gt;/&lt;myproject.tar.gz&gt;</small>
+	</li>
+</ol>
