@@ -37,6 +37,10 @@ config(['$stateProvider', function($stateProvider) {
   		'instances': {templateUrl: 'dashboard/instances.partial.html', controller: 'instancesCtrl'},
   		'buckets': {templateUrl: 'dashboard/buckets.partial.html', controller: 'BucketCtrl'}
   	}
+  })
+  .state('tutorial', {
+	  url: '/tutorial',
+	  templateUrl: 'tutorial/tutorial.partial.html'
   });
 }])
 .run(['$rootScope', '$location', '$window', function($rootScope, $location, $window) {
