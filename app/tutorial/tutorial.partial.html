@@ -62,6 +62,38 @@
 			
 		</section>
 		<section id="workers">
+			<h3>Start Workers</h3>
+			
+			<p>
+				The workers are the AWS EC2 instances that will perform the work of rendering the frames.  On boot
+				the workers will copy the Blender project from the source bucket.  Once the machine is up and running,
+				they will start pulling tasks from the work queue.  Upon completion of each task, the results will be
+				posted to the destination S3 bucket.
+			</p>
+			
+			<ol>
+				<li>
+					Enter the ID of the AMI image you'd like to use.  Optionally you can click on the links below the
+					select box to auto populate the ID of the selected AMI.
+				</li>
+				<li>
+					Select whether to use spot or on demand instances.  On demand are charged at the static price set
+					by Amazon whereas spot instances are bids for unused capacity.
+				</li>
+				<li>
+					Select the size of the EC2 instance to be used.  
+					See <a href="https://aws.amazon.com/ec2/instance-types/" target="_blank">Amazon EC2 Instance Types</a>
+					for more information.
+				</li>
+				<li>
+					If you selected to run spot instances, a field for <strong>Spot Price</strong> will be present.  Enter
+					the amount you want to bid for the spare capacity of the instance size you selected.  The latest spot
+					price for the instance size you chose will be shown below the text box for convenience.
+				</li>
+				<li>Specify how many instance you want to start up in the <strong>Instance Count</strong> field</li>
+				<li>Optionally specify a SSH key if you need to log in to the workers for any reason</li>
+				<li>Click the <strong>Request Instances</strong> button to send your request to AWS</li>
+			</ol>
 			
 		</section>
 		<section id="dashboard">
