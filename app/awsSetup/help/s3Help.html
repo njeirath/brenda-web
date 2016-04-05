@@ -15,17 +15,7 @@
     <div ng-include="'tutorial/s3Source.partial.html'"></div>
     <hr />
     <h4>Destination Bucket</h4>
-    <p>
-    	The destination bucket is where the workers will place the completed frames.  The bucket can be created by simply
-    	logging into AWS, clicking S3 and clicking the "Create Bucket" button and following the prompts.
-	</p>
-	<p>
-    	Once the bucket is created, populate the "Frame Destination Bucket" field with the bucket in the format:
-    	<br>
-    	<code>s3://BUCKET_NAME</code>
-    	<br>
-    	Where BUCKET_NAME is the name of the destination bucket.
-    </p>
+    <div ng-include="'tutorial/s3Destination.partial.html'"></div>
 </div>
 <div class="modal-footer">
     <button class="btn btn-primary" type="button" ng-click="ok()">Done</button>
