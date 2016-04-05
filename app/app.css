@@ -107,17 +107,27 @@ body {
 .tutorial ol li {
 	padding-bottom: 5px;
 	padding-left: 5px;
+	counter-increment: item;
+	display: table-row;
 }
 
 .tutorial ol li:before {
 	font-size: 16px;
-	background: lightblue;
+	content: counter(item);
+	display: table-cell;
+	text-align: right;
+	padding-right: 20px;
+	font-weight: bold;
+	padding-top: 10px;
 }
 
 .tutorial ol {
 	padding-bottom: 10px;
 	padding-top: 10px;
-	padding-left: 60px;
+	margin-left: 0;
+    padding-right: 0;
+    list-style-type: none;
+    display: table;
 }
 
 .tutorial ol code {
