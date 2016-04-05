@@ -26,7 +26,12 @@
 		
 		<div class="form-group">
 			<label for="workTemplate">Work Template</label>
-			<input type="text" class="form-control" id="workTemplate" ng-model="workTemplate" />
+			<div class="input-group">
+				<span class="input-group-btn">
+					<button class="btn btn-default" type="button" brenda-help="awsSetup/help/jobHelp.html"><span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span></button>
+				</span>
+				<input type="text" class="form-control" id="workTemplate" ng-model="workTemplate" />
+			</div>
 		</div>
 		
 		<div class="form-inline">

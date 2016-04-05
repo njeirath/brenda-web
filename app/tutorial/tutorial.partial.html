@@ -1,0 +1,142 @@
+<div class="row tutorial">
+	<div class="col-sm-3 col-md-2 sidebar">
+		<ul class="nav nav-sidebar">
+			<li du-scrollspy="credentials"><a du-smooth-scroll="credentials">Setup AWS Credentials</a></li>
+			<li du-scrollspy="createQueue"><a du-smooth-scroll="createQueue">Create Work Queue</a></li>
+			<li du-scrollspy="tasks"><a du-smooth-scroll="tasks">Setup Tasks</a></li>
+			<li du-scrollspy="s3Source"><a du-smooth-scroll="s3Source">S3 Source Bucket Setup</a></li>
+			<li du-scrollspy="s3Destination"><a du-smooth-scroll="s3Destination">S3 Destination Bucket Setup</a></li>
+			<li du-scrollspy="workers"><a du-smooth-scroll="workers">Start Workers</a></li>
+			<li du-scrollspy="dashboard"><a du-smooth-scroll="dashboard">Monitor Job Status</a></li>
+		</ul>
+	</div>
+	<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+		<h2>Brenda-Web Tutorial</h2>
+		<p class="lead">
+			This tutorial will demonstrate the process for setting up AWS, submitting jobs and monitoring their progress.
+		</p>
+		
+		<p>
+			We assume you already have an AWS account and, for the sake of this tutorial, that it is brand new with nothing
+			configured.  If you have previously used Brenda, some of the steps may not be required.  In general, the tool
+			and configurations will happily live along side any other unrelated AWS resources without issues.  If you'd like
+			further isolation, AWS allows for the creation of linked accounts.  The configuration of linked accounts is beyond
+			the scope of this tutorial but additional details can be found 
+			<a href="http://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/consolidated-billing.html" target="_blank">here</a>.
+		</p>
+		
+		<p>
+			To completely understand what is happening in this tutorial, we recommend logging in to the AWS console and observing the 
+			changes being made and resources being utilized.
+		</p>
+		
+		<p>
+			To assist with managing files in S3 buckets, a number of tools are available for uploading/downloading files from your S3
+			buckets.  For the sake of this tutorial we utilize the <a href="https://aws.amazon.com/cli/" target="_blank">AWS CLI</a> 
+			tool however any tool of choice can be leveraged, including the AWS web interface.
+		</p>
+		
+		<section id="credentials">
+			<h3>Setup AWS Credentials</h3>
+			<div ng-include="'tutorial/awsCredentials.partial.html'"></div>
+			
+		</section>
+		<section id="createQueue">
+			<h3>Create Work Queue</h3>
+			<div ng-include="'tutorial/createQueue.partial.html'"></div>
+						
+		</section>
+		<section id="tasks">
+			<h3>Setup Tasks</h3>
+			<div ng-include="'tutorial/setupTasks.partial.html'"></div>
+			
+		</section>
+		<section id="s3Source">
+			<h3>S3 Source Bucket Setup</h3>
+			<div ng-include="'tutorial/s3Source.partial.html'"></div>
+			
+		</section>
+		<section id="s3Destination">
+			<h3>S3 Destination Bucket Setup</h3>
+			<div ng-include="'tutorial/s3Destination.partial.html'"></div>
+			
+		</section>
+		<section id="workers">
+			<h3>Start Workers</h3>
+			
+			<p class="lead">
+				The workers are the AWS EC2 instances that will perform the work of rendering the frames
+			</p>
+			
+			<p>
+				On boot the workers will copy the Blender project from the source bucket.  Once the machine is up and running,
+				they will start pulling tasks from the work queue.  Upon completion of each task, the results will be
+				posted to the destination S3 bucket.
+			</p>
+			
+			<ol>
+				<li>
+					Enter the ID of the AMI image you'd like to use.  Optionally you can click on the links below the
+					select box to auto populate the ID of the selected AMI.
+				</li>
+				<li>
+					Select whether to use spot or on demand instances.  On demand are charged at the static price set
+					by Amazon whereas spot instances are bids for unused capacity.
+				</li>
+				<li>
+					Select the size of the EC2 instance to be used.  
+					See <a href="https://aws.amazon.com/ec2/instance-types/" target="_blank">Amazon EC2 Instance Types</a>
+					for more information.
+				</li>
+				<li>
+					If you selected to run spot instances, a field for <strong>Spot Price</strong> will be present.  Enter
+					the amount you want to bid for the spare capacity of the instance size you selected.  The latest spot
+					price for the instance size you chose will be shown below the text box for convenience.
+				</li>
+				<li>Specify how many instance you want to start up in the <strong>Instance Count</strong> field</li>
+				<li>Optionally specify a SSH key if you need to log in to the workers for any reason</li>
+				<li>Click the <strong>Request Instances</strong> button to send your request to AWS</li>
+			</ol>
+			
+		</section>
+		<section id="dashboard">
+			<h3>Monitor Job Status</h3>
+			
+			<p>
+				Simply click on the <strong>Dashboard</strong> tab at the top of the page to access the dashboard.  If you've
+				started a job already, you should begin to see the details of the progress.  The dashboard panels will update
+				periodically on their own.
+			</p>
+			
+			<h4>Queues</h4>
+			<p>
+				This panel shows the various queues that have tasks being processed by workers.  Here you can see the current
+				size of the queue, how many workers are pulling tasks from this queue, and some metrics estimating the task rate
+				and time left to complete the job.  
+			</p>
+			
+			<h4>Workers</h4>
+			<p>
+				This panel will have a row for each EC2 instance that was started by Brenda-Web.  It will include details about
+				the instance itself and its current state along with metrics such as uptime, task rate and CPU load.
+			</p>
+			
+			<h4>Buckets</h4>
+			<p>
+				If this is the first time you've used the specified destination bucket with this tool, you'll likely get an
+				error.  Try clicking on the <strong>fix it</strong> link in the error message and follow the instructions to
+				attempt to remedy the issue.
+			</p>
+			
+			<p>
+				The buckets panel will display the files that are currently in the bucket specified.  These represent completed
+				tasks.  Clicking on the name of a file will open an in browser view of the rendered frame, you can use the 
+				left/right arrow keys or the buttons at the top to step between frames.  Clicking on the 
+				<span class="glyphicon glyphicon-download" hide-aria="true"></span> icon next to the file name will download
+				that single file.
+			</p>
+		</section>
+		
+		<div class="spacer"></div>
+	</div>
+</div>

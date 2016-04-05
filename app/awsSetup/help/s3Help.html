@@ -12,50 +12,10 @@
     <hr />
     
     <h4>Source Bucket</h4>
-    <p>
-    	To setup the source, a bucket needs to be created and the blender project will need to be bundled
-    	and uploaded.  
-    </p>
-    
-    <ol>
-    	<li>Log in to AWS and click on S3</li>
-    	<li>If a source bucket does not already exist, click the "Create Bucket" button and follow the prompts to create one</li>
-    	<li>Bundle the project for upload by running a command similar to the following:
-    		<br>
-    		<code>tar cfzv myproject.tar.gz myproject</code>
-    		<br>
-    		In the above example replace "myproject" with the name of your project.
-    		<div class="alert alert-info" role="alert">Before bundling the project, ensure 
-    			references to resources are using relative paths so the workers will be able to find them
-			</div>
-		</li>
-		<li>
-			Upload the bundled project to S3 using the AWS console by selecting the bucket in S3 and 
-			selecting Actions --> Upload and follow the prompts
-		</li>
-		<li>
-			Fill the "Project Location" field with 
-			<br>
-			<code>s3://&lt;BUCKET_NAME&gt;/&lt;PROJECT_NAME&gt;</code>
-			<br>
-			Where &lt;BUCKET_NAME&gt; is the source bucket name and &lt;PROJECT_NAME&gt; is the bundled up project name from above
-			<br>
-			<small>Example: s3://&lt;source_bucket&gt;/&lt;myproject.tar.gz&gt;</small>
-		</li>
-    </ol>
+    <div ng-include="'tutorial/s3Source.partial.html'"></div>
     <hr />
     <h4>Destination Bucket</h4>
-    <p>
-    	The destination bucket is where the workers will place the completed frames.  The bucket can be created by simply
-    	logging into AWS, clicking S3 and clicking the "Create Bucket" button and following the prompts.
-	</p>
-	<p>
-    	Once the bucket is created, populate the "Frame Destination Bucket" field with the bucket in the format:
-    	<br>
-    	<code>s3://BUCKET_NAME</code>
-    	<br>
-    	Where BUCKET_NAME is the name of the destination bucket.
-    </p>
+    <div ng-include="'tutorial/s3Destination.partial.html'"></div>
 </div>
 <div class="modal-footer">
     <button class="btn btn-primary" type="button" ng-click="ok()">Done</button>
