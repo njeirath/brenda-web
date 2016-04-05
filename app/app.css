@@ -97,3 +97,39 @@ body {
     padding-left: 40px;
   }
 }
+
+/*Tutorial content*/
+.tutorial section {
+	padding-top: 80px;
+	padding-bottom: 80px;
+}
+
+.tutorial ol li {
+	padding-bottom: 5px;
+	padding-left: 5px;
+}
+
+.tutorial ol li:before {
+	font-size: 16px;
+	background: lightblue;
+}
+
+.tutorial ol {
+	padding-bottom: 10px;
+	padding-top: 10px;
+	padding-left: 60px;
+}
+
+.tutorial ol code {
+	margin-top: 20px;
+	margin-bottom: 20px;
+}
+
+.tutorial ol .alert {
+	margin-top: 10px;
+	margin-bottom: 10px;
+}
+
+.tutorial .spacer {
+	margin-top: 800px;
+}

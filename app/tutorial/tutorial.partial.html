@@ -1,6 +1,6 @@
-<div class="row">
+<div class="row tutorial">
 	<div class="col-sm-3 col-md-2 sidebar">
-		<ol class="nav nav-sidebar">
+		<ul class="nav nav-sidebar">
 			<li du-scrollspy="credentials"><a du-smooth-scroll="credentials">Setup AWS Credentials</a></li>
 			<li du-scrollspy="createQueue"><a du-smooth-scroll="createQueue">Create Work Queue</a></li>
 			<li du-scrollspy="tasks"><a du-smooth-scroll="tasks">Setup Tasks</a></li>
@@ -8,10 +8,10 @@
 			<li du-scrollspy="s3Destination"><a du-smooth-scroll="s3Destination">S3 Destination Bucket Setup</a></li>
 			<li du-scrollspy="workers"><a du-smooth-scroll="workers">Start Workers</a></li>
 			<li du-scrollspy="dashboard"><a du-smooth-scroll="dashboard">Monitor Job Status</a></li>
-		</ol>
+		</ul>
 	</div>
 	<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
-		<h3>Brenda-Web Tutorial</h3>
+		<h2>Brenda-Web Tutorial</h2>
 		<p class="lead">
 			This tutorial will demonstrate the process for setting up AWS, submitting jobs and monitoring their progress.
 		</p>
@@ -64,9 +64,12 @@
 		<section id="workers">
 			<h3>Start Workers</h3>
 			
+			<p class="lead">
+				The workers are the AWS EC2 instances that will perform the work of rendering the frames
+			</p>
+			
 			<p>
-				The workers are the AWS EC2 instances that will perform the work of rendering the frames.  On boot
-				the workers will copy the Blender project from the source bucket.  Once the machine is up and running,
+				On boot the workers will copy the Blender project from the source bucket.  Once the machine is up and running,
 				they will start pulling tasks from the work queue.  Upon completion of each task, the results will be
 				posted to the destination S3 bucket.
 			</p>
@@ -133,5 +136,7 @@
 				that single file.
 			</p>
 		</section>
+		
+		<div class="spacer"></div>
 	</div>
 </div>

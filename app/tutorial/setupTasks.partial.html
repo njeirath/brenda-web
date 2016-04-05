@@ -1,7 +1,10 @@
+<p class="lead">
+	To give the workers something to do, we need to populate the queue with a list of tasks.
+</p>
 <p>
-	We'll now populate the work queue with a list of tasks.  For this, we leverage a work template which defines
-	the basic structure of the tasks.  The template is expanded to a list of tasks by specifying the start and end 
-	frames.  The default template is:
+	For this, we leverage a work template which defines the basic structure of the tasks.  The 
+	template is expanded to a list of tasks by specifying the start and end frames.  The default 
+	template is:
 </p>
 <p>
 	<code>blender -b *.blend -F PNG -o $OUTDIR/frame_###### -s $START -e $END -j $STEP -t 0 -a</code>
