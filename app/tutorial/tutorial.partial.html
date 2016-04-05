@@ -97,7 +97,41 @@
 			
 		</section>
 		<section id="dashboard">
+			<h3>Monitor Job Status</h3>
 			
+			<p>
+				Simply click on the <strong>Dashboard</strong> tab at the top of the page to access the dashboard.  If you've
+				started a job already, you should begin to see the details of the progress.  The dashboard panels will update
+				periodically on their own.
+			</p>
+			
+			<h4>Queues</h4>
+			<p>
+				This panel shows the various queues that have tasks being processed by workers.  Here you can see the current
+				size of the queue, how many workers are pulling tasks from this queue, and some metrics estimating the task rate
+				and time left to complete the job.  
+			</p>
+			
+			<h4>Workers</h4>
+			<p>
+				This panel will have a row for each EC2 instance that was started by Brenda-Web.  It will include details about
+				the instance itself and its current state along with metrics such as uptime, task rate and CPU load.
+			</p>
+			
+			<h4>Buckets</h4>
+			<p>
+				If this is the first time you've used the specified destination bucket with this tool, you'll likely get an
+				error.  Try clicking on the <strong>fix it</strong> link in the error message and follow the instructions to
+				attempt to remedy the issue.
+			</p>
+			
+			<p>
+				The buckets panel will display the files that are currently in the bucket specified.  These represent completed
+				tasks.  Clicking on the name of a file will open an in browser view of the rendered frame, you can use the 
+				left/right arrow keys or the buttons at the top to step between frames.  Clicking on the 
+				<span class="glyphicon glyphicon-download" hide-aria="true"></span> icon next to the file name will download
+				that single file.
+			</p>
 		</section>
 	</div>
 </div>
