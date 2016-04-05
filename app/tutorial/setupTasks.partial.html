@@ -1,0 +1,30 @@
+<p>
+	We'll now populate the work queue with a list of tasks.  For this, we leverage a work template which defines
+	the basic structure of the tasks.  The template is expanded to a list of tasks by specifying the start and end 
+	frames.  The default template is:
+</p>
+<p>
+	<code>blender -b *.blend -F PNG -o $OUTDIR/frame_###### -s $START -e $END -j $STEP -t 0 -a</code>
+</p>
+<p>
+	This template tells the workers to render each frame of the project as a single task.  The start and end frame
+	inputs specify which frames are to be rendered.  
+</p>
+
+<ol>
+	<li>Set the start and end frame fields as appropriate for your project</li>
+	<li>
+		The <strong>Work List</strong> shows the expanded list of tasks that will be enqueued allowing you to double
+		check that things look alright
+	</li>
+	<li>Click the <strong>Queue Work</strong> button</li>
+</ol>
+
+<p>
+	This will send the tasks to the selected queue and the progress bar will be updated to reflect the status.
+</p>
+
+<p>
+	The current size of the queue can be seen below the queue selection drop down.  If a mistake was made, you may use the
+	<strong>Clear Queue</strong> button to clear all tasks from the queue.
+</p>
