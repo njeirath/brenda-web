@@ -12,6 +12,7 @@
 						<th>Active Workers</th>
 						<th>Combined Time/Task</th>
 						<th>Estimated Time Left</th>
+						<th>Cost/Hr</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -21,6 +22,7 @@
 						<td>{{workerCount(queue.url)}}</td>
 						<td>{{timePerFrame(queue.url) | secondsToDateTime}}</td>
 						<td>{{queue.size * timePerFrame(queue.url) | secondsToDateTime}}</td>
+						<td>{{totalCost(queue.url) | currency}}</td>
 					</tr>
 				</tbody>
 			</table>
