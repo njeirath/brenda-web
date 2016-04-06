@@ -38,7 +38,7 @@
 						<td>{{instance.instanceStatus}}</td>
 						<td>{{instance.instanceIp}}</td>
 						<td>{{instance.uptime | secondsToDateTime}}</td>
-						<td>{{instance.tasksCompleted}}</td>
+						<td>{{instance.tasksCompleted | number:3}}</td>
 						<td>{{(instance.uptime / instance.tasksCompleted) | secondsToDateTime}}</td>
 						<td>{{instance.cpuLoad}}</td>
 						<td>{{instance.destinationBucket}}</td>

@@ -143,6 +143,7 @@ describe('dashboard instances', function() {
 		
 		it('should call individual servers for status', function() {
 			$httpBackend.expectGET(/http:\/\/1.2.3.4\/uptime.txt\?d=(.+)/).respond("20.3 10.5\n1.9 1.5 1.1 1/5 9\n3");
+			$httpBackend.expectGET(/http:\/\/1.2.3.4\/log_tail.txt\?d=(.+)/).respond("Fra:1 Mem:7.69M (39.55M, Peak 47.82M) | Mem:0.89M, Peak:0.89M | Scene, RenderLayer | Path Tracing Tile 51/510");
 			
 			$rootScope.getInstanceStats();
 			$httpBackend.flush();
@@ -157,7 +158,7 @@ describe('dashboard instances', function() {
 				instanceDns: '1.2.3.4.com',
 				instanceIp: '1.2.3.4',
 				uptime: 20.3,
-				tasksCompleted: 3,
+				tasksCompleted: 3.1,
 				cpuLoad: 1.9
 			});
 		});
