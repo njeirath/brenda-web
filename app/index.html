@@ -17,36 +17,35 @@
   <script src="bower_components/html5-boilerplate/dist/js/vendor/modernizr-2.8.3.min.js"></script>
 </head>
 <body>
-	
-    <nav class="navbar navbar-inverse navbar-fixed-top">
+    <nav class="navbar navbar-inverse navbar-fixed-top" ng-controller="NavCtrl">
       <div class="container">
         <div class="navbar-header">
-          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+          <button type="button" class="navbar-toggle collapsed" ng-click="navbarCollapsed = !navbarCollapsed" aria-expanded="false" aria-controls="navbar">
             <span class="sr-only">Toggle navigation</span>
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="#">Brenda Web</a>
+          <a class="navbar-brand" href="#" ng-click="navbarCollapsed = true">Brenda Web</a>
         </div>
-        <div id="navbar" class="collapse navbar-collapse">
+        <div class="collapse navbar-collapse" uib-collapse="navbarCollapsed">
           <ul class="nav navbar-nav">
-          	<li><a href aws-configure id="awsConfigureButton"><span class="glyphicon glyphicon-cog" aria-hidden="true"></span> AWS Config</a></li>
-            <li><a ui-sref="setup.view"><span class="glyphicon glyphicon-wrench" aria-hidden="true"></span> Setup Job</a></li>
-            <li><a ui-sref="dashboard.view"><span class="glyphicon glyphicon-scale" aria-hidden="true"></span> Dashboard</a></li>
+          	<li><a href aws-configure id="awsConfigureButton" ng-click="navbarCollapsed = true"><span class="glyphicon glyphicon-cog" aria-hidden="true"></span> AWS Config</a></li>
+            <li><a ui-sref="setup.view" ng-click="navbarCollapsed = true"><span class="glyphicon glyphicon-wrench" aria-hidden="true"></span> Setup Job</a></li>
+            <li><a ui-sref="dashboard.view" ng-click="navbarCollapsed = true"><span class="glyphicon glyphicon-scale" aria-hidden="true"></span> Dashboard</a></li>
           </ul>
           <ul class="nav navbar-nav navbar-right">
-          	<li><a ui-sref="tutorial"><span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span> Tutorial</a></li>
+          	<li><a ui-sref="tutorial" ng-click="navbarCollapsed = true"><span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span> Tutorial</a></li>
           </ul>
         </div><!--/.nav-collapse -->
       </div>
     </nav>
-
+	
 	<div class="container-fluid">
 		<ui-view></ui-view>
 	</div>
 
-
+	
   <!--[if lt IE 7]>
       <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
   <![endif]-->

@@ -8,41 +8,43 @@
 			<div ng-message="CredentialsError" class="alert alert-danger">Configuration error: {{errors.CredentialsError}}. <a href aws-configure><strong>Edit configuration</strong></a></div>
 			<div ng-message="OtherError" class="alert alert-danger">Error: {{errors.OtherError}}</div>
 		</div>
-		<table class="table">
-			<thead>
-				<tr>
-					<th>Queue</th>
-					<th>Spot ID</th>
-					<th>Spot Price</th>
-					<th>Instance ID</th>
-					<th>Type</th>
-					<th>Spot Status</th>
-					<th>Instance Status</th>
-					<th>Instance IP</th>
-					<th>Uptime</th>
-					<th>Tasks Completed</th>
-					<th>Time/Task</th>
-					<th>CPU Load</th>
-					<th>Destination Bucket</th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr ng-repeat="instance in instances.table">
-					<td>{{instance.queueUrl | queueToName}}</td>
-					<td>{{instance.spotId}}</td>
-					<td>{{instance.spotPrice | currency}}</td>
-					<td>{{instance.instanceId}}</td>
-					<td>{{instance.instanceType}}</td>
-					<td>{{instance.spotStatus}}</td>
-					<td>{{instance.instanceStatus}}</td>
-					<td>{{instance.instanceIp}}</td>
-					<td>{{instance.uptime | secondsToDateTime}}</td>
-					<td>{{instance.tasksCompleted}}</td>
-					<td>{{(instance.uptime / instance.tasksCompleted) | secondsToDateTime}}</td>
-					<td>{{instance.cpuLoad}}</td>
-					<td>{{instance.destinationBucket}}</td>
-				</tr>
-			</tbody>
-		</table>
+		<div class="table-responsive">
+			<table class="table">
+				<thead>
+					<tr>
+						<th>Queue</th>
+						<th>Spot ID</th>
+						<th>Spot Price</th>
+						<th>Instance ID</th>
+						<th>Type</th>
+						<th>Spot Status</th>
+						<th>Instance Status</th>
+						<th>Instance IP</th>
+						<th>Uptime</th>
+						<th>Tasks Completed</th>
+						<th>Time/Task</th>
+						<th>CPU Load</th>
+						<th>Destination Bucket</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr ng-repeat="instance in instances.table">
+						<td>{{instance.queueUrl | queueToName}}</td>
+						<td>{{instance.spotId}}</td>
+						<td>{{instance.spotPrice | currency}}</td>
+						<td>{{instance.instanceId}}</td>
+						<td>{{instance.instanceType}}</td>
+						<td>{{instance.spotStatus}}</td>
+						<td>{{instance.instanceStatus}}</td>
+						<td>{{instance.instanceIp}}</td>
+						<td>{{instance.uptime | secondsToDateTime}}</td>
+						<td>{{instance.tasksCompleted}}</td>
+						<td>{{(instance.uptime / instance.tasksCompleted) | secondsToDateTime}}</td>
+						<td>{{instance.cpuLoad}}</td>
+						<td>{{instance.destinationBucket}}</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
 	</div>
 </div>

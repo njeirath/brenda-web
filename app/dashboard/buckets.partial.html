@@ -7,21 +7,23 @@
 		<div ng-messages="bucket.errors">
 			<div ng-message="error" class="alert alert-danger" role="alert">Error occurred, we can attempt to <a href brenda-help="dashboard/help/s3cors.html"><strong>fix it</strong></a></div>
 		</div>
-		<table class="table">
-			<thead>
-				<tr>
-					<th>Name</th>
-					<th>Size</th>
-					<th>Modified</th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr ng-repeat="file in bucket.files">
-					<td><a href="{{file.url}}" download={{file.name}}><span class="glyphicon glyphicon-download" aria-hidden="true"></span></a>  <a ng-click="openLightbox(bucket.name, $index)">{{file.name}}</a></td>
-					<td>{{file.size}}</td>
-					<td>{{file.modified}}</td>
-				</tr>
-			</tbody>
-		</table>
+		<div class="table-responsive">
+			<table class="table">
+				<thead>
+					<tr>
+						<th>Name</th>
+						<th>Size</th>
+						<th>Modified</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr ng-repeat="file in bucket.files">
+						<td><a href="{{file.url}}" download={{file.name}}><span class="glyphicon glyphicon-download" aria-hidden="true"></span></a>  <a ng-click="openLightbox(bucket.name, $index)">{{file.name}}</a></td>
+						<td>{{file.size}}</td>
+						<td>{{file.modified}}</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
 	</div>
 </div>
