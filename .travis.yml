@@ -23,4 +23,6 @@ deploy:
   on:
     repo: njeirath/brenda-web
     branch: master
-
+addons:
+    code_climate:
+        repo_token: cd72f6cfb00b67194fd5a19683de2f8fa72ab49590123ac167dd57b39678caab

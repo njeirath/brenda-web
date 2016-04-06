@@ -5,7 +5,7 @@ angular.module("dashboard")
 	
 	function filteredTable(queueUrl) {
 		return $scope.instances.table.filter(function(item) {
-			return ((item.queueUrl == queueUrl) && (item.instanceStatus == "running"));
+			return ((item.queueUrl === queueUrl) && (item.instanceStatus === "running"));
 		});
 	}
 	
@@ -16,7 +16,7 @@ angular.module("dashboard")
 	$scope.totalCost = function(queueUrl) {
 		var cost = 0;
 		filteredTable(queueUrl).forEach(function(item) {
-			cost += item.spotPrice;
+			cost += parseFloat(item.spotPrice);
 		});
 		
 		return cost;
