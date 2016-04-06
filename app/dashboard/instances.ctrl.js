@@ -128,12 +128,28 @@ angular.module('dashboard')
 		$scope.instances.table.forEach(function(item) {
 			if (item.instanceStatus == 'running') {
 				(function(row) {
-					$http.get('http://' + row.instanceIp + '/uptime.txt', {params: {d: new Date().valueOf()}}).then(function(data){
+					$http.get('http://' + row.instanceIp + '/uptime.txt', {params: {d: new Date().valueOf()}})
+					.then(function(data){
 						var pieces = data.data.split(/\s/);
 						row.uptime = parseFloat(pieces[0]);
 						var complete = parseFloat(pieces[7]);
 						row.tasksCompleted = Number.isNaN(complete) ? 0.0 : complete;
 						row.cpuLoad = parseFloat(pieces[2]);
+						
+						return $http.get('http://' + row.instanceIp + '/log_tail.txt', {params: {d: new Date().valueOf()}})
+					})
+					.then(function(data) {
+						var lines = data.data.split("\n");
+						var partial = 0;
+						
+						lines.forEach(function(line) {
+							var match = line.match(/Path Tracing Tile (\d+)\/(\d+)/);
+							if (match) {
+								partial = match[1] / match[2];
+							}
+						});
+						
+						row.tasksCompleted += partial;
 					}, function(err) {
 						row.uptime = 'unavailable';
 						row.tasksCompleted = 'unavailable';
