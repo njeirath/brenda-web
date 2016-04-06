@@ -16,7 +16,7 @@ angular.module("dashboard")
 	$scope.totalCost = function(queueUrl) {
 		var cost = 0;
 		filteredTable(queueUrl).forEach(function(item) {
-			cost += item.spotPrice;
+			cost += parseFloat(item.spotPrice);
 		});
 		
 		return cost;
