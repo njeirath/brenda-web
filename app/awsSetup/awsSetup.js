@@ -12,7 +12,7 @@ angular.module('awsSetup')
 	awsService.getQueues();
 	
 	$scope.$watch('queue.workQueue', function(value) {
-		if (value != '') {
+		if (value !== '') {
 			localStorageService.set('workQueue', value);
 		}
 	});
@@ -53,7 +53,7 @@ angular.module('awsSetup')
 	$scope.workList = function() {
 		var list = [];
 		
-		for (var i = parseInt($scope.startFrame); i <= parseInt($scope.endFrame); i++) {
+		for (var i = parseInt($scope.startFrame, 10); i <= parseInt($scope.endFrame, 10); i++) {
 			var cmd = $scope.workTemplate.replace("$START", i).replace("$END", i).replace("$STEP", 1);
 			list.push(cmd);
 		}
@@ -73,7 +73,7 @@ angular.module('awsSetup')
 				total: 0,
 				success: 0,
 				failed: 0,
-				inFlight: 0,
+				inFlight: 0
 	};
 	
 	$scope.$on('aws-sqs-send-update', function(event, data) {
@@ -119,14 +119,14 @@ angular.module('awsSetup')
 	
 	$scope.getSelectedInstance = function() {
 		return $scope.instances.find(function(inst) {
-			return inst.name == $scope.instance.size
+			return inst.name === $scope.instance.size
 		})
 	};
 	
 	$scope.$on('aws-spotprice-update', function(event, data) {
 		data.SpotPriceHistory.forEach(function(price) {
 			var instance = $scope.instances.find(function(inst) {
-				return inst.name == price.InstanceType;
+				return inst.name === price.InstanceType;
 			});
 			
 			if (!instance) {
@@ -228,7 +228,7 @@ angular.module('awsSetup')
 	
 	$scope.requestInstances = function() {
 		//ami, keyPair, securityGroup, userData, instanceType, spotPrice, count, type
-		if ($scope.instanceType == 'spot') {
+		if ($scope.instanceType === 'spot') {
 			awsService.requestSpot($scope.amiSelect, $scope.sshKey, 'brenda-web', $scope.generateScript(), $scope.instance.size, $scope.spotPrice, $scope.numInstances, 'one-time', $scope.queue.workQueue, $scope.s3.frameDestination.split('//').pop(), $scope.showStatus);
 		} else {
 			//requestOndemand: function(ami, keyPair, securityGroup, userData, instanceType, count)
@@ -247,7 +247,7 @@ angular.module('awsSetup')
 	};
 	
 	$scope.updateQueueSize = function() {
-		if(($scope.queue.workQueue != '') && ($scope.queue.workQueue != undefined)) {
+		if(($scope.queue.workQueue !== '') && ($scope.queue.workQueue !== undefined)) {
 			awsService.getQueueSize($scope.queue.workQueue)
 			.then(function(size) {
 				$scope.queue.queueSize = size;
@@ -368,7 +368,7 @@ angular.module('awsSetup')
 					Id: String(i)
 				});
 				
-				if ((entries.length == 10) || ( i == (data.length -1))) {
+				if ((entries.length === 10) || ( i === (data.length -1))) {
 					sendStatus.inFlight += entries.length;
 					$rootScope.$broadcast('aws-sqs-send-update', sendStatus.copy());
 					
@@ -391,7 +391,7 @@ angular.module('awsSetup')
 							
 							$rootScope.$broadcast('aws-sqs-send-update', sendStatus.copy());
 						});
-					})();
+					}());
 					
 					
 					entries = [];
@@ -434,7 +434,7 @@ angular.module('awsSetup')
 					$log.log(err);
 					$rootScope.$broadcast('aws-ec2-error', String(err));
 				} else {
-					callback(data);
+					return callback(data);
 				}
 			});
 		},
@@ -444,7 +444,7 @@ angular.module('awsSetup')
 				KeyName: keyPair,
 				SecurityGroups: [securityGroup],
 				UserData: btoa(userData),
-				InstanceType: instanceType,
+				InstanceType: instanceType
 			};
 		},
 		setTags: function(instances, tags, callback) {
@@ -462,7 +462,7 @@ angular.module('awsSetup')
 			var params = {
 				// DryRun: true,
 				SpotPrice: String(spotPrice),
-				InstanceCount: parseInt(count),
+				InstanceCount: parseInt(count, 10),
 				LaunchSpecification: spec,
 				Type: type
 			};
