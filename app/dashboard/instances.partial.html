@@ -23,6 +23,7 @@
 						<th>Uptime</th>
 						<th>Tasks Completed</th>
 						<th>Time/Task</th>
+						<th>Cost/Task</th>
 						<th>CPU Load</th>
 						<th>Destination Bucket</th>
 					</tr>
@@ -40,6 +41,7 @@
 						<td>{{instance.uptime | secondsToDateTime}}</td>
 						<td>{{instance.tasksCompleted | number:3}}</td>
 						<td>{{(instance.uptime / instance.tasksCompleted) | secondsToDateTime}}</td>
+						<td>{{3600 / instance.uptime / instance.tasksCompleted * instance.spotPrice | currency}}</td>
 						<td>{{instance.cpuLoad}}</td>
 						<td>{{instance.destinationBucket}}</td>
 					</tr>
