@@ -13,6 +13,7 @@
 						<th>Combined Time/Task</th>
 						<th>Estimated Time Left</th>
 						<th>Cost/Hr</th>
+						<th>Estimated Cost Left</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -23,6 +24,7 @@
 						<td>{{timePerFrame(queue.url) | secondsToDateTime}}</td>
 						<td>{{queue.size * timePerFrame(queue.url) | secondsToDateTime}}</td>
 						<td>{{totalCost(queue.url) | currency}}</td>
+						<td>{{queue.size * timePerFrame(queue.url) / 3600 * totalCost(queue.url) | currency}}</td>
 					</tr>
 				</tbody>
 			</table>
