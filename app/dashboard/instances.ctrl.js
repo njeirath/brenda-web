@@ -1,7 +1,19 @@
 'use strict';
 
 angular.module('dashboard')
-.controller('instancesCtrl', ['$scope', 'awsService', '$interval', '$http', function($scope, awsService, $interval, $http) {	
+.controller('instancesCtrl', ['$scope', 'awsService', '$interval', '$http', function($scope, awsService, $interval, $http) {
+	var sortOrder = ['running', 'terminated'];
+	
+	$scope.statusMapper = function(item) {
+		var index = sortOrder.indexOf(item.instanceStatus)
+		
+		if (index !== -1) {
+			return index;
+		} else {
+			return sortOrder.length;
+		}
+	};
+	
 	function createRow() {
 		return {
 			spotId: '-',
