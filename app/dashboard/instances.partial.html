@@ -16,10 +16,10 @@
 						<th>Spot ID</th>
 						<th>Spot Price</th>
 						<th>Instance ID</th>
-						<th>Type</th>
 						<th>Spot Status</th>
 						<th>Instance Status</th>
 						<th>Instance IP</th>
+						<th>Type</th>
 						<th>Uptime</th>
 						<th>Tasks Completed</th>
 						<th>Time/Task</th>
@@ -33,10 +33,10 @@
 						<td>{{instance.spotId}}</td>
 						<td>{{instance.spotPrice | currency}}</td>
 						<td>{{instance.instanceId}}</td>
-						<td>{{instance.instanceType}}</td>
 						<td>{{instance.spotStatus}}</td>
 						<td>{{instance.instanceStatus}}</td>
 						<td>{{instance.instanceIp}}</td>
+						<td>{{instance.instanceType}}</td>
 						<td>{{instance.uptime | secondsToDateTime}}</td>
 						<td>{{instance.tasksCompleted | number:3}}</td>
 						<td>{{(instance.uptime / instance.tasksCompleted) | secondsToDateTime}}</td>
