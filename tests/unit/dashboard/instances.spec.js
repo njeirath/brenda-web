@@ -184,4 +184,15 @@ describe('dashboard instances', function() {
 			});
 		});
 	});
+	
+	describe('$scope.statusMapper', function() {
+		it('should return correct index for matched statuses', function() {
+			expect($rootScope.statusMapper({instanceStatus: 'running'})).toBe(0);
+			expect($rootScope.statusMapper({instanceStatus: 'terminated'})).toBe(1);
+		});
+		
+		it('should return max index for unmatched status', function() {
+			expect($rootScope.statusMapper({instanceStatus: 'unknown'})).toBe(2);
+		});
+	});
 });

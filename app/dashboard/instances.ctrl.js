@@ -1,7 +1,19 @@
 'use strict';
 
 angular.module('dashboard')
-.controller('instancesCtrl', ['$scope', 'awsService', '$interval', '$http', function($scope, awsService, $interval, $http) {	
+.controller('instancesCtrl', ['$scope', 'awsService', '$interval', '$http', function($scope, awsService, $interval, $http) {
+	var sortOrder = ['running', 'terminated'];
+	
+	$scope.statusMapper = function(item) {
+		var index = sortOrder.indexOf(item.instanceStatus)
+		
+		if (index !== -1) {
+			return index;
+		} else {
+			return sortOrder.length;
+		}
+	};
+	
 	function createRow() {
 		return {
 			spotId: '-',
@@ -35,6 +47,17 @@ angular.module('dashboard')
 		};	
 	};
 	
+	function handleTags(row, tags) {
+		tags.forEach(function(tag) {
+			if (tag.Key === 'brenda-queue') {
+				$scope.queues.addQueue(tag.Value);
+				row.queueUrl = tag.Value;
+			} else if(tag.Key === 'brenda-dest') {
+				$scope.buckets.addBucket(tag.Value);
+				row.destinationBucket = tag.Value;
+			}
+		});
+	}
 	
 	$scope.updateTable = function() {
 		$scope.resetErrors();
@@ -62,15 +85,7 @@ angular.module('dashboard')
 				row.spotPrice = item.SpotPrice;
 				row.spotStatus = item.Status.Code;
 				
-				item.Tags.forEach(function(tag) {
-					if (tag.Key == 'brenda-queue') {
-						$scope.queues.addQueue(tag.Value);
-						row.queueUrl = tag.Value;
-					} else if(tag.Key == 'brenda-dest') {
-						$scope.buckets.addBucket(tag.Value);
-						row.destinationBucket = tag.Value;
-					}
-				});
+				handleTags(row, item.Tags);
 			});
 			return instanceIds;
 		}).then(function(instanceIds) {
@@ -100,23 +115,15 @@ angular.module('dashboard')
 					updateInstance(row, instance);
 					newRows.push(row);
 					
-					instance.Tags.forEach(function(tag) {
-						if (tag.Key == 'brenda-queue') {
-							$scope.queues.addQueue(tag.Value);
-							row.queueUrl = tag.Value;
-						} else if(tag.Key == 'brenda-dest') {
-							$scope.buckets.addBucket(tag.Value);
-							row.destinationBucket = tag.Value;
-						}
-					});
+					handleTags(row, instance.Tags);
 				});
 			});
 			
 			$scope.instances.table = newRows;
 		}).then($scope.getInstanceStats, function(error) {
-			if(error.code == 'ConfigError') {
+			if(error.code === 'ConfigError') {
 				$scope.errors.ConfigError = error.message;
-			} else if(error.code == 'CredentialsError') {
+			} else if(error.code === 'CredentialsError') {
 				$scope.errors.CredentialsError = error.message;
 			} else {
 				$scope.errors.OtherError = String(error);
@@ -124,11 +131,15 @@ angular.module('dashboard')
 		});
 	};
 	
+	function getInstanceFile(ip, file) {
+		return $http.get('http://' + ip + '/' + file, {params: {d: new Date().valueOf()}});
+	}
+	
 	$scope.getInstanceStats = function() {
 		$scope.instances.table.forEach(function(item) {
-			if (item.instanceStatus == 'running') {
+			if (item.instanceStatus === 'running') {
 				(function(row) {
-					$http.get('http://' + row.instanceIp + '/uptime.txt', {params: {d: new Date().valueOf()}})
+					getInstanceFile(row.instanceIp, 'uptime.txt')
 					.then(function(data){
 						var pieces = data.data.split(/\s/);
 						row.uptime = parseFloat(pieces[0]);
@@ -136,7 +147,7 @@ angular.module('dashboard')
 						row.tasksCompleted = Number.isNaN(complete) ? 0.0 : complete;
 						row.cpuLoad = parseFloat(pieces[2]);
 						
-						return $http.get('http://' + row.instanceIp + '/log_tail.txt', {params: {d: new Date().valueOf()}})
+						return getInstanceFile(row.instanceIp, 'log_tail.txt');
 					})
 					.then(function(data) {
 						var lines = data.data.split("\n");

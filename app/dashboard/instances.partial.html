@@ -29,7 +29,7 @@
 					</tr>
 				</thead>
 				<tbody>
-					<tr ng-repeat="instance in instances.table">
+					<tr ng-repeat="instance in instances.table | orderBy : statusMapper">
 						<td>{{instance.queueUrl | queueToName}}</td>
 						<td>{{instance.spotId}}</td>
 						<td>{{instance.spotPrice | currency}}</td>
