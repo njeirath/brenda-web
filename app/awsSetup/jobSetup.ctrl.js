@@ -45,7 +45,7 @@ angular.module('awsSetup')
 				
 				$interval(awsService.getQueues, 30000, 2);
 			}, function(err) {
-				$scope.queueAlerts.push({type: 'danger', msg: 'Create ' + queueName + ': ' + err});
+				$scope.queueAlerts.push({type: 'danger', msg: 'Create ' + queueName + ': ' + String(err)});
 			});
 		});
 	};

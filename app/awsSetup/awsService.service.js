@@ -4,6 +4,19 @@ angular.module('awsSetup')
 .factory('awsService', ['$log', '$rootScope', 'localStorageService', 'aws', '$q', function($log, $rootScope, localStorageService, aws, $q) {	
 	var startDate = startDate = new Date(new Date() - 6*60*60*1000);
 	
+	var deferredWrapper = function(obj, func, params) {
+		var deferred = $q.defer();
+		func.call(obj, params, function(err, data) {
+			if (err) {
+				deferred.reject(err);
+			} else {
+				deferred.resolve(data);
+			}
+		});
+		
+		return deferred.promise;
+	}
+	
 	var service = {
 		setCredentials: function(keyId, secret) {
 			aws.config.update({accessKeyId: keyId, secretAccessKey: secret});
@@ -122,18 +135,7 @@ angular.module('awsSetup')
 		},
 		clearQueue: function(queueUrl) {
 			var sqs = new aws.SQS();
-			
-			var deferred = $q.defer();
-			
-			sqs.purgeQueue({QueueUrl: queueUrl}, function(err, data) {
-				if (err) {
-					deferred.reject(err);
-				} else {
-					deferred.resolve(data);
-				}
-			});
-			
-			return deferred.promise;
+			return deferredWrapper(sqs, sqs.purgeQueue, {QueueUrl: queueUrl});
 		},
 		getQueueSize: function(queueUrl) {
 			var sqs = new aws.SQS();
@@ -248,22 +250,11 @@ angular.module('awsSetup')
 		},
 		getSpotRequests: function() {
 			var ec2 = new aws.EC2();
-			
-			var deferred = $q.defer();
-			ec2.describeSpotInstanceRequests({Filters: [{Name: 'tag-key', Values: ['brenda-queue']}]}, function(err, data) {
-				if (err) {
-					deferred.reject(err);
-				} else {
-					deferred.resolve(data);
-				}
-			});
-			
-			return deferred.promise;
+			return deferredWrapper(ec2, ec2.describeSpotInstanceRequests, {Filters: [{Name: 'tag-key', Values: ['brenda-queue']}]});
 		},
 		getInstanceDetails: function(instanceList) {
 			var ec2 = new aws.EC2();
 			
-			var deferred = $q.defer();
 			var params = {};
 			if (instanceList) {
 				params.InstanceIds = instanceList;
@@ -271,29 +262,11 @@ angular.module('awsSetup')
 				params.Filters = [{Name: 'tag-key', Values: ['brenda-queue']}];
 			}
 			
-			ec2.describeInstances(params, function(err, data) {
-				if (err) {
-					deferred.reject(String(err));
-				} else {
-					deferred.resolve(data);
-				}
-			});
-			
-			return deferred.promise;
+			return deferredWrapper(ec2, ec2.describeInstances, params);
 		},
 		getSecurityGroups: function(groupName) {
 			var ec2 = new aws.EC2();
-			
-			var deferred = $q.defer();
-			ec2.describeSecurityGroups({GroupNames: [groupName]}, function(err, data) {
-				if (err) {
-					deferred.reject(String(err));
-				} else {
-					deferred.resolve(data);
-				}
-			});
-			
-			return deferred.promise;
+			return deferredWrapper(ec2, ec2.describeSecurityGroups, {GroupNames: [groupName]});
 		},
 		createSecurityGroup: function() {
 			var ec2 = new aws.EC2();
@@ -358,31 +331,11 @@ angular.module('awsSetup')
 			};
 			
 			var sqs = new aws.SQS();
-			var deferred = $q.defer();
-			
-			sqs.createQueue(params, function(err, data) {
-				if (err) {
-					deferred.reject(String(err));
-				} else {
-					deferred.resolve(data);
-				}
-			});
-			
-			return deferred.promise;
+			return deferredWrapper(sqs, sqs.createQueue, params);
 		},
 		listObjects: function(bucket) {
-			var deferred = $q.defer();
 			var s3 = new aws.S3();
-			
-			s3.listObjects({Bucket: bucket}, function(err, data) {
-				if (err) {
-					deferred.reject(String(err));
-				} else {
-					deferred.resolve(data);
-				}
-			});
-			
-			return deferred.promise;
+			return deferredWrapper(s3, s3.listObjects, {Bucket: bucket});
 		},
 		getObjectUri: function(bucket, key) {
 			var s3 = new aws.S3();
@@ -424,31 +377,11 @@ angular.module('awsSetup')
 		},
 		cancelSpotRequest: function(spotId) {
 			var ec2 = new aws.EC2();
-			
-			var deferred = $q.defer();
-			ec2.cancelSpotInstanceRequests({SpotInstanceRequestIds: [spotId]}, function(err, data) {
-				if (err) {
-					deferred.reject(err);
-				} else {
-					deferred.resolve();
-				}
-			});
-			
-			return deferred.promise;
+			return deferredWrapper(ec2, ec2.cancelSpotInstanceRequests, {SpotInstanceRequestIds: [spotId]})
 		},
 		terminateInstance: function(instanceId) {
 			var ec2 = new aws.EC2();
-			var deferred = $q.defer();
-			
-			ec2.terminateInstances({InstanceIds: [instanceId]}, function(err, data) {
-				if (err) {
-					deferred.reject(err);
-				} else {
-					deferred.resolve();
-				}
-			});
-			
-			return deferred.promise;
+			return deferredWrapper(ec2, ec2.terminateInstances, {InstanceIds: [instanceId]});
 		}
 	};
 	

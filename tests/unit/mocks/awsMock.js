@@ -10,6 +10,8 @@ function getAwsMock() {
 	var EC2authorizeSecurityGroupIngressSpy = jasmine.createSpy();
 	var EC2describeAvailabilityZonesSpy = jasmine.createSpy();
 	var EC2describeSpotPriceHistorySpy = jasmine.createSpy();
+	var EC2cancelSpotInstanceRequestsSpy = jasmine.createSpy();
+	var EC2terminateInstancesSpy = jasmine.createSpy();
 	var SQSlistQueuesSpy = jasmine.createSpy();
 	var SQSSendMessageBatchSpy = jasmine.createSpy();
 	var SQSpurgeQueueSpy = jasmine.createSpy();
@@ -35,6 +37,8 @@ function getAwsMock() {
 		EC2authorizeSecurityGroupIngress: EC2authorizeSecurityGroupIngressSpy,
 		EC2describeAvailabilityZones: EC2describeAvailabilityZonesSpy,
 		EC2describeSpotPriceHistory: EC2describeSpotPriceHistorySpy,
+		EC2cancelSpotInstanceRequests: EC2cancelSpotInstanceRequestsSpy,
+		EC2terminateInstances: EC2terminateInstancesSpy,
 		EC2: function() {
 			this.describeKeyPairs = EC2describeKeyPairsSpy;
 			this.requestSpotInstances = EC2requestSpotInstancesSpy;
@@ -47,6 +51,8 @@ function getAwsMock() {
 			this.authorizeSecurityGroupIngress = EC2authorizeSecurityGroupIngressSpy;
 			this.describeAvailabilityZones = EC2describeAvailabilityZonesSpy;
 			this.describeSpotPriceHistory = EC2describeSpotPriceHistorySpy;
+			this.cancelSpotInstanceRequests = EC2cancelSpotInstanceRequestsSpy;
+			this.terminateInstances = EC2terminateInstancesSpy;
 		},
 		SQSlistQueues: SQSlistQueuesSpy,
 		SQSSendMessageBatch: SQSSendMessageBatchSpy,
