@@ -1,9 +1,6 @@
 'use strict';
 
 angular.module('awsSetup')
-.controller('S3Ctrl', ['$scope', 'localStorageService', function($scope, localStorageService) {
-	
-}])
 .controller('WorkerSetupCtrl', ['$scope', 'localStorageService', '$http', 'awsService', '$q', function($scope, localStorageService, $http, awsService, $q) {	
 	//Get list of AMIs to choose from
 	$scope.amis = [];
