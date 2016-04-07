@@ -1,8 +1,8 @@
 'use strict';
 
 angular.module('dashboard')
-.controller('instancesCtrl', ['$scope', 'awsService', '$interval', '$http', function($scope, awsService, $interval, $http) {
-	var sortOrder = ['running', 'terminated'];
+.controller('instancesCtrl', ['$scope', 'awsService', '$interval', '$http', '$uibModal', function($scope, awsService, $interval, $http, $uibModal) {
+	var sortOrder = ['running', 'pending', 'terminating', 'shutting-down', 'terminated'];
 	
 	$scope.statusMapper = function(item) {
 		var index = sortOrder.indexOf(item.instanceStatus)
@@ -168,6 +168,30 @@ angular.module('dashboard')
 					});
 				}(item));
 			}
+		});
+	};
+	
+	$scope.terminate = function(instance) {
+		$uibModal.open({
+			animation: true,
+			templateUrl: 'dashboard/terminateConfirm.dialog.html',
+			controller: 'TerminateConfirmCtrl',
+			resolve: {
+				instance: function() {
+					return instance;
+				}
+			}
+		}).result.then(function() {
+			var spot = instance.spotId;
+			var inst = instance.instanceId;
+			
+			if ((spot !== undefined ) && (spot !== '-')) {
+				awsService.cancelSpotRequest(spot);
+			}
+			
+			awsService.terminateInstance(inst).then(function() {
+				instance.instanceStatus = 'terminating';
+			});
 		});
 	};
 	

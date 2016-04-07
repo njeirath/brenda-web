@@ -26,6 +26,7 @@
 						<th>Cost/Task</th>
 						<th>CPU Load</th>
 						<th>Destination Bucket</th>
+						<th>Terminate</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -44,6 +45,7 @@
 						<td>{{instance.uptime / instance.tasksCompleted / 3600 * instance.spotPrice | currency:"$":4}}</td>
 						<td>{{instance.cpuLoad}}</td>
 						<td>{{instance.destinationBucket}}</td>
+						<td class="text-center" ng-click="terminate(instance)"><button class="btn btn-danger" ng-show="instance.instanceStatus == 'running'"><span class="glyphicon glyphicon-remove" aria-hide="true"></span></button></td>
 					</tr>
 				</tbody>
 			</table>

@@ -421,6 +421,34 @@ angular.module('awsSetup')
 					$rootScope.$broadcast('aws-spotprice-update', data);
 				}
 			});
+		},
+		cancelSpotRequest: function(spotId) {
+			var ec2 = new aws.EC2();
+			
+			var deferred = $q.defer();
+			ec2.cancelSpotInstanceRequests({SpotInstanceRequestIds: [spotId]}, function(err, data) {
+				if (err) {
+					deferred.reject(err);
+				} else {
+					deferred.resolve();
+				}
+			});
+			
+			return deferred.promise;
+		},
+		terminateInstance: function(instanceId) {
+			var ec2 = new aws.EC2();
+			var deferred = $q.defer();
+			
+			ec2.terminateInstances({InstanceIds: [instanceId]}, function(err, data) {
+				if (err) {
+					deferred.reject(err);
+				} else {
+					deferred.resolve();
+				}
+			});
+			
+			return deferred.promise;
 		}
 	};
 	
