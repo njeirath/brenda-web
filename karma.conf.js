@@ -13,7 +13,7 @@ module.exports = function(config){
       'app/brenda-help/*.js',
       'app/components/**/*.js',
       'app/awsSetup/awsSetup.module.js',
-      'app/awsSetup/awsSetup.js',
+      'app/awsSetup/awsService.service.js',
       'app/awsSetup/awsConfigure.ctrl.js',
       'app/awsSetup/awsSetup.ctrl.js',
       'app/awsSetup/jobSetup.ctrl.js',
