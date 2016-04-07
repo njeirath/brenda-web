@@ -123,9 +123,17 @@ angular.module('awsSetup')
 		clearQueue: function(queueUrl) {
 			var sqs = new aws.SQS();
 			
+			var deferred = $q.defer();
+			
 			sqs.purgeQueue({QueueUrl: queueUrl}, function(err, data) {
-				
+				if (err) {
+					deferred.reject(err);
+				} else {
+					deferred.resolve(data);
+				}
 			});
+			
+			return deferred.promise;
 		},
 		getQueueSize: function(queueUrl) {
 			var sqs = new aws.SQS();
