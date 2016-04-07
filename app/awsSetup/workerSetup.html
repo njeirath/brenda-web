@@ -34,6 +34,9 @@
 			
 			<div class="panel panel-default">
 				<div class="panel-body">
+					<div ng-messages="spotErrors">
+						<div ng-message="error" class="alert alert-danger" role="alert">Error occurred: {{spotErrors.error}}</div>
+					</div>
 					<div class="panel panel-default col-lg-4" style="margin-bottom: 0px" ng-repeat="inst in instances">
 						<div class="panel-body">
 							<div class="radio">

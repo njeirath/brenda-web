@@ -263,6 +263,17 @@ describe('awsSetup', function() {
 				})
 			});
 			
+			describe('$scope.$on(aws-spotprice-error', function() {
+				beforeEach(function() {
+					$httpBackend.flush();
+				});
+				
+				it('should set error on error received', function() {
+					$rootScope.$broadcast('aws-spotprice-error', 'error');
+					expect($rootScope.spotErrors.error).toBe('error');
+				});
+			});
+			
 			it('should return the currently selected instance when getSelectedInstance is called', function() {
 				$httpBackend.flush();
 				$rootScope.instance.size = 'c1.xlarge';
