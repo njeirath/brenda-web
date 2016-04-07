@@ -50,6 +50,12 @@ angular.module('awsSetup')
 		}
 	});
 	
+	$scope.spotErrors = {};
+	
+	$scope.$on('aws-spotprice-error', function(event, data) {
+		$scope.spotErrors.error = data;
+	});
+	
 	$scope.updateTypes = function() {
 		$q.all([$http.get('instances.json'), awsService.getAvailabilityZones()])
 		.then(function(results) {

@@ -408,7 +408,7 @@ angular.module('awsSetup')
 			
 			ec2.describeSpotPriceHistory(params, function(err, data) {
 				if (err) {
-					
+					$rootScope.$broadcast('aws-spotprice-error', err);
 				} else {
 					$rootScope.$broadcast('aws-spotprice-update', data);
 				}
