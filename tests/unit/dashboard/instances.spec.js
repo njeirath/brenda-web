@@ -3,7 +3,8 @@
 describe('dashboard instances', function() {
 	beforeEach(module('dashboard'));
 
-	var $rootScope, $controller, $httpBackend, ctrl, awsServiceMock, instanceDeferred, spotDeferred, addQueueSpy;
+	var $rootScope, $controller, $httpBackend, $q, ctrl, awsServiceMock, instanceDeferred, spotDeferred, addQueueSpy;
+	var modalMock, modalDeferred;
 	var spotRet = {SpotInstanceRequests: [
 		{
 			SpotInstanceRequestId: 'sir_1',
@@ -26,10 +27,11 @@ describe('dashboard instances', function() {
 		}
 	]};
 			
-	beforeEach(inject(function(_$controller_, _$rootScope_, _$httpBackend_, $q) {
+	beforeEach(inject(function(_$controller_, _$rootScope_, _$httpBackend_, _$q_) {
 		$rootScope = _$rootScope_;
 		$controller = _$controller_;
 		$httpBackend = _$httpBackend_;
+		$q = _$q_;
 		
 		//Seed scope with normally inherited object
 		$rootScope.instances = {
@@ -37,19 +39,22 @@ describe('dashboard instances', function() {
 		};
 		
 		awsServiceMock = getAwsServiceMock();
+		modalMock = {open: function(){}}
 		
 		instanceDeferred = $q.defer();
 		spotDeferred = $q.defer();
+		modalDeferred = $q.defer();
 		
 		spyOn(awsServiceMock, 'getInstanceDetails').and.returnValue(instanceDeferred.promise);
 		spyOn(awsServiceMock, 'getSpotRequests').and.returnValue(spotDeferred.promise);
+		spyOn(modalMock, 'open').and.returnValue({result: modalDeferred.promise});
 		
 		$rootScope.queues = {addQueue: function(){}};
 		$rootScope.buckets = {addBucket: function(){}};
 		spyOn($rootScope.queues, 'addQueue');
 		spyOn($rootScope.buckets, 'addBucket');
 	
-		ctrl = $controller('instancesCtrl', {$scope: $rootScope, awsService: awsServiceMock});
+		ctrl = $controller('instancesCtrl', {$scope: $rootScope, awsService: awsServiceMock, $uibModal: modalMock});
 	}));
 	
 	it('should start with empty set of instance table', function() {
@@ -188,11 +193,53 @@ describe('dashboard instances', function() {
 	describe('$scope.statusMapper', function() {
 		it('should return correct index for matched statuses', function() {
 			expect($rootScope.statusMapper({instanceStatus: 'running'})).toBe(0);
-			expect($rootScope.statusMapper({instanceStatus: 'terminated'})).toBe(1);
+			expect($rootScope.statusMapper({instanceStatus: 'terminated'})).toBe(4);
 		});
 		
 		it('should return max index for unmatched status', function() {
-			expect($rootScope.statusMapper({instanceStatus: 'unknown'})).toBe(2);
+			expect($rootScope.statusMapper({instanceStatus: 'unknown'})).toBe(5);
+		});
+	});
+	
+	describe('$scope.terminate', function() {
+		var terminateDeferred, instance;
+		
+		beforeEach(function() {
+			instance = {spotId: 'sid_123', instanceId: 'i_abc'}
+			$rootScope.terminate(instance);
+			terminateDeferred = $q.defer();
+			
+			awsServiceMock.terminateInstance.and.returnValue(terminateDeferred.promise);
+		});
+		
+		it('should open modal', function() {
+			expect(modalMock.open).toHaveBeenCalledWith({
+				animation: true, 
+				templateUrl: 'dashboard/terminateConfirm.dialog.html',
+				controller: 'TerminateConfirmCtrl',
+				resolve: jasmine.any(Object)
+			});
+		});
+		
+		it('should cancel spot and instance on OK', function() {
+			modalDeferred.resolve();
+			$rootScope.$apply();
+			
+			expect(awsServiceMock.cancelSpotRequest).toHaveBeenCalledWith('sid_123');
+			expect(awsServiceMock.terminateInstance).toHaveBeenCalledWith('i_abc');
+			
+			terminateDeferred.resolve();
+			$rootScope.$apply();
+			
+			expect(instance.instanceStatus).toBe('terminating');
+		});
+		
+		it('should not cancel on cancel', function() {
+			modalDeferred.reject();
+			$rootScope.$apply();
+			
+			expect(awsServiceMock.cancelSpotRequest).not.toHaveBeenCalled();
+			expect(awsServiceMock.terminateInstance).not.toHaveBeenCalled();
 		});
 	});
 });

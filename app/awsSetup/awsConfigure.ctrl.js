@@ -39,7 +39,7 @@ angular.module('awsSetup')
 			$rootScope.$broadcast('brenda-web-credentials-updated');
 		}, function(err) {
 			$scope.securityGroupCheck.status = 'danger';
-			$scope.securityGroupCheck.msg = 'Security group check failed: ' + err;
+			$scope.securityGroupCheck.msg = 'Security group check failed: ' + String(err);
 		});
 	};
 	

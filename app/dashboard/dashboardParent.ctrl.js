@@ -52,7 +52,7 @@ angular.module('dashboard')
 							b.files.push({name: obj.Key, size: obj.Size, modified: obj.LastModified, url: url, caption: obj.Key});
 						});
 					}, function(err) {
-						b.errors.error = err;
+						b.errors.error = String(err);
 					});
 				}(item));
 			});

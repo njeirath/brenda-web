@@ -27,7 +27,9 @@ function getAwsServiceMock() {
 		createSecurityGroup: function(){},
 		createQueue: function(){},
 		getAvailabilityZones: function(){},
-		getSpotPrices: function(){}
+		getSpotPrices: function(){},
+		cancelSpotRequest: function(){},
+		terminateInstance: function(){}
 	};
 		
 	spyOn(mock, 'getKeyId').and.callThrough();
@@ -45,6 +47,8 @@ function getAwsServiceMock() {
 	spyOn(mock, 'createQueue');
 	spyOn(mock, 'getAvailabilityZones');
 	spyOn(mock, 'getSpotPrices');
+	spyOn(mock, 'cancelSpotRequest');
+	spyOn(mock, 'terminateInstance');
 		
 	return mock;
 }

@@ -723,6 +723,51 @@ describe('awsSetup', function() {
 					expect($rootScope.$broadcast).toHaveBeenCalledWith('aws-spotprice-update', 'datas')
 				});
 			});
+			
+			describe('cancelSpotRequest', function() {
+				it('should call to cancel spot requests', function() {
+					awsService.cancelSpotRequest('sid_123');
+					expect(awsMock.EC2cancelSpotInstanceRequests).toHaveBeenCalledWith({
+						SpotInstanceRequestIds: ['sid_123']
+					}, jasmine.any(Function));
+				});
+			});
+			
+			describe('terminateInstance', function() {
+				it('should call to terminate instances', function() {
+					awsService.terminateInstance('i_abc');
+					expect(awsMock.EC2terminateInstances).toHaveBeenCalledWith({
+						InstanceIds: ['i_abc']
+					}, jasmine.any(Function));
+				});
+			});
+			
+			describe('deferredWrapper', function() {
+				var errResp, dataResp, handlerCallback;
+				
+				beforeEach(function() {
+					var promise = awsService.terminateInstance('i_abc');
+					handlerCallback = awsMock.EC2terminateInstances.calls.argsFor(0)[1];
+					
+					promise.then(function(data) {
+						dataResp = data;
+					}, function(err) {
+						errResp = err;
+					});
+				});
+				
+				it('should resolve with data on success', function() {
+					handlerCallback(null, 'data');
+					$rootScope.$apply();
+					expect(dataResp).toBe('data');
+				});
+				
+				it('should reject with error on failure', function() {
+					handlerCallback('err', null);
+					$rootScope.$apply();
+					expect(errResp).toBe('err');
+				});
+			});
 		});
 	});
 });
