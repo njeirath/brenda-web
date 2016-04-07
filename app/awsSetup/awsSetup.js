@@ -417,9 +417,4 @@ angular.module('awsSetup')
 	};
 	
 	return service;
-}])
-.filter('queueToName', function() {
-    return function(url) {
-        return url.split("/").pop();
-    };
-});
+}]);

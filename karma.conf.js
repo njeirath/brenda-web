@@ -21,6 +21,7 @@ module.exports = function(config){
       'app/awsSetup/workerSetup.ctrl.js',
       'app/awsSetup/setup.ctrl.js',
       'app/awsSetup/aws.service.js',
+      'app/awsSetup/queueToName.filter.js',
       'app/dashboard/dashboard.js',
       'app/dashboard/*.js',
       'app/app.js',
