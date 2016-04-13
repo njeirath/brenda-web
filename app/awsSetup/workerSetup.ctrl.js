@@ -109,12 +109,12 @@ angular.module('awsSetup')
 				'sudo apt-get update\n' +
 				'sudo apt-get -y install nginx\n' +
 				"sudo sed -i '29 i\\ add_header 'Access-Control-Allow-Origin' '*';' /etc/nginx/sites-enabled/default\n" +
-				'sudo echo "* * * * * root tail -n1000 /mnt/brenda/log > /usr/share/nginx/www/log_tail.txt" >> /etc/crontab\n' +
-				'sudo echo "* * * * * root cat /proc/uptime /proc/loadavg $B/task_count > /usr/share/nginx/www/uptime.txt" >> /etc/crontab\n' +
+				'sudo echo "* * * * * root tail -n1000 /mnt/brenda/log > ' + $scope.amiNginxPath + 'log_tail.txt" >> /etc/crontab\n' +
+				'sudo echo "* * * * * root cat /proc/uptime /proc/loadavg $B/task_count > ' + $scope.amiNginxPath + 'uptime.txt" >> /etc/crontab\n' +
 				'if ! [ -d "$B" ]; then\n' +
 				'  for f in brenda.pid log task_count task_last DONE ; do\n' +
 				'    ln -s "$B/$f" "/root/$f"\n' +
-				'    sudo ln -s "$B/$f" "/usr/share/nginx/www/$f"\n' +
+				'    sudo ln -s "$B/$f" "' + $scope.amiNginxPath + '$f"\n' +
 				'  done\n' +
 				'fi\n' +
 				'sudo service nginx start\n' +
