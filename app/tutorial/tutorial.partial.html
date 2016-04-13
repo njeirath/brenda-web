@@ -8,6 +8,9 @@
 			<li du-scrollspy="s3Destination"><a du-smooth-scroll="s3Destination">S3 Destination Bucket Setup</a></li>
 			<li du-scrollspy="workers"><a du-smooth-scroll="workers">Start Workers</a></li>
 			<li du-scrollspy="dashboard"><a du-smooth-scroll="dashboard">Monitor Job Status</a></li>
+			<li class="section-label"><strong>Advanced Topics</strong></li>
+			<li du-scrollspy="customAmi"><a du-smooth-scroll="customAmi">Create a Custom AMI</a></li>
+			<li du-scrollspy="nginxPath"><a du-smooth-scroll="nginxPath">Nginx Path</a></li>
 		</ul>
 	</div>
 	<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
@@ -134,6 +137,144 @@
 				left/right arrow keys or the buttons at the top to step between frames.  Clicking on the 
 				<span class="glyphicon glyphicon-download" hide-aria="true"></span> icon next to the file name will download
 				that single file.
+			</p>
+		</section>
+		<section id="customAmi">
+			<h3>Create a Custom AMI</h3>
+			<p class="lead">
+				AMIs are the machine images, with software preinstalled, that are used to launch instances of workers   
+			</p>
+			
+			<p>
+				There are a few reasons you may want to create your own custom AMI such as needing an updated or custom version 
+				of Blender on your workers.  Whatever the reason, this section will explain how to build your instance, image it
+				and optionally make it public for others to use.  Since this is considered an "advanced" topic, we'll assume the
+				reader is familiar with AWS and in particular EC2 instances, volumes, snapshots, and images.  Additionally, these
+				steps were used to setup an AMI based on Ubuntu 14.04, if using a different version, make the appropriate adjustments.
+			</p>
+			
+			<h4>Build Instance</h4>
+			<ol>
+				<li>Start by opening the AWS web console and navigate to EC2</li>
+				<li>Choose to launch an instance</li>
+				<li>Select an image to start from, typically a flavor or Ubuntu</li>
+				<li>Select an instance type, <strong>t2.micro</strong> should be sufficient for the following steps</li>
+				<li>Follow through the rest of the steps with appropriate settings</li>
+				<li>Once the instance is created and running, SSH into it</li>
+				<li>
+					Install blender and the various other dependencies using something like the following:
+					<pre>
+sudo su
+apt-get update
+apt-get install -y blender python-pip gcc python-dev libcurl4-openssl-dev git unzip
+					</pre>
+				</li>
+				<li>
+					<strong>Optional</strong>: The above commands will install Blender and its dependencies.  In case you want to
+					download a different verion or build your own the following commands will remove the version that was installed
+					(leaving the dependencies alone) and, in this example, dowload version 2.77a and install it:
+					<pre>
+apt-get remove -y blender
+
+wget http://ftp.halifax.rwth-aachen.de/blender/release/Blender2.77/blender-2.77a-linux-glibc211-x86_64.tar.bz2
+bunzip2 -d blender-2.77a-linux-glibc211-x86_64.tar.bz2 
+cd /opt/
+tar xvf /home/ubuntu/blender-2.77a-linux-glibc211-x86_64.tar 
+ln -s /opt/blender-2.77a-linux-glibc211-x86_64/blender /usr/bin/blender
+cd /home/ubuntu
+rm blender-2.77a-linux-glibc211-x86_64.tar
+					</pre>
+				</li>
+				<li>
+					Install boto, s3cmd, and brenda:
+					<pre>
+pip install -U boto
+pip install -U s3cmd
+
+git clone http://github.com/jamesyonan/brenda.git
+cd brenda
+python setup.py install
+					</pre>
+				</li>
+				<li>
+					<strong>Optional (but recommended)</strong>: If you plan to make the AMI public, it is a VERY good idea to remove
+					any keys and history from the instance first (NOTE: only do this right before you're ready to image the machine
+					as once you remove your keys you will no longer be able to SSH into the instance):
+					<pre>
+rm -rf /root/.bash_history /home/ubuntu/.bash_history
+rm -rf /root/.cache /home/ubuntu/.sudo_as_admin_successful /home/ubuntu/.cache /var/log/auth.log /var/log/lastlog
+rm -rf /root/.ssh/authorized_keys /home/ubuntu/.ssh/authorized_keys /root/.ssh/authorized_keys.bak /home/ubuntu/.ssh/authorized_keys.bak
+					</pre> 
+				</li>
+			</ol>
+			
+			<p>
+				At this point the instance should be setup with Blender, and Brenda and their dependencies.  To confirm Blender is
+				working, you may optionally run <code>blender -v</code> which should display the version of Blender.
+			</p>
+			
+			<h4>Create the Image</h4>
+			<ol>
+				<li>Open the AWS web console, navigate to EC2, find your running and configured instance and select it</li>
+				<li>Select <strong>Actions --> Image --> Create Image</strong></li>
+				<li>
+					Fill in the required details (NOTE: make sure the <strong>Delete on Termination</strong> checkbox is selected
+					to ensure volumes are not left in your AWS account as they will incur charges)
+				</li>
+			</ol>
+			
+			<p>
+				The image creation process may take some time to complete, the status can be followed under the <strong>AMIs</strong>
+				section of EC2.
+			</p>
+			
+			<h4>Publish AMI</h4>
+			<ol>
+				<li>Click to select the AMI in the AWS web console</li>
+				<li>Click the <strong>Permissions</strong> tab and select <strong>Edit</strong></li>
+				<li>Click <strong>Public</strong></li>
+			</ol>
+			
+			<p>
+				After some time, it should appear in the list of community AMIs.
+			</p>
+			
+			<p>
+				<strong>Optional:</strong> If you'd like your AMI to appear in the list of preset AMIs within Brenda-Web there are
+				a couple options to choose from:
+				
+				<ul>
+					<li>
+						<strong>Recommended:</strong> Clone the 
+						<a href="https://github.com/njeirath/brenda-web" target="_blank">Brenda-Web Git repo</a>, edit the json file
+						located at <code>ami/amiList.json</code> with the necessary details, and submit a PR.  Once the PR is reviewed
+						and merged, your AMI will appear in the list of preset AMIs list on the site.
+					</li>
+					<li>
+						The other option is to submit a ticket under the Github project requesting your AMI be added with the necessary
+						details included.  This route will take longer as the ticket will have to be pulled and the code added.
+					</li>
+				</ul>
+			</p>
+			<p>
+				Refer to the Nginx path help section for information on what the <code>nginxPath</code> property in 
+				<code>ami/amiList.json</code> should be set to.
+			</p>
+		</section>
+		<section id="nginxPath">
+			<h3>Nginx Path</h3>
+			<div ng-include="'tutorial/nginxPath.partial.html'"></div>
+			<p>
+				If creating your own AMI and you want to validate this setting:
+				<ol>
+					<li>Use your AMI to start up an AWS instance</li>
+					<li>Once it is running, SSH into your instance</li>
+					<li>Install Nginx using <code>sudo apt-get install nginx</code></li>
+					<li>Once installed, open <code>/etc/nginx/sites-enabled/default</code></li>
+					<li>Look for a property called <code>root</code>, the value will be the location you should use for the Nginx path</li>
+					<li>Shut down your instance and use Blender-Web to start up a worker with your AMI and the appropriate Nginx path</li>
+					<li>Once it starts up, if you see the status of your worker in the dashboard, the path was correct</li>
+				</ol>
 			</p>
 		</section>
 		

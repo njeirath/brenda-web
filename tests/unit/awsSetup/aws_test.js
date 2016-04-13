@@ -197,10 +197,19 @@ describe('awsSetup', function() {
 			
 			beforeEach(function() {
 				amiListHandler = $httpBackend.when('GET', 'amiList.json').respond({
-					"ami-0529086c": {
-						"blenderVersion": "2.69"
-					}	
-				});
+					"amis": [
+					 		{
+					 			"ami": "ami-0529086c",
+					 			"blenderVersion": "2.69",
+					 			"nginxPath": "/usr/share/nginx/www/"
+					 		},
+					 		{
+					 			"ami": "ami-test",
+					 			"blenderVersion": "2.77"
+					 		}
+					 	],
+					 	"defaultNginxPath": "/usr/share/nginx/html/" 
+					 });
 				
 				awsServiceMock = getAwsServiceMock();
 				
@@ -228,9 +237,15 @@ describe('awsSetup', function() {
 			
 			it('should populate list based on http response and default select first item', function() {
 				$httpBackend.flush();
-				expect($rootScope.amis.length).toBe(1);
-				expect($rootScope.amis[0]).toEqual({id: 0, name: 'ami-0529086c', version: '2.69'});
+				expect($rootScope.amis.length).toBe(2);
+				expect($rootScope.amis[0]).toEqual({name: 'ami-0529086c', version: '2.69', nginxPath: '/usr/share/nginx/www/'});
+				expect($rootScope.amis[1]).toEqual({name: 'ami-test', version: '2.77', nginxPath: '/usr/share/nginx/html/'});
 				expect($rootScope.amiSelect).toBe('');
+			});
+			
+			it('should set the default nginx path', function() {
+				$httpBackend.flush();
+				expect($rootScope.amiNginxPath).toBe('/usr/share/nginx/html/')
 			});
 			
 			it('should populate instance list based on http response', function() {
@@ -238,6 +253,18 @@ describe('awsSetup', function() {
 				expect($rootScope.instances.length).toBe(2);
 				expect($rootScope.instances[0]).toEqual({name: 'c1.xlarge', spotPrices: {zone1: undefined, zone2: undefined}});
 				expect(awsServiceMock.getSpotPrices).toHaveBeenCalled();
+			});
+			
+			describe('$scope.setAmi', function() {
+				beforeEach(function() {
+					$httpBackend.flush();
+				});
+				
+				it('should set amiSelect and amiNginxPath based on item passed', function() {
+					$rootScope.setAmi({name: 'ami-test', nginxPath: '/path/to/nginx/'});
+					expect($rootScope.amiSelect).toBe('ami-test');
+					expect($rootScope.amiNginxPath).toBe('/path/to/nginx/');
+				});
 			});
 			
 			describe('$scope.$on(aws-spotprice-update', function() {
@@ -291,6 +318,7 @@ describe('awsSetup', function() {
 			
 			describe('generateScript', function() {
 				it('should generate the startup script correctly', function() {
+					$httpBackend.flush();
 					
 					var expected = 
 						'#!/bin/bash\n' +
@@ -299,15 +327,15 @@ describe('awsSetup', function() {
 						'sudo apt-get update\n' +
 						'sudo apt-get -y install nginx\n' +
 						"sudo sed -i '29 i\\ add_header 'Access-Control-Allow-Origin' '*';' /etc/nginx/sites-enabled/default\n" +
-						'sudo echo "* * * * * root tail -n1000 /mnt/brenda/log > /usr/share/nginx/www/log_tail.txt" >> /etc/crontab\n' +
-						'sudo echo "* * * * * root cat /proc/uptime /proc/loadavg $B/task_count > /usr/share/nginx/www/uptime.txt" >> /etc/crontab\n' +
+						'sudo echo "* * * * * root tail -n1000 /mnt/brenda/log > /usr/share/nginx/html/log_tail.txt" >> /etc/crontab\n' +
+						'sudo echo "* * * * * root cat /proc/uptime /proc/loadavg $B/task_count > /usr/share/nginx/html/uptime.txt" >> /etc/crontab\n' +
 						'if ! [ -d "$B" ]; then\n' +
 						'  for f in brenda.pid log task_count task_last DONE ; do\n' +
 						'    ln -s "$B/$f" "/root/$f"\n' +
-						'    sudo ln -s "$B/$f" "/usr/share/nginx/www/$f"\n' +
+						'    sudo ln -s "$B/$f" "/usr/share/nginx/html/$f"\n' +
 						'  done\n' +
 						'fi\n' +
-						'sudo service nginx start\n' +
+						'sudo service nginx restart\n' +
 						'export BRENDA_WORK_DIR="."\n' +
 						'mkdir -p "$B"\n' +
 						'cd "$B"\n' +
