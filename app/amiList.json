@@ -4,6 +4,10 @@
 			"ami": "ami-0529086c",
 			"blenderVersion": "2.69",
 			"nginxPath": "/usr/share/nginx/www/"
+		},{
+			"ami": "ami-837567e9",
+			"blenderVersion": "2.77a",
+			"nginxPath": "/usr/share/nginx/html/"
 		}
 	],
 	"defaultNginxPath": "/usr/share/nginx/html/" 
