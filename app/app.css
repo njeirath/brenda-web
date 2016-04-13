@@ -71,6 +71,10 @@ body {
   padding-right: 20px;
   padding-left: 20px;
 }
+.nav-sidebar > li > strong {
+  padding-right: 10px;
+  padding-left: 10px;
+}
 .nav-sidebar > .active > a,
 .nav-sidebar > .active > a:hover,
 .nav-sidebar > .active > a:focus {
@@ -137,4 +141,8 @@ body {
 
 .tutorial .spacer {
 	margin-top: 800px;
+}
+
+.tutorial pre {
+	overflow-x: auto;
 }
