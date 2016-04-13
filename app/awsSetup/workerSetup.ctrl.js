@@ -117,7 +117,7 @@ angular.module('awsSetup')
 				'    sudo ln -s "$B/$f" "' + $scope.amiNginxPath + '$f"\n' +
 				'  done\n' +
 				'fi\n' +
-				'sudo service nginx start\n' +
+				'sudo service nginx restart\n' +
 				'export BRENDA_WORK_DIR="."\n' +
 				'mkdir -p "$B"\n' +
 				'cd "$B"\n' +
