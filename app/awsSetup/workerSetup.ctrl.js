@@ -5,18 +5,23 @@ angular.module('awsSetup')
 	//Get list of AMIs to choose from
 	$scope.amis = [];
 	
+	var defaultNginxPath = '';
 	$http.get('amiList.json').then(function(response) {
-		var i = 0;
-		Object.keys(response.data).forEach(function(item) {
-			$scope.amis[i] = {id: i, name: item, version: response.data[item]['blenderVersion']}; 
-			i++;
+		defaultNginxPath = response.data.defaultNginxPath;
+		
+		response.data.amis.forEach(function(item) {
+			var ami = {name: item.ami, version: item.blenderVersion}
+			ami.nginxPath = item.nginxPath ? item.nginxPath : defaultNginxPath;
+			$scope.amis.push(ami); 
 		});
 		
-		$scope.amiSelect = '';	
+		$scope.amiSelect = '';
+		$scope.amiNginxPath = defaultNginxPath;
 	});
 	
-	$scope.setAmi = function(name) {
-		$scope.amiSelect = name;
+	$scope.setAmi = function(ami) {
+		$scope.amiSelect = ami.name;
+		$scope.amiNginxPath = ami.nginxPath;
 	};
 	
 	$scope.instanceType = 'spot';

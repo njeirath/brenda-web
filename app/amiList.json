@@ -1,5 +1,10 @@
 {
-	"ami-0529086c": {
-		"blenderVersion": "2.69"
-	}
+	"amis": [
+		{
+			"ami": "ami-0529086c",
+			"blenderVersion": "2.69",
+			"nginxPath": "/usr/share/nginx/www/"
+		}
+	],
+	"defaultNginxPath": "/usr/share/nginx/html/" 
 }
