@@ -9,6 +9,7 @@
 			<li du-scrollspy="workers"><a du-smooth-scroll="workers">Start Workers</a></li>
 			<li du-scrollspy="dashboard"><a du-smooth-scroll="dashboard">Monitor Job Status</a></li>
 			<li class="section-label"><strong>Advanced Topics</strong></li>
+			<li du-scrollspy="ebsSource"><a du-smooth-scroll="ebsSource">EBS Sources</a></li>
 			<li du-scrollspy="customAmi"><a du-smooth-scroll="customAmi">Create a Custom AMI</a></li>
 			<li du-scrollspy="nginxPath"><a du-smooth-scroll="nginxPath">Nginx Path</a></li>
 		</ul>
@@ -17,6 +18,17 @@
 		<h2>Brenda-Web Tutorial</h2>
 		<p class="lead">
 			This tutorial will demonstrate the process for setting up AWS, submitting jobs and monitoring their progress.
+		</p>
+		
+		<p>
+			This tool is built around the <a href="https://github.com/jamesyonan/brenda" target="_blank">Brenda</a> project.  As such, a lot
+			of additional information and history can be found in the readme of that project.  This documentation attempts to
+			answer most of the questions users will have but in the likely case that something is missing, it is highly
+			recommended to read the documentation from the <a href="https://github.com/jamesyonan/brenda" target="_blank">Brenda</a> repository
+			on Github as it will likely contain the answers.  In the event that answers are not provided here or in the Brenda
+			repository, questions can also be submitted to the 
+			<a href="https://github.com/njeirath/brenda-web/issues" target="_blank">Brenda-Web repository</a> and all attempts will be
+			made to provide you with an answer.
 		</p>
 		
 		<p>
@@ -139,6 +151,51 @@
 				that single file.
 			</p>
 		</section>
+		<section id="ebsSource">
+			<h3>EBS Sources</h3>
+			
+			<p>
+				When a worker is started, the first thing it will do is copy the Blender project from S3 to the EC2 instance.  
+				In the case that your Blender project is large, this can take some time before the rendering process will be
+				able to start.  In this case, an alternative is to place your project files on an EBS volume and use a snapshot
+				to distribute the data to the workers.  The <a href="https://github.com/jamesyonan/brenda" target="_blank">Brenda</a>
+				Project readme has an in depth write up on how this works with Brenda so the details will be omitted from here
+				but we'll cover the high level steps.  Note: Brenda supports mounting multiple EBS volumes to the same instance
+				however, due to changes in how AWS mounts volumes, Brenda-Web currently only supports mounting a single EBS volume.
+			</p>
+			
+			<h4>Setup Snapshot</h4>
+			<ol>
+				<li>Use the AWS web console to spin up an EC2 instance, usually a <strong>t2.micro</strong> instance is sufficient</li>
+				<li>Once it is ready, create an EBS volume large enough to be able to contain your project files</li>
+				<li>Attach the volume to your instance</li>
+				<li>SSH into your instance and mount the volume to a directory of your choosing</li>
+				<li>
+					Use any method you desire to copy your project files to the folder where the volume is mounted.  NOTE: it is
+					important to place your .blend file at the root of this folder as this is where Brenda will look for it on the workers.
+				</li>
+				<li>Once your project is coppied, you can shut down your instance</li>
+				<li>Use the AWS web console to locate your volume and select it</li>
+				<li>Click <strong>Actions --> Create Snapshot</strong> to start the snapshot process</li>
+				<li>Once the snapshot is created, it will be assigned an id that looks like <strong>snap-xxxxxxxx</strong></li>
+			</ol>
+			
+			<h4>Using the Snapshot as the Project Source</h4>
+			<p>
+				Setting the snapshot as the project source is as simple as entering the source as an EBS style URL.  This will
+				look something like <code>ebs://snap-xxxxxxxx</code>.
+			</p>
+			
+			<p>
+				If for example your snapshot had ID <code>snap-abcd1234</code>, the proper URL would be <code>ebs://snap-abcd1234</code>
+			</p>
+			
+			<p>
+				When the worker is started, a volume will be created from the snapshot and be attached to the instance.  Brenda
+				will use this as the project and begin executing tasks against it as usual.
+			</p>
+			
+		</section>
 		<section id="customAmi">
 			<h3>Create a Custom AMI</h3>
 			<p class="lead">
@@ -257,7 +314,7 @@ rm -rf /root/.ssh/authorized_keys /home/ubuntu/.ssh/authorized_keys /root/.ssh/a
 				</ul>
 			</p>
 			<p>
-				Refer to the Nginx path help section for information on what the <code>nginxPath</code> property in 
+				Refer to the <a du-smooth-scroll="nginxPath">Nginx Path</a> help section for information on what the <code>nginxPath</code> property in 
 				<code>ami/amiList.json</code> should be set to.
 			</p>
 		</section>
