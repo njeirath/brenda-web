@@ -34,7 +34,7 @@ angular.module('awsSetup')
 		projectSource: localStorageService.get('projectSource'),
 		frameDestination: localStorageService.get('frameDestination'),
 		isEbsSource: function() {
-			return $scope.s3.projectSource.match(/^[eE][bB][sS]:\/\//);
+			return $scope.s3.projectSource.match(/^[eE][bB][sS]:\/\//) ? true : false;
 		}
 	};
 	
