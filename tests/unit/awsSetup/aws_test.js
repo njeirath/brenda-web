@@ -220,7 +220,10 @@ describe('awsSetup', function() {
 				//Mock up inherited scope objects
 				$rootScope.s3 = {
 					projectSource: 'source location',
-					frameDestination: 'frame dest'
+					frameDestination: 'frame dest',
+					isEbsSource: function() {
+						return false;
+					}
 				};
 				
 				$rootScope.queue = {
@@ -368,13 +371,20 @@ describe('awsSetup', function() {
 				
 				it('should call requestSpot method when spot instances being requested', function() {
 					$rootScope.requestInstances();
-					expect(awsServiceMock.requestSpot).toHaveBeenCalledWith('ami_123', 'key', 'brenda-web', 'script', 'c3.large', '0.02', 1, 'one-time', 'queueName', 'frame dest', jasmine.any(Function));
+					expect(awsServiceMock.requestSpot).toHaveBeenCalledWith('ami_123', 'key', 'brenda-web', 'script', 'c3.large', null, '0.02', 1, 'one-time', 'queueName', 'frame dest', jasmine.any(Function));
 				});
 				
 				it('should call reqstOndemand method when on demand instances being requested', function() {
 					$rootScope.instanceType = 'onDemand';
 					$rootScope.requestInstances();
-					expect(awsServiceMock.requestOndemand).toHaveBeenCalledWith('ami_123', 'key', 'brenda-web', 'script', 'c3.large', 1, 'queueName', 'frame dest', jasmine.any(Function));
+					expect(awsServiceMock.requestOndemand).toHaveBeenCalledWith('ami_123', 'key', 'brenda-web', 'script', 'c3.large', null, 1, 'queueName', 'frame dest', jasmine.any(Function));
+				});
+				
+				it('should call requestSpot with snapshot if using ebs style project source', function() {
+					$rootScope.s3.projectSource = 'ebs://snap-123';
+					$rootScope.s3.isEbsSource = function() {return true;};
+					$rootScope.requestInstances();
+					expect(awsServiceMock.requestSpot).toHaveBeenCalledWith('ami_123', 'key', 'brenda-web', 'script', 'c3.large', ['snap-123'], '0.02', 1, 'one-time', 'queueName', 'frame dest', jasmine.any(Function));
 				});
 			});
 			

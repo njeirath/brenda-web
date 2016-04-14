@@ -103,10 +103,15 @@ angular.module('awsSetup')
 	});
 	
 	$scope.generateScript = function() {
-		return 	'#!/bin/bash\n' +
+		var script = '#!/bin/bash\n' +
 				'# run Brenda on the EC2 instance store volume\n' +
-				'B="/mnt/brenda"\n' +
-				'sudo apt-get update\n' +
+				'B="/mnt/brenda"\n';
+		
+		if ($scope.s3.isEbsSource()) {
+			script += 'sudo ln /dev/xvdf /dev/xvdf1\n' 
+		}
+		
+		script += 'sudo apt-get update\n' +
 				'sudo apt-get -y install nginx\n' +
 				"sudo sed -i '29 i\\ add_header 'Access-Control-Allow-Origin' '*';' /etc/nginx/sites-enabled/default\n" +
 				'sudo echo "* * * * * root tail -n1000 /mnt/brenda/log > ' + $scope.amiNginxPath + 'log_tail.txt" >> /etc/crontab\n' +
@@ -129,6 +134,8 @@ angular.module('awsSetup')
 				'RENDER_OUTPUT=' + $scope.s3.frameDestination + '\n' +
 				'DONE=shutdown\n' +
 				'EOF\n';
+		
+		return script;
 
 	};
 	
@@ -146,11 +153,16 @@ angular.module('awsSetup')
 	
 	$scope.requestInstances = function() {
 		//ami, keyPair, securityGroup, userData, instanceType, spotPrice, count, type
+		var snapshots = null;
+		if ($scope.s3.isEbsSource()) {
+			snapshots = [$scope.s3.projectSource.split('//').pop()];
+		}
+			
 		if ($scope.instanceType === 'spot') {
-			awsService.requestSpot($scope.amiSelect, $scope.sshKey, 'brenda-web', $scope.generateScript(), $scope.instance.size, $scope.spotPrice, $scope.numInstances, 'one-time', $scope.queue.workQueue, $scope.s3.frameDestination.split('//').pop(), $scope.showStatus);
+			awsService.requestSpot($scope.amiSelect, $scope.sshKey, 'brenda-web', $scope.generateScript(), $scope.instance.size, snapshots, $scope.spotPrice, $scope.numInstances, 'one-time', $scope.queue.workQueue, $scope.s3.frameDestination.split('//').pop(), $scope.showStatus);
 		} else {
 			//requestOndemand: function(ami, keyPair, securityGroup, userData, instanceType, count)
-			awsService.requestOndemand($scope.amiSelect, $scope.sshKey, 'brenda-web', $scope.generateScript(), $scope.instance.size, $scope.numInstances, $scope.queue.workQueue, $scope.s3.frameDestination.split('//').pop(), $scope.showStatus);
+			awsService.requestOndemand($scope.amiSelect, $scope.sshKey, 'brenda-web', $scope.generateScript(), $scope.instance.size, snapshots, $scope.numInstances, $scope.queue.workQueue, $scope.s3.frameDestination.split('//').pop(), $scope.showStatus);
 		}
 	};
 	
