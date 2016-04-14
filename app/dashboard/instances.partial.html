@@ -13,38 +13,48 @@
 				<thead>
 					<tr>
 						<th>Queue</th>
+						
 						<th>Spot ID</th>
 						<th>Spot Price</th>
-						<th>Instance ID</th>
 						<th>Spot Status</th>
+						
+						<th>Instance ID</th>
 						<th>Instance Status</th>
-						<th>Instance IP</th>
 						<th>Type</th>
+						<th>Instance IP</th>
+						
 						<th>Uptime</th>
 						<th>Tasks Completed</th>
 						<th>Time/Task</th>
 						<th>Cost/Task</th>
 						<th>CPU Load</th>
+						
 						<th>Destination Bucket</th>
+						
 						<th>Terminate</th>
 					</tr>
 				</thead>
 				<tbody>
 					<tr ng-repeat="instance in instances.table | orderBy : statusMapper">
 						<td>{{instance.queueUrl | queueToName}}</td>
+						
 						<td>{{instance.spotId}}</td>
 						<td>{{instance.spotPrice | currency}}</td>
-						<td>{{instance.instanceId}}</td>
 						<td>{{instance.spotStatus}}</td>
+						
+						<td>{{instance.instanceId}}</td>
 						<td>{{instance.instanceStatus}}</td>
-						<td>{{instance.instanceIp}}</td>
 						<td>{{instance.instanceType}}</td>
+						<td>{{instance.instanceIp}}</td>
+						
 						<td>{{instance.uptime | secondsToDateTime}}</td>
 						<td>{{instance.tasksCompleted | number:3}}</td>
 						<td>{{(instance.uptime / instance.tasksCompleted) | secondsToDateTime}}</td>
 						<td>{{instance.uptime / instance.tasksCompleted / 3600 * instance.spotPrice | currency:"$":4}}</td>
 						<td>{{instance.cpuLoad}}</td>
+						
 						<td>{{instance.destinationBucket}}</td>
+						
 						<td class="text-center" ng-click="terminate(instance)"><button class="btn btn-danger" ng-show="instance.instanceStatus == 'running'"><span class="glyphicon glyphicon-remove" aria-hide="true"></span></button></td>
 					</tr>
 				</tbody>
