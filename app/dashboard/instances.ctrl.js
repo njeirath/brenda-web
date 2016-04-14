@@ -2,6 +2,12 @@
 
 angular.module('dashboard')
 .controller('instancesCtrl', ['$scope', 'awsService', '$interval', '$http', '$uibModal', function($scope, awsService, $interval, $http, $uibModal) {
+	$scope.condensed = false;
+	
+	$scope.condenseFilter = function(item) {
+		return $scope.condensed ? item.instanceStatus == 'running' : true; 
+	}
+	
 	var sortOrder = ['running', 'pending', 'terminating', 'shutting-down', 'terminated'];
 	
 	$scope.statusMapper = function(item) {
