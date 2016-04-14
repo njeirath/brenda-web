@@ -167,14 +167,34 @@ angular.module('awsSetup')
 				}
 			});
 		},
-		getLaunchSpecification: function(ami, keyPair, securityGroup, userData, instanceType) {
-			return {
+		getLaunchSpecification: function(ami, keyPair, securityGroup, userData, instanceType, snapshots) {
+			var devs = [
+	            'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p'
+            ];
+			
+			var spec = {
 				ImageId: ami,
 				KeyName: keyPair,
 				SecurityGroups: [securityGroup],
 				UserData: btoa(userData),
 				InstanceType: instanceType
 			};
+			
+			if (snapshots) {
+				spec.BlockDeviceMappings = [];
+				
+				snapshots.forEach(function(snapshot, i) {
+					spec.BlockDeviceMappings.push({
+						DeviceName: '/dev/sd' + devs[i],
+						Ebs: {
+							DeleteOnTermination: true,
+							SnapshotId: snapshot
+						}
+					});
+				});
+			}
+			
+			return spec;
 		},
 		setTags: function(instances, tags, callback) {
 			var params = {
@@ -185,8 +205,8 @@ angular.module('awsSetup')
 			var ec2 = new aws.EC2();
 			ec2.createTags(params, callback);
 		},
-		requestSpot: function(ami, keyPair, securityGroup, userData, instanceType, spotPrice, count, type, queueName, s3Destination, statusCallback) {
-			var spec = this.getLaunchSpecification(ami, keyPair, securityGroup, userData, instanceType);
+		requestSpot: function(ami, keyPair, securityGroup, userData, instanceType, snapshots, spotPrice, count, type, queueName, s3Destination, statusCallback) {
+			var spec = this.getLaunchSpecification(ami, keyPair, securityGroup, userData, instanceType, snapshots);
 			
 			var params = {
 				// DryRun: true,
@@ -219,8 +239,8 @@ angular.module('awsSetup')
 				}
 			});
 		},
-		requestOndemand: function(ami, keyPair, securityGroup, userData, instanceType, count, queueName, s3Destination, statusCallback) {
-			var spec = this.getLaunchSpecification(ami, keyPair, securityGroup, userData, instanceType);
+		requestOndemand: function(ami, keyPair, securityGroup, userData, instanceType, snapshots, count, queueName, s3Destination, statusCallback) {
+			var spec = this.getLaunchSpecification(ami, keyPair, securityGroup, userData, instanceType, snapshots);
 			spec.MinCount = count;
 			spec.MaxCount = count;
 			spec.InstanceInitiatedShutdownBehavior = 'terminate';

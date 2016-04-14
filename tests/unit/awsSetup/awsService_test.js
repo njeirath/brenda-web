@@ -309,15 +309,57 @@ describe('awsSetup', function() {
 			});
 			
 			describe('getLaunchSpecification', function() {
+				var expectedResponse, snapshots;
+				
+				beforeEach(function() {
+					snapshots = undefined;
+					
+					expectedResponse = {
+						ImageId: 'ami_123',
+						KeyName: 'brendaKey',
+						SecurityGroups: ['brendaSG'],
+						UserData: btoa('bunches of stuff here'),
+						InstanceType: 'c3.large'
+					};
+				});
+				
+				afterEach(function() {
+					expect(awsService.getLaunchSpecification('ami_123', 'brendaKey', 'brendaSG', 'bunches of stuff here', 'c3.large', snapshots))
+					.toEqual(expectedResponse);
+				});
+				
 				it('should construct the ec2 lauch specification correctly', function() {
-					expect(awsService.getLaunchSpecification('ami_123', 'brendaKey', 'brendaSG', 'bunches of stuff here', 'c3.large'))
-						.toEqual({
-							ImageId: 'ami_123',
-							KeyName: 'brendaKey',
-							SecurityGroups: ['brendaSG'],
-							UserData: btoa('bunches of stuff here'),
-							InstanceType: 'c3.large'
-						});
+					
+				});
+				
+				it('should add in EBS volume if only one provided', function() {
+					snapshots = ['snap-123'];
+					
+					expectedResponse.BlockDeviceMappings = [{
+						DeviceName: '/dev/sdf',
+						Ebs: {
+							SnapshotId: 'snap-123',
+							DeleteOnTermination: true
+						}
+					}];
+				});
+				
+				it('should add in EBS volumes if multiple provided', function() {
+					snapshots = ['snap-123', 'snap-456'];
+					
+					expectedResponse.BlockDeviceMappings = [{
+						DeviceName: '/dev/sdf',
+						Ebs: {
+							SnapshotId: 'snap-123',
+							DeleteOnTermination: true
+						}
+					},{
+						DeviceName: '/dev/sdg',
+						Ebs: {
+							SnapshotId: 'snap-456',
+							DeleteOnTermination: true
+						}
+					}];
 				});
 			});
 			
@@ -326,7 +368,7 @@ describe('awsSetup', function() {
 				
 				beforeEach(function() {
 					callback = jasmine.createSpy();
-					awsService.requestSpot('ami_123', 'brendaKey', 'brendaSG', 'bunches of stuff here', 'c3.large', 0.02, 1, 'one-time', 'queueName', 'frame dest', callback);
+					awsService.requestSpot('ami_123', 'brendaKey', 'brendaSG', 'bunches of stuff here', 'c3.large', null, 0.02, 1, 'one-time', 'queueName', 'frame dest', callback);
 					serviceCallback = awsMock.EC2requestSpotInstances.calls.argsFor(0)[1];
 				});
 				
@@ -344,6 +386,17 @@ describe('awsSetup', function() {
 							InstanceType: 'c3.large'
 						}
 					});
+				});
+				
+				it('should make a request with EBS volumes if provided', function() {
+					awsService.requestSpot('ami_123', 'brendaKey', 'brendaSG', 'bunches of stuff here', 'c3.large', ['snap-123'], 0.02, 1, 'one-time', 'queueName', 'frame dest', callback);
+					expect(awsMock.EC2requestSpotInstances.calls.argsFor(1)[0].LaunchSpecification.BlockDeviceMappings).toEqual([{
+						DeviceName: '/dev/sdf',
+						Ebs: {
+							DeleteOnTermination: true,
+							SnapshotId: 'snap-123'
+						}
+					}]);
 				});
 				
 				it('should call callback with danger and message on error', function() {
@@ -389,7 +442,7 @@ describe('awsSetup', function() {
 				
 				beforeEach(function() {
 					callback = jasmine.createSpy();
-					awsService.requestOndemand('ami_123', 'brendaKey', 'brendaSG', 'bunches of stuff here', 'c3.large', 1, 'queueName', 'frame dest', callback);
+					awsService.requestOndemand('ami_123', 'brendaKey', 'brendaSG', 'bunches of stuff here', 'c3.large', null, 1, 'queueName', 'frame dest', callback);
 					serviceCallback = awsMock.EC2runInstances.calls.argsFor(0)[1];
 				});
 				
@@ -406,6 +459,17 @@ describe('awsSetup', function() {
 						InstanceInitiatedShutdownBehavior: 'terminate'
 					});
 				});
+				
+				it('should include block mappings if snapshots provided', function() {
+					awsService.requestOndemand('ami_123', 'brendaKey', 'brendaSG', 'bunches of stuff here', 'c3.large', ['snap-123'], 1, 'queueName', 'frame dest', callback);
+					expect(awsMock.EC2runInstances.calls.argsFor(1)[0].BlockDeviceMappings).toEqual([{
+						DeviceName: '/dev/sdf',
+						Ebs: {
+							DeleteOnTermination: true,
+							SnapshotId: 'snap-123'
+						}
+					}]);
+				})
 				
 				it('should call callback with danger and error message on error', function() {
 					serviceCallback('Error message', null);

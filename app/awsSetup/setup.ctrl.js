@@ -32,7 +32,10 @@ angular.module('awsSetup')
 	//Load source/destination if it is stored
 	$scope.s3 = {
 		projectSource: localStorageService.get('projectSource'),
-		frameDestination: localStorageService.get('frameDestination')
+		frameDestination: localStorageService.get('frameDestination'),
+		isEbsSource: function() {
+			return $scope.s3.projectSource.match(/^[eE][bB][sS]:\/\//) ? true : false;
+		}
 	};
 	
 	//Persist source/destination when changed
