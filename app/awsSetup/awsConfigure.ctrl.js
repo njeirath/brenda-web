@@ -17,20 +17,26 @@
 
 angular.module('awsSetup')
 .controller('AwsConfigureCtrl', ['$scope', 'awsService', '$rootScope', '$uibModalInstance', 'localStorageService', function($scope, awsService, $rootScope, $uibModalInstance, localStorageService) {
-	$scope.credentials = {
-			awsRegion: awsService.getRegion(),
-			awsKeyId: awsService.getKeyId(),
-			awsSecret: awsService.getKeySecret()
-	};
+	function init() {
+		$scope.credentials = {
+				awsRegion: awsService.getRegion(),
+				awsKeyId: awsService.getKeyId(),
+				awsSecret: awsService.getKeySecret()
+		};
+		
+		$scope.storeCredentials = Boolean(localStorageService.get('storeCredentials'));
+		
+		$scope.credentialCheck = {
+			status: 'info', 
+			msg: 'AWS credentials not checked yet'
+		};
+		$scope.securityGroupCheck = {
+			status: 'info', 
+			msg: 'Security group not checked yet'
+		};
+	}
 	
-	$scope.credentialCheck = {
-		status: 'info', 
-		msg: 'AWS credentials not checked yet'
-	};
-	$scope.securityGroupCheck = {
-		status: 'info', 
-		msg: 'Security group not checked yet'
-	};
+	init();
 	
 	$scope.awsChecks = function() {
 		$scope.credentialCheck.status = 'info';
@@ -78,15 +84,26 @@ angular.module('awsSetup')
 		form.$setSubmitted();
 		if (form.$valid) {
 			awsService.setCredentials($scope.credentials.awsKeyId, $scope.credentials.awsSecret);
-			localStorageService.set('keyId', $scope.credentials.awsKeyId);
-			localStorageService.set('keySecret', $scope.credentials.awsSecret);
-			
 			awsService.setRegion($scope.credentials.awsRegion);
-			localStorageService.set('region', $scope.credentials.awsRegion);
+			
+			if ($scope.storeCredentials) {
+				localStorageService.set('keyId', $scope.credentials.awsKeyId);
+				localStorageService.set('keySecret', $scope.credentials.awsSecret);
+				localStorageService.set('region', $scope.credentials.awsRegion);
+				localStorageService.set('storeCredentials', true);
+			}
 			
 			$scope.awsChecks();
 		}
 	};
+	
+	$scope.clearStorage = function() {
+		localStorageService.clearAll();
+		awsService.setCredentials('', '');
+		awsService.setRegion('');
+		
+		init();
+	}
 	
 	$scope.ok = function () {
 		$uibModalInstance.close();
