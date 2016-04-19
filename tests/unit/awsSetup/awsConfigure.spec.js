@@ -36,15 +36,20 @@ describe('awsSetup', function() {
 		});
 		
 		describe('$scope.setCredentials()', function() {
-			it('should call into awsService with scope vars and set local storage values', function() {					
+			var form;
+			beforeEach(function() {
 				$scope.credentials = {
-					awsRegion: 'reg',
-					awsKeyId: 'id',
-					awsSecret: 'shh'
-				};
-				
-				var form = jasmine.createSpyObj('form', ['$setSubmitted']);
-				form.$valid = true;
+						awsRegion: 'reg',
+						awsKeyId: 'id',
+						awsSecret: 'shh'
+					};
+					
+					form = jasmine.createSpyObj('form', ['$setSubmitted']);
+					form.$valid = true;
+			});
+			
+			it('should call into awsService with scope vars and set local storage values', function() {					
+				$scope.storeCredentials = true;
 				
 				$scope.setCredentials(form);
 				
@@ -57,6 +62,31 @@ describe('awsSetup', function() {
 				expect(localStorageMock.set).toHaveBeenCalledWith('keyId', 'id');
 				expect(localStorageMock.set).toHaveBeenCalledWith('keySecret', 'shh');
 				expect(localStorageMock.set).toHaveBeenCalledWith('region', 'reg');
+				expect(localStorageMock.set).toHaveBeenCalledWith('storeCredentials', true);
+			});
+			
+			it('should not store data if storeCredentials is not set', function() {
+				$scope.storeCredentials = false;
+				
+				$scope.setCredentials(form);
+				
+				expect(form.$setSubmitted).toHaveBeenCalled();
+				
+				expect(awsServiceMock.setCredentials).toHaveBeenCalledWith('id', 'shh');
+				expect(awsServiceMock.setRegion).toHaveBeenCalledWith('reg');
+				expect(awsServiceMock.testCredentials).toHaveBeenCalled();
+				
+				expect(localStorageMock.set).not.toHaveBeenCalled();
+			});
+		});
+		
+		describe('$scope.clearStorage', function() {
+			it('should clear out the credential storage', function() {
+				$scope.clearStorage();
+				
+				expect(localStorageMock.clearAll).toHaveBeenCalled();
+				expect(awsServiceMock.setCredentials).toHaveBeenCalledWith('', '');
+				expect(awsServiceMock.setRegion).toHaveBeenCalledWith('');
 			});
 		});
 		

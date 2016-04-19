@@ -47,7 +47,15 @@
 						<div ng-message="required">Field is required</div>
 					</div>
 				</div>
-				<button type="submit" ng-click="setCredentials(awsConfigure)" id="setCredentialsBtn" class="btn btn-primary">Set Credentials</button>
+				<div class="form-inline">
+					<button type="submit" ng-click="setCredentials(awsConfigure)" id="setCredentialsBtn" class="btn btn-primary">Set Credentials</button>
+					<button type="submit" ng-click="clearStorage()" id="clearStorageBtn" class="btn btn-default">Clear</button>
+					<div class="checkbox">
+					    <label>
+				      		<input type="checkbox" ng-model="storeCredentials"> Remember me (<strong>Don't check this if you're on a public computer</strong>)
+					    </label>
+				  	</div>
+				</div>
 				<ul class="list-group">
 					<li class="list-group-item list-group-item-{{credentialCheck.status}}" id="loginStatus">
 						{{credentialCheck.msg}}
@@ -55,6 +63,10 @@
 					<li class="list-group-item list-group-item-{{securityGroupCheck.status}}">{{securityGroupCheck.msg}} 
 						<a href ng-click="createSG()" ng-show="securityGroupCheck.status == 'danger'"><strong>Fix it</strong></a></li>
 				</ul>
+				<div class="alert alert-info" role="alert">
+					<span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+					If updating or clearing credentials, refresh the page after making changes due to AWS libraries caching credentials
+				</div>
 			</form>
 		</div>
 	</div>
