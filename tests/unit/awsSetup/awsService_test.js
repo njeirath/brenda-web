@@ -728,9 +728,24 @@ describe('awsSetup', function() {
 			});
 			
 			describe('getObjectUri', function() {
+				beforeEach(function() {
+					awsMock.S3getSignedUrl.and.returnValue('signed url');
+				});
+				
 				it('should call to get a signed url', function() {
 					awsService.getObjectUri('bucket', 'key');
-					expect(awsMock.S3getSignedUrl).toHaveBeenCalledWith('getObject', {Bucket: 'bucket', Key: 'key'});
+					expect(awsMock.S3getSignedUrl).toHaveBeenCalledWith('getObject', {Bucket: 'bucket', Key: 'key', Expires: 3600});
+					expect(awsService.uriCache['bucket-key']).toEqual({url: 'signed url', expiration: jasmine.any(Object)});
+				});
+				
+				it('should return a cached url if a valid one exists', function() {
+					awsService.uriCache['bucket-key'] = {url: 'cached url', expiration: new Date(new Date().valueOf() + 3600*1000)};
+					expect(awsService.getObjectUri('bucket', 'key')).toBe('cached url');
+				});
+				
+				it('should return a new url if the cached one is expired', function() {
+					awsService.uriCache['bucket-key'] = {url: 'cached url', expiration: new Date(new Date().valueOf() - 3600*1000)};
+					expect(awsService.getObjectUri('bucket', 'key')).toBe('signed url');
 				});
 			});
 			
