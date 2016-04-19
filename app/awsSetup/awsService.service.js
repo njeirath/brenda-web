@@ -372,9 +372,22 @@ angular.module('awsSetup')
 			var s3 = new aws.S3();
 			return deferredWrapper(s3, s3.listObjects, {Bucket: bucket});
 		},
+		uriCache: {},
 		getObjectUri: function(bucket, key) {
-			var s3 = new aws.S3();
-			return s3.getSignedUrl('getObject', {Bucket: bucket, Key: key});
+			var cacheKey = bucket + '-' + key;
+			var cached = this.uriCache[cacheKey];
+			
+			//If cached and not going to expire within the next two minutes
+			if (cached && (cached.expiration > new Date(new Date().valueOf() + 120*1000))) {
+				return cached.url;
+			} else {
+				var s3 = new aws.S3();
+				var url = s3.getSignedUrl('getObject', {Bucket: bucket, Key: key, Expires: 3600});
+				this.uriCache[cacheKey] = {url: url, expiration: new Date(new Date().valueOf() + 3600*1000)}
+				return url;
+			}
+			
+			
 		},
 		getAvailabilityZones: function() {
 			var deferred = $q.defer();
