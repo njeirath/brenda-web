@@ -3,7 +3,7 @@
 describe('WorkerSetupCtrl', function() {
 	beforeEach(module('awsSetup'));
 	
-	var $rootScope, $controller, $httpBackend, $q;
+	var $rootScope, $controller, $httpBackend, $q, $analyticsMock;
 		
 	beforeEach(inject(function(_$controller_, _$rootScope_, _$httpBackend_, _$q_) {
 		$rootScope = _$rootScope_;
@@ -30,6 +30,8 @@ describe('WorkerSetupCtrl', function() {
 			 	"defaultNginxPath": "/usr/share/nginx/html/" 
 			 });
 		
+		$analyticsMock = jasmine.createSpyObj('$analyticsMock', ['eventTrack']);
+		
 		awsServiceMock = getAwsServiceMock();
 		
 		awsServiceMock.getAvailabilityZones.and.returnValue(['zone1', 'zone2']);
@@ -49,7 +51,7 @@ describe('WorkerSetupCtrl', function() {
 			workQueue: 'queueName'
 		};
 		
-		ctrl = $controller('WorkerSetupCtrl', {$scope: $rootScope, localStorageService: localStorageService, awsService: awsServiceMock});
+		ctrl = $controller('WorkerSetupCtrl', {$scope: $rootScope, localStorageService: localStorageService, awsService: awsServiceMock, $analytics: $analyticsMock});
 		$rootScope.$broadcast('brenda-web-credentials-updated');
 	});
 	
