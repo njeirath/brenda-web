@@ -20,6 +20,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>. */
   background-color: transparent;
 }
 
+.landing .section {
+	margin-bottom: 80px;
+}
+
+.landing .vertical-align {
+	display: flex;
+    align-items: center;
+}
+
 .menu {
   list-style: none;
   border-bottom: 0.1em solid black;
