@@ -1,7 +1,8 @@
-# Brenda-web - A web based UI for use with Brenda
+# [Brenda-web](www.brenda-web.com) - A web based UI for use with Brenda
 
 This project is a web based UI for use with Brenda [https://github.com/jamesyonan/brenda]
 
+It is currently being hosted if you just want to use the tool: [www.brenda-web.com](http://www.brenda-web.com)
 
 ## Getting Started
 
