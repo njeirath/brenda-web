@@ -15,26 +15,91 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>. 
 -->
-<div class="jumbotron">
-	<h1>Brenda-web</h1>
-	<p>Brenda-web is intended to be a web based UI to replace the command line tools provided by the <a href="https://github.com/jamesyonan/brenda">Brenda</a> project.</p>
-	<p><a class="btn btn-lg btn-success" ui-sref="setup.view" role="button">Setup Your Project!</a></p>
-</div>
-
-<div class="row col-lg-10 col-lg-offset-1">
-	<div class="col-lg-4">
-		<h2>Fully Client Side</h2>
-		<p>The core principle of this tool is to be fully client side meaning credentials are not stored anywhere other than in your own browser reducing the risk of them falling into the wrong hands.
-		</ul>
+<div class="landing">
+	<div class="jumbotron">
+		<h1>Brenda-Web</h1>
+		<p>Brenda-web is intended to be a web based UI to replace the command line tools provided by the <a href="https://github.com/jamesyonan/brenda">Brenda</a> project.</p>
+		<p><a class="btn btn-lg btn-success" ui-sref="setup.view" role="button">Setup Your Project!</a> or <a class="btn btn-lg btn-info" ui-sref="tutorial" role="button">Follow the Tutorial</a></p>
 	</div>
 	
-	<div class="col-lg-4">
-		<h2>Your Own Account</h2>
-		<p>Using your own AWS account means your project files never go to a 3rd party which helps protect your work and gives you ultimate control</p>
+	<div class="row section">
+		<div class="col-lg-10 col-lg-offset-1">
+			<div class="col-lg-4">
+				<h2>Fully Client Side</h2>
+				<p>The core principle of this tool is to be fully client side meaning credentials are not stored anywhere other than in your own browser reducing the risk of them falling into the wrong hands.</p>
+			</div>
+			
+			<div class="col-lg-4">
+				<h2>Your Own Account</h2>
+				<p>Using your own AWS account means your project files never go to a 3rd party which helps protect your work and gives you ultimate control</p>
+			</div>
+			
+			<div class="col-lg-4">
+				<h2>Everything in One Place</h2>
+				<p>Everything you need to run and monitor your rendering farm is in one convenient and easy to use tool</p>
+			</div>
+		</div>
+		<div class="col-lg-10 col-lg-offset-1">
+			<div class="col-lg-4">
+				<h2>Mobile Friendly</h2>
+				<p>Setup and monitor your render jobs from a computer or on the go from your phone or tablet</p>
+			</div>
+			<div class="col-lg-4">
+				<h2>An Open Source Project</h2>
+				<p>Free to use - you only pay for the AWS resources you use and all source code is available <a href="https://github.com/njeirath/brenda-web" target="_blank">on GitHub</a></p>
+			</div>
+			
+		</div>
 	</div>
 	
-	<div class="col-lg-4">
-		<h2>Everything in One Place</h2>
-		<p>Everything you need to run and monitor your rendering farm is in one convenient and easy to use tool</p>
+	<div class="row section">
+		<div class="row col-lg-10 col-lg-offset-1">
+			<h1 class="text-center">How it Works</h1>
+			<p class="lead text-center" style="margin-bottom: 20px">
+				Brenda-Web has four primary components:
+			</p>
+		</div>
+		<div class="row col-lg-10 col-lg-offset-1 vertical-align">
+			<div class="col-lg-6">
+				<img src="architecture.png" class="img-responsive center-block">	
+			</div>
+			<div class="col-lg-6">
+				<dl class="dl-horizontal">
+					<dt>S3 Source</dt>
+					<dd>Location of the Blender project</dd>
+					<dt>Work Queue</dt>
+					<dd>List of tasks to be processed</dd>
+					<dt>Brenda Worker</dt>
+					<dd>EC2 instance running Brenda</dd>
+					<dt>S3 Destination</dt>
+					<dd>Location of finished frames</dd>
+				</dl>
+			</div>
+			
+		</div>
+	</div>
+	
+	<div class="row section">
+		<div class="row col-lg-10 col-lg-offset-1">
+			<h1 class="text-center">Monitor Progress</h1>
+			<p class="lead text-center" style="margin-bottom: 20px">
+				The dashboard allows you to monitor the progress of your jobs
+			</p>
+		</div>
+		
+		<div class="col-lg-10 col-lg-offset-1">
+			<div class="col-lg-4">
+				<h2>Work Queue</h2>
+				<p>See number of tasks remaining and get estimates of time and cost to completion</p>
+			</div>
+			<div class="col-lg-4">
+				<h2>Workers</h2>
+				<p>Visibility into each worker's state, how it is performing and the ability to quickly terminate workers</p>
+			</div>
+			<div class="col-lg-4">
+				<h2>Destination Bucket</h2>
+				<p>Get a list of all the frames that have been completed and quick access to preview or download frames</p>
+			</div>
+		</div>
 	</div>
 </div>
