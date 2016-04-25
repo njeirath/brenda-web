@@ -16,7 +16,7 @@
 'use strict';
 
 angular.module('awsSetup')
-.controller('WorkerSetupCtrl', ['$scope', 'localStorageService', '$http', 'awsService', '$q', function($scope, localStorageService, $http, awsService, $q) {	
+.controller('WorkerSetupCtrl', ['$scope', 'localStorageService', '$http', 'awsService', '$q', '$analytics', function($scope, localStorageService, $http, awsService, $q, $analytics) {	
 	//Get list of AMIs to choose from
 	$scope.amis = [];
 	
@@ -168,6 +168,7 @@ angular.module('awsSetup')
 	
 	$scope.requestInstances = function() {
 		//ami, keyPair, securityGroup, userData, instanceType, spotPrice, count, type
+		$analytics.eventTrack('launchInstances', {instanceType: $scope.instanceType, instanceCount: $scope.numInstances})
 		var snapshots = null;
 		if ($scope.s3.isEbsSource()) {
 			snapshots = [$scope.s3.projectSource.split('//').pop()];
