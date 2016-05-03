@@ -227,7 +227,7 @@ angular.module('awsSetup')
 					}, 5000, 1);
 
 				} else {
-					callback(err, data);
+					return callback(err, data);
 				}
 			});
 		},
