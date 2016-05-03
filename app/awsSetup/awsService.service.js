@@ -16,7 +16,7 @@
 'use strict';
 
 angular.module('awsSetup')
-.factory('awsService', ['$log', '$rootScope', 'localStorageService', 'aws', '$q', function($log, $rootScope, localStorageService, aws, $q) {	
+.factory('awsService', ['$log', '$rootScope', 'localStorageService', 'aws', '$q', '$interval', function($log, $rootScope, localStorageService, aws, $q, $interval) {	
 	var startDate = startDate = new Date(new Date() - 6*60*60*1000);
 	
 	var deferredWrapper = function(obj, func, params) {
@@ -218,7 +218,18 @@ angular.module('awsSetup')
 			};
 			
 			var ec2 = new aws.EC2();
-			ec2.createTags(params, callback);
+			ec2.createTags(params, function(err, data) {
+				if (err) {
+					//Try the call again after a little bit
+					$log.log("Setting tags failed once, retrying");
+					$interval(function() {
+						ec2.createTags(params, callback);
+					}, 5000, 1);
+
+				} else {
+					callback(err, data);
+				}
+			});
 		},
 		requestSpot: function(ami, keyPair, securityGroup, userData, instanceType, snapshots, spotPrice, count, type, queueName, s3Destination, statusCallback) {
 			var spec = this.getLaunchSpecification(ami, keyPair, securityGroup, userData, instanceType, snapshots);
