@@ -63,6 +63,8 @@ angular.module('dashboard')
 						b.errors = {};
 						b.files = [];
 						b.size = data.Contents.length;
+						b.truncated = data.IsTruncated;
+						
 						data.Contents.forEach(function(obj) {
 							var url = awsService.getObjectUri(b.name, obj.Key);
 							b.files.push({name: obj.Key, size: obj.Size, modified: obj.LastModified, url: url, caption: obj.Key});
