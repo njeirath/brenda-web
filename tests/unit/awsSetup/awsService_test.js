@@ -4,15 +4,17 @@ describe('awsSetup', function() {
 	beforeEach(module('awsSetup'));
 	
 	describe('awsService', function() {
-		var $rootScope, $controller, localStorageService, awsMock;
+		var $rootScope, $controller, localStorageService, awsMock, intervalMock;
 			
 		beforeEach(function() {
 			localStorageService = getLocalStorageMock();
 			awsMock = getAwsMock();
+			intervalMock = jasmine.createSpy('interval');
 			
 			module(function($provide) {
 				$provide.value('localStorageService', localStorageService);
 				$provide.value('aws', awsMock);
+				$provide.value('$interval', intervalMock);
 			});
 		});
 			
@@ -427,7 +429,7 @@ describe('awsSetup', function() {
 					
 					it('should call status callback with warning on tagging error', function() {
 						setTagsCallback('Error happened', null);
-						expect(callback).toHaveBeenCalledWith('warning', 'Spot instances requested but could not set tags (may affect dashboard)');
+						expect(intervalMock).toHaveBeenCalledWith(jasmine.any(Function), 5000, 1);
 					});
 					
 					it('should call status callback with success on tagging success', function() {
@@ -499,7 +501,7 @@ describe('awsSetup', function() {
 					
 					it('should call status callback with warning on tagging error', function() {
 						setTagsCallback('Error happened', null);
-						expect(callback).toHaveBeenCalledWith('warning', 'On demand instances requested but could not set tags (may affect dashboard)');
+						expect(intervalMock).toHaveBeenCalledWith(jasmine.any(Function), 5000, 1);
 					});
 					
 					it('should call status callback with success on tagging success', function() {
