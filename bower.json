@@ -18,9 +18,7 @@
     "angulartics-google-analytics": "~0.1.4",
     "angular-bootstrap": "~1.2.5",
     "angular-bootstrap-lightbox": "~0.11.0",
-    "angular-messages": "1.5.2",
-    "webpack": "^1.14.0",
-    "webpack-dev-server": "^1.8.0"
+    "angular-messages": "1.5.2"
   },
   "resolutions": {
     "angular": "1.5.2"
