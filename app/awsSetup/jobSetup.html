@@ -62,6 +62,38 @@
 				<input type="number" name="endFrame" class="form-control" id="endFrame" ng-model="endFrame" required min="{{startFrame}}"/>
 			</div>
 		</div>
+
+		<div class="form-inline">
+			<div class="checkbox">
+				<label>
+					<input type="checkbox" ng-model="isSubframeRender" ng-change="subframeRenderChanged()"> Use subframe rendering
+				</label>
+			</div>
+			<div class="checkbox">
+				<label>
+					<input type="checkbox" ng-model="isMultiframeRender" ng-change="multiframeRenderChanged()"> Use multiframe rendering
+				</label>
+			</div>
+		</div>
+		<div class="form-inline" ng-if="isSubframeRender">
+			<div class="form-group">
+				<label for="subframesX">Subframes X</label>
+				<input type="number" name="subframesX" class="form-control" id="subframesX" ng-model="subframeModel.subframesX" required min="1" />
+			</div>
+
+			<div class="form-group">
+				<label for="subframesY">Subframes Y</label>
+				<input type="number" name="subframesY" class="form-control" id="subframesY" ng-model="subframeModel.subframesY" required min="1"/>
+			</div>
+		</div>
+
+		<div class="form-inline" ng-if="isMultiframeRender">
+			<div class="form-group">
+				<label for="multiframes">Frames per taks</label>
+				<input type="number" name="multiframes" class="form-control" id="multiframes" ng-model="multiframeModel.multiframes" required min="1" />
+			</div>
+		</div>
+
 		<div ng-messages="jobForm.startFrame.$error" role="alert">
 			<div ng-message="required">Start frame is required</div>
 			<div ng-message="min">Start frame must be greater than 0</div>
@@ -73,8 +105,8 @@
 		</div>
 		
 		<div class="form-group">
-			<label for="workList">Work List</label>
-			<textarea class="form-control" id="workList" rows="5" readonly>{{workList().join('\n')}}</textarea>
+			<label for="workList">Work List (task count = {{workList().length}})</label>
+			<textarea class="form-control" id="workList" rows="5" readonly>{{workList().join(taskSeperator)}}</textarea>
 		</div>
 		
 		<hr />

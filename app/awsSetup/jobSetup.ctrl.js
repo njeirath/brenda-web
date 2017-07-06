@@ -17,15 +17,43 @@
 
 angular.module('awsSetup')
 .controller('JobSetupCtrl', ['$scope', 'awsService', '$uibModal', '$interval', 'localStorageService', function($scope, awsService, $uibModal, $interval, localStorageService) {
-	$scope.queues = [];
-	$scope.queueSize = 'No Queue Selected';
-	
-	$scope.workTemplate = 'blender -b *.blend -F PNG -o $OUTDIR/frame_###### -s $START -e $END -j $STEP -t 0 -a';
-	$scope.startFrame = 1;
-	$scope.endFrame = 240;
-	
-	$scope.shuffle = Boolean(localStorageService.get('shuffleQ'));
-	
+    $scope.setInitialState = function () {
+        $scope.queues = [];
+
+        $scope.queueSize = 'No Queue Selected';
+        $scope.taskSeperator = '\n';
+
+        $scope.isSubframeRender = false;
+        $scope.subframeScript = '-P subframe.py';
+        $scope.subframeModel = {};
+        $scope.subframeModel.subframesX = 2;
+        $scope.subframeModel.subframesY = 2;
+
+        $scope.isMultiframeRender = false;
+        $scope.multiframeModel = {};
+        $scope.multiframeModel.multiframes = 2;
+
+        $scope.subframeScriptTemplate = [
+            'cat >subframe.py <<EOF\n',
+            'import bpy\n',
+            'bpy.context.scene.render.border_min_x = $SF_MIN_X\n',
+            'bpy.context.scene.render.border_max_x = $SF_MAX_X\n',
+            'bpy.context.scene.render.border_min_y = $SF_MIN_Y\n',
+            'bpy.context.scene.render.border_max_y = $SF_MAX_Y\n',
+            'bpy.context.scene.render.use_border = True\n',
+            'EOF\n'
+        ].join('');
+
+        $scope.workTemplateFullframe = 'blender -b *.blend -F PNG -o $OUTDIR/frame_###### -s $START -e $END -j $STEP -t 0 -a';
+        $scope.workTemplateSubframe = 'blender -b *.blend $SCRIPT -F PNG -o $OUTDIR/frame_######_x$SF_MIN_Xto$SF_MAX_Xy$SF_MIN_Yto$SF_MAX_Y -s $START -e $END -j $STEP -t 0 -a';
+        $scope.workTemplate = $scope.workTemplateFullframe;
+        $scope.startFrame = 1;
+        $scope.endFrame = 240;
+
+        $scope.shuffle = Boolean(localStorageService.get('shuffleQ'));
+    };
+    $scope.setInitialState();
+
 	$scope.$watch('shuffle', function(value) {
 		localStorageService.set('shuffleQ', value);
 	});
@@ -70,14 +98,60 @@ angular.module('awsSetup')
 			});
 		});
 	};
-	
-	$scope.workList = function() {
-		var list = [];
-		
-		for (var i = parseInt($scope.startFrame, 10); i <= parseInt($scope.endFrame, 10); i++) {
-			var cmd = $scope.workTemplate.replace("$START", i).replace("$END", i).replace("$STEP", 1);
-			list.push(cmd);
+
+	$scope.subframeRenderChanged = function() {
+        $scope.isMultiframeRender = false;
+        if ($scope.isSubframeRender) {
+            $scope.workTemplate = $scope.workTemplateSubframe;
+            $scope.taskSeperator = '\n--- Task seperator (not part of the command) ---\n';
+		} else {
+            $scope.workTemplate = $scope.workTemplateFullframe;
+            $scope.taskSeperator = '\n';
 		}
+	};
+
+    $scope.multiframeRenderChanged = function() {
+		$scope.isSubframeRender = false;
+        $scope.workTemplate = $scope.workTemplateFullframe;
+    };
+
+    function addSubframeTasksToList(parsedSubframeX, parsedSubframeY, blenderCmd, list) {
+        var xFraction = 1.0 / parsedSubframeX;
+        var yFraction = 1.0 / parsedSubframeY;
+        for (var x = 0; x < parsedSubframeX; x++) {
+            var minX = x * xFraction;
+            var maxX = (x + 1) * xFraction;
+            for (var y = 0; y < parsedSubframeY; y++) {
+                var minY = y * yFraction;
+                var maxY = (y + 1) * yFraction;
+                var subframeCmd = $scope.subframeScriptTemplate + blenderCmd;
+                subframeCmd = subframeCmd.replace(/\$SF_MIN_X/g, minX).replace(/\$SF_MAX_X/g, maxX).replace(/\$SF_MIN_Y/g, minY).replace(/\$SF_MAX_Y/g, maxY);
+                list.push(subframeCmd);
+            }
+        }
+    }
+
+    $scope.workList = function() {
+        var list = [];
+        var multiframeSteps = 1;
+		if ( $scope.isMultiframeRender ) {
+            multiframeSteps = $scope.multiframeModel.multiframes;
+        }
+		for (var i = parseInt($scope.startFrame, 10); i <= parseInt($scope.endFrame, 10); i=i+multiframeSteps) {
+            var parsedSubframeX = parseInt($scope.subframeModel.subframesX, 10);
+            var parsedSubframeY = parseInt($scope.subframeModel.subframesY, 10);
+            if ($scope.isSubframeRender && (parsedSubframeX > 1 || parsedSubframeY > 1)) {
+                var blenderCmd = $scope.workTemplate.replace("$SCRIPT", $scope.subframeScript).replace("$START", i).replace("$END", i).replace("$STEP", 1);
+                addSubframeTasksToList(parsedSubframeX, parsedSubframeY, blenderCmd, list);
+            } else {
+            	var endFrame = i+multiframeSteps-1;
+            	if (endFrame > $scope.endFrame){
+            		endFrame = $scope.endFrame;
+				}
+                var cmd = $scope.workTemplate.replace("$START", i).replace("$END", endFrame).replace("$STEP", 1);
+                list.push(cmd);
+            }
+        }
 		
 		return list;
 	};

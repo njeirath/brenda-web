@@ -53,13 +53,64 @@ describe('JobSetupCtrl', function() {
 	});
 	
 	describe('$scope.workList', function() {
-		it('should generate the work list', function() {
+		it('should generate the default work list', function() {
 			var workList = $rootScope.workList();
 			
 			expect(workList.length).toBe(240);
 			expect(workList[0]).toBe('blender -b *.blend -F PNG -o $OUTDIR/frame_###### -s 1 -e 1 -j 1 -t 0 -a');
 			expect(workList[1]).toBe('blender -b *.blend -F PNG -o $OUTDIR/frame_###### -s 2 -e 2 -j 1 -t 0 -a');
 		});
+
+        it('should generate the subframe work list', function() {
+        	$rootScope.isSubframeRender = true;
+        	$rootScope.startFrame = 1;
+            $rootScope.endFrame = 1;
+            $rootScope.subframeModel.subframesX = 2;
+            $rootScope.subframeModel.subframesY = 2;
+            $rootScope.subframeRenderChanged();
+
+            var workList = $rootScope.workList();
+
+            expect(workList.length).toBe(4);
+            expect(workList[0]).toContain('cat >subframe.py <<EOF');
+            expect(workList[0]).toContain('blender -b *.blend -P subframe.py -F PNG -o $OUTDIR/frame_######');
+            expect(workList[1]).toContain('cat >subframe.py <<EOF');
+            expect(workList[1]).toContain('blender -b *.blend -P subframe.py -F PNG -o $OUTDIR/frame_######');
+        });
+
+        it('should generate the subframe work list for 2 frames', function() {
+            $rootScope.isSubframeRender = true;
+            $rootScope.startFrame = 1;
+            $rootScope.endFrame = 2;
+            $rootScope.subframeModel.subframesX = 5;
+            $rootScope.subframeModel.subframesY = 3;
+            $rootScope.subframeRenderChanged();
+
+            var workList = $rootScope.workList();
+
+            expect(workList.length).toBe(30);
+            expect(workList[0]).toContain('cat >subframe.py <<EOF');
+            expect(workList[0]).toContain('blender -b *.blend -P subframe.py -F PNG -o $OUTDIR/frame_######');
+            expect(workList[1]).toContain('cat >subframe.py <<EOF');
+            expect(workList[1]).toContain('blender -b *.blend -P subframe.py -F PNG -o $OUTDIR/frame_######');
+        });
+
+        it('should generate the multiframe work list', function() {
+            $rootScope.isMultiframeRender = true;
+            $rootScope.startFrame = 1;
+            $rootScope.endFrame = 23;
+            $rootScope.multiframeModel.multiframes = 5;
+            $rootScope.multiframeRenderChanged();
+
+            var workList = $rootScope.workList();
+
+            expect(workList.length).toBe(5);
+            expect(workList[0]).toContain('blender -b *.blend -F PNG -o $OUTDIR/frame_###### -s 1 -e 5 -j 1 -t 0 -a');
+            expect(workList[1]).toContain('blender -b *.blend -F PNG -o $OUTDIR/frame_###### -s 6 -e 10 -j 1 -t 0 -a');
+            expect(workList[2]).toContain('blender -b *.blend -F PNG -o $OUTDIR/frame_###### -s 11 -e 15 -j 1 -t 0 -a');
+            expect(workList[3]).toContain('blender -b *.blend -F PNG -o $OUTDIR/frame_###### -s 16 -e 20 -j 1 -t 0 -a');
+            expect(workList[4]).toContain('blender -b *.blend -F PNG -o $OUTDIR/frame_###### -s 21 -e 23 -j 1 -t 0 -a');
+        });
 	});
 				
 	describe('$scope.sendWork', function() {
