@@ -12,6 +12,10 @@
 			"ami": "ami-380bd82e",
 			"blenderVersion": "2.78",
 			"nginxPath": "/usr/share/nginx/html/"
+		},{
+			"ami": "ami-5c41a726",
+			"blenderVersion": "2.79",
+			"nginxPath": "/usr/share/nginx/html/"			
 		}
 	],
 	"defaultNginxPath": "/usr/share/nginx/html/" 
