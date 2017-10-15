@@ -6,9 +6,9 @@
   "repository": "https://github.com/angular/angular-seed",
   "license": "MIT",
   "devDependencies": {
-    "bower": "^1.7.7",
+    "bower": "^1.8.2",
     "http-server": "^0.10.0",
-    "jasmine-core": "^2.4.1",
+    "jasmine-core": "^2.8.0",
     "karma": "^1.7.1",
     "karma-chrome-launcher": "^2.2.0",
     "karma-coverage": "^1.1.1",
