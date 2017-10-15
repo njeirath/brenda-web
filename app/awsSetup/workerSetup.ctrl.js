@@ -24,7 +24,9 @@ angular.module('awsSetup')
 	$http.get('amiList.json').then(function(response) {
 		defaultNginxPath = response.data.defaultNginxPath;
 		
-		response.data.amis.forEach(function(item) {
+		response.data.amis.filter(function(item) {
+			return item.region === awsService.getRegion()
+		}).forEach(function(item) {
 			var ami = {name: item.ami, version: item.blenderVersion}
 			ami.nginxPath = item.nginxPath ? item.nginxPath : defaultNginxPath;
 			$scope.amis.push(ami); 
@@ -144,6 +146,9 @@ angular.module('awsSetup')
 				'/usr/local/bin/brenda-node --daemon <<EOF\n' +
 				'AWS_ACCESS_KEY=' + awsService.getKeyId() + '\n' +
 				'AWS_SECRET_KEY=' + awsService.getKeySecret() + '\n' +
+				'S3_REGION=' + awsService.getRegion() + '\n' +
+            	'SQS_REGION=' + awsService.getRegion() + '\n' +
+            	'EC2_REGION=' + awsService.getRegion() + '\n' +
 				'BLENDER_PROJECT=' + $scope.s3.projectSource + '\n' +
 				'WORK_QUEUE=sqs://' + $scope.queue.workQueue.split('/').pop() + '\n' +
 				'RENDER_OUTPUT=' + $scope.s3.frameDestination + '\n' +
