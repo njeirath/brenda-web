@@ -25,7 +25,7 @@ angular.module('awsSetup')
 		defaultNginxPath = response.data.defaultNginxPath;
 		
 		response.data.amis.filter(function(item) {
-			return item.region == awsService.getRegion()
+			return item.region === awsService.getRegion()
 		}).forEach(function(item) {
 			var ami = {name: item.ami, version: item.blenderVersion}
 			ami.nginxPath = item.nginxPath ? item.nginxPath : defaultNginxPath;
