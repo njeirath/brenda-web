@@ -20,12 +20,19 @@ describe('WorkerSetupCtrl', function() {
 			 		{
 			 			"ami": "ami-0529086c",
 			 			"blenderVersion": "2.69",
-			 			"nginxPath": "/usr/share/nginx/www/"
+			 			"nginxPath": "/usr/share/nginx/www/",
+						"region": "region"
 			 		},
 			 		{
 			 			"ami": "ami-test",
-			 			"blenderVersion": "2.77"
-			 		}
+			 			"blenderVersion": "2.77",
+						"region": "region"
+			 		},
+                {
+                    "ami": "ami-test",
+                    "blenderVersion": "2.77",
+                    "region": "region-2"
+                }
 			 	],
 			 	"defaultNginxPath": "/usr/share/nginx/html/" 
 			 });
