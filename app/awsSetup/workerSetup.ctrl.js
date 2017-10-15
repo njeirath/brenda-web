@@ -144,6 +144,9 @@ angular.module('awsSetup')
 				'/usr/local/bin/brenda-node --daemon <<EOF\n' +
 				'AWS_ACCESS_KEY=' + awsService.getKeyId() + '\n' +
 				'AWS_SECRET_KEY=' + awsService.getKeySecret() + '\n' +
+				'S3_REGION=' + awsService.getRegion() + '\n' +
+            	'SQS_REGION=' + awsService.getRegion() + '\n' +
+            	'EC2_REGION=' + awsService.getRegion() + '\n' +
 				'BLENDER_PROJECT=' + $scope.s3.projectSource + '\n' +
 				'WORK_QUEUE=sqs://' + $scope.queue.workQueue.split('/').pop() + '\n' +
 				'RENDER_OUTPUT=' + $scope.s3.frameDestination + '\n' +

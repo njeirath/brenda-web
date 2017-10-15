@@ -166,6 +166,9 @@ describe('WorkerSetupCtrl', function() {
 				'/usr/local/bin/brenda-node --daemon <<EOF\n' +
 				'AWS_ACCESS_KEY=accessKey\n' +
 				'AWS_SECRET_KEY=secretKey\n' +
+				'S3_REGION=region\n' +
+                'SQS_REGION=region\n' +
+                'EC2_REGION=region\n' +
 				'BLENDER_PROJECT=source location\n' +
 				'WORK_QUEUE=sqs://queueName\n' +
 				'RENDER_OUTPUT=frame dest\n' +
