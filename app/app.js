@@ -26,9 +26,10 @@ angular.module('brendaWeb', [
   'duScroll',
   'angulartics', 
   'angulartics.google.analytics',
-  'dashboard'
+  'dashboard',
+  'environment'
 ]).
-config(['$stateProvider', function($stateProvider) {
+config(['$stateProvider', 'envServiceProvider', function($stateProvider, envServiceProvider) {
   $stateProvider.state('landing', {
   	url: '',
   	templateUrl: "landing.html"
@@ -58,13 +59,23 @@ config(['$stateProvider', function($stateProvider) {
 	  url: '/tutorial',
 	  templateUrl: 'tutorial/tutorial.partial.html'
   });
+
+  envServiceProvider.config({
+	  domains: {
+	  	development: ['localhost'],
+	    production: ['brenda-web.com', '*.brenda-web.com']
+	  }
+  });
+  envServiceProvider.check();
 }])
 .controller('NavCtrl', ['$scope', function($scope) {
 	$scope.navbarCollapsed = true;
 }])
-.run(['$rootScope', '$location', '$window', function($rootScope, $location, $window) {
-	$window.ga('create', 'UA-74793002-1', 'auto');
-	$rootScope.$on('$stateChangeSuccess', function (event) {
-	    $window.ga('send', 'pageview', $location.path());
-	});
+.run(['$rootScope', '$location', '$window', 'envService', function($rootScope, $location, $window, envService) {
+    if (envService.get() === "production") {
+        $window.ga('create', 'UA-74793002-1', 'auto');
+        $rootScope.$on('$stateChangeSuccess', function (event) {
+            $window.ga('send', 'pageview', $location.path());
+        });
+    }
 }]);
