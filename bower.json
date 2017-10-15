@@ -18,7 +18,8 @@
     "angulartics-google-analytics": "~0.1.4",
     "angular-bootstrap": "~1.2.5",
     "angular-bootstrap-lightbox": "~0.11.0",
-    "angular-messages": "1.5.2"
+    "angular-messages": "1.5.2",
+    "angular-environment": "^1.0.8"
   },
   "resolutions": {
     "angular": "1.5.2"
