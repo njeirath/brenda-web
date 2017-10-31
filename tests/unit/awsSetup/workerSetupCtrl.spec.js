@@ -69,16 +69,11 @@ describe('WorkerSetupCtrl', function() {
 	it('should populate list based on http response and default select first item', function() {
 		$httpBackend.flush();
 		expect($rootScope.amis.length).toBe(2);
-		expect($rootScope.amis[0]).toEqual({name: 'ami-0529086c', version: '2.69', nginxPath: '/usr/share/nginx/www/'});
-		expect($rootScope.amis[1]).toEqual({name: 'ami-test', version: '2.77', nginxPath: '/usr/share/nginx/html/'});
+		expect($rootScope.amis[0]).toEqual({name: 'ami-0529086c', version: '2.69'});
+		expect($rootScope.amis[1]).toEqual({name: 'ami-test', version: '2.77'});
 		expect($rootScope.amiSelect).toBe('');
 	});
-	
-	it('should set the default nginx path', function() {
-		$httpBackend.flush();
-		expect($rootScope.amiNginxPath).toBe('/usr/share/nginx/html/')
-	});
-	
+
 	it('should populate instance list based on http response', function() {
 		$httpBackend.flush();
 		expect($rootScope.instances.length).toBe(2);
@@ -92,9 +87,8 @@ describe('WorkerSetupCtrl', function() {
 		});
 		
 		it('should set amiSelect and amiNginxPath based on item passed', function() {
-			$rootScope.setAmi({name: 'ami-test', nginxPath: '/path/to/nginx/'});
+			$rootScope.setAmi({name: 'ami-test'});
 			expect($rootScope.amiSelect).toBe('ami-test');
-			expect($rootScope.amiNginxPath).toBe('/path/to/nginx/');
 		});
 	});
 	
@@ -157,13 +151,15 @@ describe('WorkerSetupCtrl', function() {
 				'B="/mnt/brenda"\n' +
 				'sudo apt-get update\n' +
 				'sudo apt-get -y install nginx\n' +
-				"sudo sed -i '29 i\\ add_header 'Access-Control-Allow-Origin' '*';' /etc/nginx/sites-enabled/default\n" +
-				'sudo echo "* * * * * root tail -n1000 /mnt/brenda/log > /usr/share/nginx/html/log_tail.txt" >> /etc/crontab\n' +
-				'sudo echo "* * * * * root cat /proc/uptime /proc/loadavg $B/task_count > /usr/share/nginx/html/uptime.txt" >> /etc/crontab\n' +
+				'sudo mkdir /root/www\n' +
+                'chmod +x /root && chmod +x /root/www\n' +
+				"sudo wget http://brenda-web.com/resources/nginx/default -O /etc/nginx/sites-enabled/default\n" +
+				'sudo echo "* * * * * root tail -n1000 /mnt/brenda/log > /root/www/log_tail.txt" >> /etc/crontab\n' +
+				'sudo echo "* * * * * root cat /proc/uptime /proc/loadavg $B/task_count > /root/www/uptime.txt" >> /etc/crontab\n' +
 				'if ! [ -d "$B" ]; then\n' +
 				'  for f in brenda.pid log task_count task_last DONE ; do\n' +
 				'    ln -s "$B/$f" "/root/$f"\n' +
-				'    sudo ln -s "$B/$f" "/usr/share/nginx/html/$f"\n' +
+				'    sudo ln -s "$B/$f" "/root/www/$f"\n' +
 				'  done\n' +
 				'fi\n' +
 				'sudo service nginx restart\n' +
