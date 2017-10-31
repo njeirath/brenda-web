@@ -19,26 +19,21 @@ angular.module('awsSetup')
 .controller('WorkerSetupCtrl', ['$scope', 'localStorageService', '$http', 'awsService', '$q', '$analytics', function($scope, localStorageService, $http, awsService, $q, $analytics) {	
 	//Get list of AMIs to choose from
 	$scope.amis = [];
-	
-	var defaultNginxPath = '';
+
 	$http.get('amiList.json').then(function(response) {
-		defaultNginxPath = response.data.defaultNginxPath;
 		
 		response.data.amis.filter(function(item) {
 			return item.region === awsService.getRegion()
 		}).forEach(function(item) {
 			var ami = {name: item.ami, version: item.blenderVersion}
-			ami.nginxPath = item.nginxPath ? item.nginxPath : defaultNginxPath;
 			$scope.amis.push(ami); 
 		});
 		
 		$scope.amiSelect = '';
-		$scope.amiNginxPath = defaultNginxPath;
 	});
 	
 	$scope.setAmi = function(ami) {
 		$scope.amiSelect = ami.name;
-		$scope.amiNginxPath = ami.nginxPath;
 	};
 	
 	$scope.instanceType = 'spot';
@@ -130,13 +125,15 @@ angular.module('awsSetup')
 		
 		script += 'sudo apt-get update\n' +
 				'sudo apt-get -y install nginx\n' +
-				"sudo sed -i '29 i\\ add_header 'Access-Control-Allow-Origin' '*';' /etc/nginx/sites-enabled/default\n" +
-				'sudo echo "* * * * * root tail -n1000 /mnt/brenda/log > ' + $scope.amiNginxPath + 'log_tail.txt" >> /etc/crontab\n' +
-				'sudo echo "* * * * * root cat /proc/uptime /proc/loadavg $B/task_count > ' + $scope.amiNginxPath + 'uptime.txt" >> /etc/crontab\n' +
+				'sudo mkdir /root/www\n' +
+				'chmod +x /root && chmod +x /root/www\n' +
+				"sudo wget http://brenda-web.com/resources/nginx/default -O /etc/nginx/sites-enabled/default\n" +
+				'sudo echo "* * * * * root tail -n1000 /mnt/brenda/log > /root/www/log_tail.txt" >> /etc/crontab\n' +
+				'sudo echo "* * * * * root cat /proc/uptime /proc/loadavg $B/task_count > /root/www/uptime.txt" >> /etc/crontab\n' +
 				'if ! [ -d "$B" ]; then\n' +
 				'  for f in brenda.pid log task_count task_last DONE ; do\n' +
 				'    ln -s "$B/$f" "/root/$f"\n' +
-				'    sudo ln -s "$B/$f" "' + $scope.amiNginxPath + '$f"\n' +
+				'    sudo ln -s "$B/$f" "/root/www/$f"\n' +
 				'  done\n' +
 				'fi\n' +
 				'sudo service nginx restart\n' +

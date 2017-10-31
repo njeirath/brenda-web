@@ -14,9 +14,5 @@ describe('configFiles', function() {
 				expect(ami.blenderVersion).toMatch(/^[0-9\.a-b]+$/);
 			});
 		});
-		
-		it('should have defaultNginxPath set', function() {
-			expect(fileContents.defaultNginxPath).toBe('/usr/share/nginx/html/');
-		})
 	});
 });

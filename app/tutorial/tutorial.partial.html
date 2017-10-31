@@ -28,7 +28,6 @@
 			<li class="section-label"><strong>Advanced Topics</strong></li>
 			<li du-scrollspy="ebsSource"><a du-smooth-scroll="ebsSource">EBS Sources</a></li>
 			<li du-scrollspy="customAmi"><a du-smooth-scroll="customAmi">Create a Custom AMI</a></li>
-			<li du-scrollspy="nginxPath"><a du-smooth-scroll="nginxPath">Nginx Path</a></li>
 		</ul>
 	</div>
 	<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
@@ -330,28 +329,7 @@ rm -rf /root/.ssh/authorized_keys /home/ubuntu/.ssh/authorized_keys /root/.ssh/a
 					</li>
 				</ul>
 			</p>
-			<p>
-				Refer to the <a du-smooth-scroll="nginxPath">Nginx Path</a> help section for information on what the <code>nginxPath</code> property in 
-				<code>ami/amiList.json</code> should be set to.
-			</p>
 		</section>
-		<section id="nginxPath">
-			<h3>Nginx Path</h3>
-			<div ng-include="'tutorial/nginxPath.partial.html'"></div>
-			<p>
-				If creating your own AMI and you want to validate this setting:
-				<ol>
-					<li>Use your AMI to start up an AWS instance</li>
-					<li>Once it is running, SSH into your instance</li>
-					<li>Install Nginx using <code>sudo apt-get install nginx</code></li>
-					<li>Once installed, open <code>/etc/nginx/sites-enabled/default</code></li>
-					<li>Look for a property called <code>root</code>, the value will be the location you should use for the Nginx path</li>
-					<li>Shut down your instance and use Blender-Web to start up a worker with your AMI and the appropriate Nginx path</li>
-					<li>Once it starts up, if you see the status of your worker in the dashboard, the path was correct</li>
-				</ol>
-			</p>
-		</section>
-		
 		<div class="spacer"></div>
 	</div>
 </div>
