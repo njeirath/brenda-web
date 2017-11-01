@@ -80,13 +80,13 @@ angular.module('awsSetup')
 
 			var instanceOrder = ["nano", "micro", "small", "medium", "large", "xlarge", "2xlarge", "4xlarge", "8xlarge", "10xlarge", "16xlarge", "32xlarge"];
 			var instances = results[0].data.filter(function (i) {
-				return i.location == awsService.getRegion();
+				return i.location === awsService.getRegion();
             }).map(function (i) {
 				return i.instanceType;
             }).sort(function (a, b) {
 				var aPrefix = a.split(".")[0];
 				var bPrefix = b.split(".")[0];
-				if (aPrefix != bPrefix) {
+				if (aPrefix !== bPrefix) {
 					return aPrefix.localeCompare(bPrefix);
 				} else {
 					var aSize = instanceOrder.indexOf(a.split(".")[1])
