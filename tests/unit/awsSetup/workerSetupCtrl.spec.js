@@ -43,7 +43,7 @@ describe('WorkerSetupCtrl', function() {
 		
 		awsServiceMock.getAvailabilityZones.and.returnValue(['zone1', 'zone2']);
 		
-		instanceHandler = $httpBackend.when('GET', 'instances.json').respond(['c1.xlarge', 'm3.2xlarge']);
+		instanceHandler = $httpBackend.when('GET', 'instances.json').respond([{'location': 'region', 'instanceType': 'c1.large'}, {'location': 'region', 'instanceType': 'c1.xlarge'}, {'location': 'region-2', 'instanceType': 'm3.2xlarge'}]);
 		
 		//Mock up inherited scope objects
 		$rootScope.s3 = {
@@ -77,9 +77,16 @@ describe('WorkerSetupCtrl', function() {
 	it('should populate instance list based on http response', function() {
 		$httpBackend.flush();
 		expect($rootScope.instances.length).toBe(2);
-		expect($rootScope.instances[0]).toEqual({name: 'c1.xlarge', spotPrices: {zone1: undefined, zone2: undefined}});
+		expect($rootScope.instances[1]).toEqual({name: 'c1.xlarge', spotPrices: {zone1: undefined, zone2: undefined}});
 		expect(awsServiceMock.getSpotPrices).toHaveBeenCalled();
 	});
+
+	it('should sort instance list based on size and filter by region', function () {
+		$httpBackend.flush();
+        expect($rootScope.instances.length).toBe(2);
+        expect($rootScope.instances[0].name).toEqual("c1.large");
+        expect($rootScope.instances[1].name).toEqual("c1.xlarge");
+    });
 	
 	describe('$scope.setAmi', function() {
 		beforeEach(function() {
@@ -105,7 +112,7 @@ describe('WorkerSetupCtrl', function() {
 				 	{InstanceType: 'c1.xlarge', AvailabilityZone: 'zone1', Timestamp: new Date(curDate - 100), SpotPrice: 0.025}	//Older data should be ignored
 			 	]});
 			
-			expect($rootScope.instances[0].spotPrices).toEqual({zone1: {price: 0.023, tstamp: curDate}, zone2: undefined});
+			expect($rootScope.instances[1].spotPrices).toEqual({zone1: {price: 0.023, tstamp: curDate}, zone2: undefined});
 		})
 		
 		it('should call for next data if next token present', function() {
