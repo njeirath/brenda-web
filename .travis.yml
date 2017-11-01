@@ -10,7 +10,6 @@ before_script:
 - sleep 1
 script:
 - node_modules/.bin/karma start karma.conf.js --no-auto-watch --single-run --reporters=dots
-  --browsers=Firefox
 - node_modules/.bin/protractor tests/e2e-tests/protractor.conf.js
 deploy:
   provider: s3

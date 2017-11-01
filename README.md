@@ -76,3 +76,11 @@ npm run protractor
 
 This script will execute the end-to-end tests against the application being hosted on the
 development server.
+
+## Updating instance list
+From time to time AWS will add new instance types to various regions.  To update this list to
+make the new instances available from within brenda-web follow the instructions below:
+
+1. Follow instructions in Gist: [https://gist.github.com/njeirath/2fb9a7d18301350c332d6fc7c5a46954]
+2. After execution a line with JSON will be printed out, copy and paste this
+entire line into the app/instances.json file (replace anything already there)
