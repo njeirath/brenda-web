@@ -183,7 +183,7 @@ angular.module('awsSetup')
 	};
 	
 	$scope.instance = {
-		size: ''
+		size: localStorageService.get('instance.size') || ''
 	}
 	
 	$scope.requestInstances = function() {
@@ -213,6 +213,10 @@ angular.module('awsSetup')
 	
 	$scope.$watch('instanceType', function(newVal) {
 		localStorageService.set('instanceType', newVal);
+	});
+	
+	$scope.$watch('instance.size', function(newVal) {
+		localStorageService.set('instance.size', newVal);
 	});
 
 	$scope.$watch('numInstances', function(newVal) {
