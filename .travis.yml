@@ -9,7 +9,7 @@ before_script:
 - npm install webpack-dev-server@2.9.0
 - sleep 1
 script:
-- node_modules/.bin/karma start karma.conf.js --no-auto-watch --single-run --reporters=dots
+- node_modules/.bin/karma start karma.conf.js --no-auto-watch --single-run --reporters=dots --no-sandbox
 - node_modules/.bin/protractor tests/e2e-tests/protractor.conf.js
 deploy:
   provider: s3
