@@ -1,4 +1,7 @@
 language: node_js
+sudo: required
+addons:
+ chrome: stable
 node_js:
 - 'node'
 before_script:
@@ -6,7 +9,8 @@ before_script:
 - sh -e /etc/init.d/xvfb start
 - npm start > /dev/null &
 - npm run update-webdriver
-- npm install webpack-dev-server@2.9.0
+- npm install webpack-dev-server@3.1.1
+- sudo apt update && sudo apt install google-chrome-stable
 - sleep 1
 script:
 - node_modules/.bin/karma start karma.conf.js --no-auto-watch --single-run --reporters=dots
