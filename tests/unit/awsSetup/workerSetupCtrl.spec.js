@@ -170,6 +170,24 @@ describe('WorkerSetupCtrl', function() {
 				'  done\n' +
 				'fi\n' +
 				'sudo service nginx restart\n' +
+				'sudo curl https://s3.amazonaws.com/aws-cloudwatch/downloads/latest/awslogs-agent-setup.py -O\n' +
+				'sudo mkdir -p /.aws\n' +
+				'echo "[default]\n' +
+				'aws_access_key_id=accessKey\n' +
+				'aws_secret_access_key=secretKey\n' +
+				'" | sudo tee /.aws/credentials\n' +
+				'ln -s /.aws ~/.aws\n' +
+				'echo "[general]\n' +
+				'state_file = /var/awslogs/state/agent-state\n' +
+				'[/mnt/brenda/log]\n' +
+				'datetime_format = %Y-%m-%d %H:%M:%S\n' +
+				'file = /mnt/brenda/log\n' +
+				'buffer_duration = 5000\n' +
+				'log_stream_name = {instance_id}\n' +
+				'initial_position = start_of_file\n' +
+				'log_group_name = Brenda\n' +
+				'" | sudo tee awslogs.conf\n' +
+				'sudo python ./awslogs-agent-setup.py --region us-east-1 -n --configfile=./awslogs.conf\n' +
 				'export BRENDA_WORK_DIR="."\n' +
 				'mkdir -p "$B"\n' +
 				'cd "$B"\n' +
