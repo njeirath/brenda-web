@@ -28,15 +28,15 @@ angular.module('awsSetup')
 			var ami = {name: item.ami, version: item.blenderVersion}
 			$scope.amis.push(ami); 
 		});
-		
-		$scope.amiSelect = '';
 	});
+
+	$scope.amiSelect = localStorageService.get('amiSelect') || '';
 	
 	$scope.setAmi = function(ami) {
 		$scope.amiSelect = ami.name;
 	};
-	
-	$scope.instanceType = 'spot';
+
+	$scope.instanceType = localStorageService.get('instanceType') || 'spot';
 	
 	//Get list of instance types to choose from
 	$scope.instances = [];
@@ -110,11 +110,13 @@ angular.module('awsSetup')
 		});
 	};
 	
-	$scope.numInstances = 1;
+	$scope.spotPrice = localStorageService.get('spotPrice') || undefined;
+	$scope.numInstances =  localStorageService.get('numInstances') || 1;
 	
 	//Get EC2 keypairs to choose from
 	$scope.keys = [];
-	
+	$scope.sshKey = localStorageService.get('sshKey') || undefined;
+
 	$scope.refreshKeyPairs = function() {
 		awsService.getKeyPairs(function(data) {
 			$scope.keys = [];
@@ -181,7 +183,7 @@ angular.module('awsSetup')
 	};
 	
 	$scope.instance = {
-		size: ''
+		size: localStorageService.get('instance.size') || ''
 	}
 	
 	$scope.requestInstances = function() {
@@ -202,4 +204,30 @@ angular.module('awsSetup')
 	
 	$scope.updateTypes();
 	$scope.refreshKeyPairs();
+
+	
+	//Persist when changed
+	$scope.$watch('amiSelect', function(newVal) {
+		localStorageService.set('amiSelect', newVal);
+	});
+	
+	$scope.$watch('instanceType', function(newVal) {
+		localStorageService.set('instanceType', newVal);
+	});
+	
+	$scope.$watch('instance.size', function(newVal) {
+		localStorageService.set('instance.size', newVal);
+	});
+
+	$scope.$watch('numInstances', function(newVal) {
+		localStorageService.set('numInstances', newVal);
+	});
+
+	$scope.$watch('sshKey', function(newVal) {
+		localStorageService.set('sshKey', newVal);
+	});
+
+	$scope.$watch('spotPrice', function(newVal) {
+		localStorageService.set('spotPrice', newVal);
+	});
 }]);
