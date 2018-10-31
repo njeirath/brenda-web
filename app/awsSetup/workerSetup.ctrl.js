@@ -18,7 +18,7 @@
 angular.module('awsSetup')
 	.controller('WorkerSetupCtrl', ['$scope', 'localStorageService', '$http', 'awsService', '$q', '$analytics', function ($scope, localStorageService, $http, awsService, $q, $analytics) {
 
-		$scope.addAmiToList(item) {
+		$scope.addAmiToList = function(item) {
 			var ami = { name: item.ami, version: item.blenderVersion }
 			$scope.amis.push(ami);
 		};
