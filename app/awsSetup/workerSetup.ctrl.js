@@ -17,20 +17,29 @@
 
 angular.module('awsSetup')
 .controller('WorkerSetupCtrl', ['$scope', 'localStorageService', '$http', 'awsService', '$q', '$analytics', function($scope, localStorageService, $http, awsService, $q, $analytics) {	
-	//Get list of AMIs to choose from
-	$scope.amis = [];
 
-	$http.get('amiList.json').then(function(response) {
+	$scope.loadAmiList = function() {	
+		//Get list of AMIs to choose from
+		$scope.amis = [];
+		$http.get('amiList.json').then(function(response) {
 		
-		response.data.amis.filter(function(item) {
-			return item.region === awsService.getRegion()
-		}).forEach(function(item) {
-			var ami = {name: item.ami, version: item.blenderVersion}
-			$scope.amis.push(ami); 
+			response.data.amis.filter(function(item) {
+				return item.region === awsService.getRegion()
+			}).forEach(function(item) {
+				var ami = {name: item.ami, version: item.blenderVersion}
+				$scope.amis.push(ami); 
+			});
+	
+			awsService.getCustomAmiList().forEach(function(item) {
+				var ami = {name: item.ami, version: item.blenderVersion}
+				$scope.amis.push(ami); 
+			});
+			
+			$scope.amiSelect = '';
 		});
-		
-		$scope.amiSelect = '';
-	});
+	}
+	
+	$scope.loadAmiList();
 	
 	$scope.setAmi = function(ami) {
 		$scope.amiSelect = ami.name;
