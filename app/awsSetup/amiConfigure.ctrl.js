@@ -36,7 +36,7 @@ angular.module('awsSetup')
 		console.log("ami to remove: " + amiName);
 		var tmpAmiList = [];
 		$scope.customAmis.forEach(function(ami){
-			if(ami.ami != amiName) {
+			if(ami.ami !== amiName) {
 				tmpAmiList.push(ami);
 			}
 		});
