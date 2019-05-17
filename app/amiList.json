@@ -20,6 +20,22 @@
 			"ami": "ami-f68d4d8e",
 			"blenderVersion": "2.78",
 			"region": "us-west-2"
+		},{
+			"ami": "ami-022b0d55ec6cc4bda",
+			"blenderVersion": "2.79b",
+			"region": "us-east-1"
+		},{
+			"ami": "ami-0eff682debdeefc6a",
+			"blenderVersion": "2.79b",
+			"region": "us-east-2"
+		},{
+			"ami": "ami-0e91b199a8c69ee76",
+			"blenderVersion": "2.79b",
+			"region": "us-west-1"
+		},{
+			"ami": "ami-05d1b5b7c20fdfb69",
+			"blenderVersion": "2.79b",
+			"region": "us-west-2"
 		}
 	]
 }
