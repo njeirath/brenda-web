@@ -6,7 +6,7 @@ exports.config = {
   ],
 
   capabilities: {
-    'browserName': 'chrome'
+    browserName: 'chrome'
   },
 
   baseUrl: 'http://localhost:8000/app/',
@@ -15,5 +15,8 @@ exports.config = {
 
   jasmineNodeOpts: {
     defaultTimeoutInterval: 30000
-  }
+  },
+  localSeleniumStandaloneOpts: {
+    loopback: true
+}
 };

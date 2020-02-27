@@ -78,7 +78,7 @@ angular.module('awsSetup')
 		.then(function(results) {
 			$scope.instances = [];
 
-			var instanceOrder = ["nano", "micro", "small", "medium", "large", "xlarge", "2xlarge", "4xlarge", "8xlarge", "10xlarge", "16xlarge", "32xlarge"];
+			var instanceOrder = ["nano", "micro", "small", "medium", "large", "xlarge", "2xlarge", "4xlarge", "8xlarge", "9xlarge", "10xlarge", "16xlarge", "18xlarge", "32xlarge"];
 			var instances = results[0].data.filter(function (i) {
 				return i.location === awsService.getRegion();
             }).map(function (i) {
